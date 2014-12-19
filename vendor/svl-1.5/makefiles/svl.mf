@@ -1,0 +1,15 @@
+include makefiles/config.mf
+
+SVL_CONFIG = include/SVLConfig.h
+SVL_CONFIG_BASE = src/SVLConfigBase.h
+
+config: config-svl
+
+config-svl:
+	@echo "Generating config file"
+	@sed -e "/--- Config/q" $(SVL_CONFIG_BASE) > $(SVL_CONFIG) 
+	@echo "#define SVL_CONFIG" $(CONFIG) >> $(SVL_CONFIG); 
+	@(for i in $(VL_EXT_FLAGS); do echo $$i; done) \
+		| sed -e "s/-D\([A-Z_]*\)/#define \1/g" >> $(SVL_CONFIG); 
+	@(for i in $(CL_EXT_FLAGS); do echo $$i; done) \
+		| grep "_BOOL\|_TF" | sed -e "s/-D\([A-Z_]*\)/#define \1/g" >> $(SVL_CONFIG); 

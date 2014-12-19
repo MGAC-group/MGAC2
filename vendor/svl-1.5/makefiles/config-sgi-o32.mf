@@ -1,0 +1,37 @@
+#
+# Irix 5.3-6.4, o32 compiler
+#
+
+CONFIG = sgi-o32
+
+# --- Compilation --------------------------------------------------------------
+CC          =   cc -woff 3262 -woff 3247 -woff 3937 -woff 3920
+CXX         =   CC -woff 3262 -woff 3247 -woff 3937 -woff 3920
+LD          =   CC
+MAKEDEP     =   makedepend -f Makefile.depend -w0 -- -I/usr/include/CC \
+                    $(SYS_INC_DIRS) $(INC_DIRS) -- $(SRCS)
+LIBTOOL     =   libtool
+
+LD_FLAGS    =   -o32
+CFLAGS      =   -O2 -mips2
+DBG_CFLAGS  =   -g3
+
+DEST        =   $(REACTOR)
+
+clean:	sgi_clean
+sgi_clean:
+	@-rm -rf ii_files
+
+config:
+	@echo "configured for Irix o32"
+
+# --- System--------------------------------------------------------------------
+SYS_INC_DIRS        =
+SYS_LIB_DIRS        =
+SYS_LIBS            =
+SYS_DBG_LIBS        =   -lmalloc_cv
+
+# --- VL -----------------------------------------------------------------------
+CL_EXT_FLAGS = -DCL_SGI_INST -DCL_NO_BOOL -DCL_NO_TF -DCL_RUSAGE_TIME -DCL_SGI_TIME
+VL_EXT_FLAGS = -DVL_HAS_ABSF -DVL_HAS_IEEEFP -DVL_HAS_DRAND
+

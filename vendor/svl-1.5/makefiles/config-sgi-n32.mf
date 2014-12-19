@@ -1,0 +1,36 @@
+#
+# For Irix 6.2 & up, new compiler, 32-bit code
+#
+
+CONFIG = sgi-n32
+
+# --- Compilation -------------------------------------------------------------
+CXX         =   CC -woff 1682 -woff 1681
+CC          =   cc
+LD          =   CC # so we get automatic template instantiation
+MAKEDEP     =   makedepend -f Makefile.depend -w0 -- -I/usr/include/CC \
+                    $(SYS_INC_DIRS) $(INC_DIRS) -- $(SRCS)
+
+LD_FLAGS    =   -n32
+CFLAGS      =   -O2
+DBG_CFLAGS  =   -g3
+
+DEST        =   $(REACTOR)
+
+clean:	sgi_clean
+sgi_clean:
+	@-rm -rf ii_files
+
+config:
+	@echo "configured for Irix n32"
+
+# --- System--------------------------------------------------------------------
+SYS_INC_DIRS        =
+SYS_LIB_DIRS        =
+SYS_LIBS            =
+SYS_DBG_LIBS        =   -lmalloc_cv
+
+# --- VL -----------------------------------------------------------------------
+CL_EXT_FLAGS = -DCL_SGI_INST -DCL_RUSAGE_TIME -DCL_SGI_TIME
+VL_EXT_FLAGS = -DVL_HAS_ABSF -DVL_HAS_IEEEFP -DVL_HAS_DRAND
+

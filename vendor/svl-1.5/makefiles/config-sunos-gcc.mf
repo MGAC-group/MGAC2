@@ -1,0 +1,34 @@
+#
+# SunOS 4.1 with gcc
+#
+
+CONFIG = sunos-gcc
+
+# --- Compilation --------------------------------------------------------------
+CXX         =   g++
+CC          =   gcc
+LD          =   g++
+MAKEDEP     =   g++ -MM $(SYS_INC_DIRS) $(INC_DIRS) $(SRCS) > Makefile.depend
+CPP         =   gcc -x c -E
+LIBTOOL     =   libtool
+
+LD_FLAGS    =
+CFLAGS      =   -O2 -ansi
+DBG_CFLAGS  =   -g -ansi
+# The -ansi is to stop gcc #defining things like "sun". (Sheesh.)
+
+DEST        =   $(REACTOR)
+
+config:
+	@echo "configured for SunOS and g++"
+
+# --- System -------------------------------------------------------------------
+SYS_INC_DIRS        =
+SYS_LIB_DIRS        =
+SYS_LIBS            =
+SYS_DBG_LIBS        =
+
+# --- VL -----------------------------------------------------------------------
+CL_EXT_FLAGS = -DCL_TMPL_INST -DCL_POSIX_TIME
+VL_EXT_FLAGS = -DVL_NONE
+

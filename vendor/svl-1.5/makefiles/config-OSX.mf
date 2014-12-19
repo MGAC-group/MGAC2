@@ -1,0 +1,36 @@
+#
+# Mac OSX
+#
+
+CONFIG = OSX
+
+# --- Compilation --------------------------------------------------------------
+CC          =   cc
+CXX         =   c++
+LD          =   c++
+MAKEDEP     =   c++ -MM $(SYS_INC_DIRS) $(INC_DIRS) $(SRCS) > Makefile.depend
+CPP         =   cpp
+LIBTOOL     =   glibtool
+
+LD_FLAGS    =
+CFLAGS      =   -O2
+DBG_CFLAGS  =   -g
+
+SHARED_LIBS = off
+USE_RANLIB = 1
+
+DEST        =   $(REACTOR)
+
+config:
+	@echo "configured for Mac OSX"
+
+# --- System -------------------------------------------------------------------
+SYS_INC_DIRS        =  -I/sw/include
+SYS_LIB_DIRS        =  -L/sw/lib
+SYS_LIBS            =
+SYS_DBG_LIBS        =
+
+# --- VL -----------------------------------------------------------------------
+CL_EXT_FLAGS = -DCL_TMPL_INST -DCL_HAS_VSNPRINTF -DCL_POSIX_TIME
+VL_EXT_FLAGS = -DVL_HAS_ABSF -DVL_USE_MEMCPY
+

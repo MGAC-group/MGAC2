@@ -1,0 +1,33 @@
+#
+# Alpha OSF1 4.0
+#
+
+CONFIG = alpha
+
+# --- Compilation --------------------------------------------------------------
+CXX         =   cxx
+CC          =   cc
+LD          =   cxx
+MAKEDEP     =   cxx -M $(SYS_INC_DIRS) $(INC_DIRS) $(SRCS) > Makefile.depend
+CPP         =   cpp
+LIBTOOL     =   libtool
+
+LD_FLAGS    =
+CFLAGS      =   -O2
+DBG_CFLAGS  =   -g
+
+DEST        =   $(REACTOR)
+
+config:
+	@echo "configured for Alpha OSF1 4.0"
+
+# --- System -------------------------------------------------------------------
+SYS_INC_DIRS        =
+SYS_LIB_DIRS        =
+SYS_LIBS            =
+SYS_DBG_LIBS        =
+
+# --- VL -----------------------------------------------------------------------
+CL_EXT_FLAGS = -DCL_TMPL_INST -DCL_POSIX_TIME
+VL_EXT_FLAGS = -DVL_HAS_ABSF -DVL_HAS_DRAND
+

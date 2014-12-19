@@ -1,0 +1,33 @@
+#
+# Linux (RedHat 5.2-6.2)
+#
+
+CONFIG = linux_RH
+
+# --- Compilation --------------------------------------------------------------
+CC          =   gcc
+CXX         =   g++
+LD          =   g++
+MAKEDEP     =   g++ -MM $(SYS_INC_DIRS) $(INC_DIRS) $(SRCS) > Makefile.depend
+CPP         =   gcc -x c -E
+LIBTOOL     =   libtool
+
+LD_FLAGS    =
+CFLAGS      =   -O2
+DBG_CFLAGS  =   -g
+
+DEST        =   $(REACTOR)
+
+config:
+	@echo "configured for redhat linux"
+
+# --- System -------------------------------------------------------------------
+SYS_INC_DIRS        =
+SYS_LIB_DIRS        =
+SYS_LIBS            =
+SYS_DBG_LIBS        =
+
+# --- VL -----------------------------------------------------------------------
+CL_EXT_FLAGS = -DCL_TMPL_INST -DCL_HAS_VSNPRINTF -DCL_POSIX_TIME
+VL_EXT_FLAGS = -DVL_HAS_ABSF -DVL_HAS_DRAND -DVL_USE_MEMCPY
+
