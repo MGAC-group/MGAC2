@@ -1,28 +1,50 @@
 #include "gasp2.hpp"
 #include "optionparser.h"
-#include <mpi.h>
 
 using namespace std;
 
 const string version = "0.1";
 
+struct Arg: public option::Arg
+{
+	  static option::ArgStatus Required(const option::Option& option, bool msg)
+	  {
+	    if (option.arg != 0)
+	      return option::ARG_OK;
 
-enum optIndex {RESTART, INPUT, UNKNOWN, HELP };
+	    if (msg) cout << "Option '" << option.name << "' requires argument" << endl;
+	    return option::ARG_ILLEGAL;
+	  }
+	  static option::ArgStatus NonEmpty(const option::Option& option, bool msg)
+	  {
+	    if (option.arg != 0 && option.arg[0] != 0)
+	      return option::ARG_OK;
+
+	    if (msg) cout << "Option '" << option.name << "' requires argument" << endl;
+	    return option::ARG_ILLEGAL;
+	  }
+};
+
+enum optIndex {INPUT,HELP,RESTART };
 
 const option::Descriptor usage[] =
 {
-		{INPUT,0,"i","input",option::Arg::Optional,"--input  The XML input file for running"},
-
-
+		{INPUT,0,"i","input",Arg::Required,"--input  The XML input file for running"},
+		{HELP,0,"h","help",option::Arg::Optional,"--help  Displays this help message"},
+		{RESTART,0,"r","restart",Arg::NonEmpty,"--restart  Optional argument for a restart file"},
+		{ 0, 0, 0, 0, 0, 0 }
 };
 
 
 int main( int argc, char* argv[] ) {
+
 	MPI_Init(&argc,&argv);
 
 	int size, ID;
     MPI_Comm_size(MPI_COMM_WORLD,&size);
     MPI_Comm_rank(MPI_COMM_WORLD, &ID);
+
+
 
     //option parsing
     argc-=(argc>0); argv+=(argc>0);
@@ -38,47 +60,51 @@ int main( int argc, char* argv[] ) {
     	return 0;
     }
 
+    if(!options[INPUT]) {
+    	cout << "An input file is required! Use -i to specify." << endl;
+    	option::printUsage(cout, usage);
+    	return 0;
+    }
     string infile;
-    if(options[INPUT] && options[INPUT].arg != NULL) {
-    	infile(options[INPUT].arg);
-    }
-    else {
+    infile.assign(options[INPUT].arg);
 
-    	exit(1);
-    }
 
+    time_t prog_start;
     //startup control
     if(ID==0) {
-    	time_t prog_start = time(0);
+    	prog_start = time(0);
     	char * dt = ctime(&prog_start);
     	cout << "------------------------------------------------------------" << endl;
     	cout << "MGAC v"<< version << " startup at " << dt;
     	cout << endl << endl;
     	cout << "Users of this program should cite: " << endl;
     	cout << endl << endl;
-    	cout << "------------------------------------------------------------" << endl;
+    	cout << "------------------------------------------------------------" << endl << endl;
+    	cout << "Using input file " << infile << endl << endl;
 
-    	if( options[RESTART] && )
-    		GASP2control server(prog_start,size-1, infile, )
-    	else
-    		GASP2control server(prog_start, infile);
+    	if( options[RESTART] && options[RESTART].arg != NULL) {
 
-    	server.server_prog();
+    		GASP2control server(prog_start,size-1, infile, options[RESTART].arg);
+    		server.server_prog();
+    	}
+    	else {
+    		GASP2control server(prog_start,size-1, infile);
+    		server.server_prog();
+    	}
+
 
     }
     else {
-
-    	GASP2control client();
+    	GASP2control client;
     	client.client_prog();
-
     }
 
     //program termination
     if(ID==0) {
-    	time_t final = time(0) - prog_start;
+    	time_t final = time(0);
     	char *dt = ctime(&final);
     	cout << "------------------------------------------------------------" << endl;
-    	cout << "MGAC completed at " << final;
+    	cout << "MGAC completed at " << dt;
     	cout << "------------------------------------------------------------" << endl;
     }
 
