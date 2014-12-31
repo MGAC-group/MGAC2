@@ -95,7 +95,7 @@ int main( int argc, char* argv[] ) {
 
     }
     else {
-    	GASP2control client;
+    	GASP2control client(ID, infile);
     	client.client_prog();
     }
 

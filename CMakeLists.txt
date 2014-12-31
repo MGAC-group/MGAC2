@@ -28,9 +28,6 @@ gasp2
 	src/gasp2struct.cpp
 	src/tinyxml2.cpp
 )
-target_link_libraries( gasp2 
-	"${PROJECT_SOURCE_DIR}/vendor/svl-1.5/lib/libsvl.a"
-)
 target_link_libraries( gasp2 ${MPI_LIBRARIES} )
 target_link_libraries( gasp2 svl )
 add_dependencies( gasp2 svl )

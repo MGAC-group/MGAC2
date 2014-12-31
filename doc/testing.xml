@@ -1,0 +1,53 @@
+<mgac version="redux-0.1">
+	<crystal distcell="0.05" intradist="0.5" maxvol="100.0" minvol="-50.0" expectvol="83.6" spacegroup="P 1" name="GLYCIN">
+		<molecule name="gly-1" countmin="1" countmax="2" plane="C1 C2 N1">
+			<atom elem="O" title="O1" x="1.79700" y="-0.47800" z="0.00000"/>
+			<atom elem="O" title="O2" x="0.38800" y="1.27500" z="-0.00000"/>
+			<atom elem="C" title="C1" x="0.72800" y="0.07400" z="-0.00000"/>
+			<atom elem="C" title="C2" x="-0.52400" y="-0.87100" z="-0.00000"/>
+			<atom elem="H" title="H1" x="-0.54800" y="-1.49300" z="-0.88200"/>
+			<atom elem="H" title="H2" x="-0.54800" y="-1.49300" z="0.88100"/>
+			<atom elem="N" title="N1" x="-1.70100" y="0.06100" z="0.00000"/>
+			<atom elem="H" title="H3" x="-1.13200" y="0.97500" z="0.00000"/>
+			<atom elem="H" title="H4" x="-2.28100" y="-0.00700" z="0.81700"/>
+			<atom elem="H" title="H5" x="-2.28200" y="-0.00700" z="-0.81600"/>
+			<dihedral title="C1-C2-N1-H3" angle="C1 C2 N1 H3" update="H3 H4 H5" min="-140.0" max="140.0"/>
+			<dihedral title="O1-C1-C2-N1" angle="O1 C1 C2 N1" update="O1 O2"/>
+			<bond title="N1-H5" atoms="H5 N1" minlength="1.0" maxlength="1.1"/>
+			<bond title="N1-H4" atoms="H4 N1" minlength="1.0" maxlength="1.1"/>
+			<bond title="N1-H3" atoms="H3 N1" minlength="1.0" maxlength="1.1"/>
+		</molecule>
+		<molecule name="gly-2" count="1" plane="C1 C2 N1">
+			<atom elem="O" title="O1" x="1.79700" y="-0.47800" z="0.00000"/>
+			<atom elem="O" title="O2" x="0.38800" y="1.27500" z="-0.00000"/>
+			<atom elem="C" title="C1" x="0.72800" y="0.07400" z="-0.00000"/>
+			<atom elem="C" title="C2" x="-0.52400" y="-0.87100" z="-0.00000"/>
+			<atom elem="H" title="H1" x="-0.54800" y="-1.49300" z="-0.88200"/>
+			<atom elem="H" title="H2" x="-0.54800" y="-1.49300" z="0.88100"/>
+			<atom elem="N" title="N1" x="-1.70100" y="0.06100" z="0.00000"/>
+			<atom elem="H" title="H3" x="-1.13200" y="0.97500" z="0.00000"/>
+			<atom elem="H" title="H4" x="-2.28100" y="-0.00700" z="0.81700"/>
+			<atom elem="H" title="H5" x="-2.28200" y="-0.00700" z="-0.81600"/>
+		</molecule>
+	</crystal>
+	<qe> 
+		<param	calculation="vc-relax" restart_mode="from_scratch" 
+				tstress=".true." tprnfor=".true." 
+				nstep="70" 
+				pseudo_dir="path_to_pseudos" 
+				outdir="scratch_path" 
+				wf_collect="true" verbosity="low" 
+				etot_conv_thr="1.0D-3" forc_conv_thr="1.0D-2" press_conv_thr="0.5D0" 
+				ecutwfc="55" ecotrho="550" spline_ps=".true." 
+				conv_thr="1.D-7" cell_dynamics="bfgs" 
+				k_points="automatic" k_point_spec="2 2 2 1 1 1" 
+				restart_limit="3" scftimeout="6000" />
+				
+		<pseudo elem="H" mass="1.000" name="H.pbe-rrkjus.UPF" />
+		<pseudo elem="O" mass="14.000" name="O.pbe-rrkjus.UPF" />
+		<pseudo elem="N" mass="15.000" name="N.pbe-rrkjus.UPF" />
+		<pseudo elem=C" mass="12.000" name="C.pbe-rrkjus.UPF" />
+	</qe>
+	<custom scratch="path_to_scratch" script="path_to_script" />
+	<run crossover_probability="1.0" replacement_percentage="1.0" mutation_probability="0.01" number_of_generations="50" population_size="60" seed="0" test_seed="true" const_scale="1.0" lin_scale="1.0" exp_scale="1.0" calcmethod="qe" mode="steadystate" type="elitism" selector="roulette" scaling="linear" />
+</mgac>
