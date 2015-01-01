@@ -3,6 +3,7 @@
 using namespace std;
 
 GASP2param::GASP2param() {
+
 	//this is where the bulk of defaults are set
 
 	//crystal params
@@ -30,7 +31,6 @@ GASP2param::GASP2param() {
 	outputmode = "xml";
 	outputfile = "population_data";
 
-
 	//qe params
 	QEcalculation = "vc-relax"; //vc-relax
 	QErestart_mode = "from_scratch"; //from_scratch
@@ -52,7 +52,6 @@ GASP2param::GASP2param() {
 	QEk_point_spec = "2 2 2  1 1 1"; //2 2 2   1 1 1
 	QErestart_limit = 3; //3
 	QEscftimeout = 6000; //time in seconds
-
 
 }
 
@@ -275,7 +274,6 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 				return false;
 			}
 		}
-
 
 		//popsize
 		if(!run->QueryIntAttribute("popsize", &itemp)) {

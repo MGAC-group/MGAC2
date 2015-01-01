@@ -90,7 +90,7 @@ private:
 	vector<string> QEpseudos; //REQUIRED
 
 	//CHARMM params
-	//at some point I will re-add this
+	//AML: at some point I may add in CHARMM support
 
 	//custom params
 	string Cscratch; //REQUIRED location of scratch handling

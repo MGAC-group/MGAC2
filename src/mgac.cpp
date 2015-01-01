@@ -5,6 +5,7 @@ using namespace std;
 
 const string version = "0.1";
 
+//front material for option parsing
 struct Arg: public option::Arg
 {
 	  static option::ArgStatus Required(const option::Option& option, bool msg)
@@ -29,9 +30,9 @@ enum optIndex {INPUT,HELP,RESTART };
 
 const option::Descriptor usage[] =
 {
-		{INPUT,0,"i","input",Arg::Required,"--input  The XML input file for running"},
-		{HELP,0,"h","help",option::Arg::Optional,"--help  Displays this help message"},
-		{RESTART,0,"r","restart",Arg::NonEmpty,"--restart  Optional argument for a restart file"},
+		{INPUT,0,"i","input",Arg::Required,"-i,--input  The XML input file for running"},
+		{HELP,0,"h","help",option::Arg::Optional,"-h,--help  Displays this help message"},
+		{RESTART,0,"r","restart",Arg::NonEmpty,"-r,--restart  Optional argument for a restart file"},
 		{ 0, 0, 0, 0, 0, 0 }
 };
 
@@ -70,7 +71,7 @@ int main( int argc, char* argv[] ) {
 
 
     time_t prog_start;
-    //startup control
+    //startup control for server/client
     if(ID==0) {
     	prog_start = time(0);
     	char * dt = ctime(&prog_start);
@@ -83,7 +84,6 @@ int main( int argc, char* argv[] ) {
     	cout << "Using input file " << infile << endl << endl;
 
     	if( options[RESTART] && options[RESTART].arg != NULL) {
-
     		GASP2control server(prog_start,size-1, infile, options[RESTART].arg);
     		server.server_prog();
     	}
@@ -91,8 +91,6 @@ int main( int argc, char* argv[] ) {
     		GASP2control server(prog_start,size-1, infile);
     		server.server_prog();
     	}
-
-
     }
     else {
     	GASP2control client(ID, infile);
