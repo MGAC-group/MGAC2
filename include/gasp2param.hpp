@@ -42,7 +42,7 @@ private:
 
 	//run params
 	string calcmethod; //REQUIRED: fitcell, qe, custom
-	string mode; //steadystate or generational
+	string mode; //steadystate or stepwise
 	string type; //elitism or classic
 	string selector; //roulette or pattern
 	string scaling; //constant, linear, exponential
@@ -51,15 +51,19 @@ private:
 	double mutation_prob; //0.01
 	int generations; //50
 	int popsize; //30
-	int seed; //internal
+	unsigned int seed; //0
 	bool test_seed; //if true; sets seed to 0
-	int clientseed; //internal
 	double const_scale;
 	double lin_scale;
 	double exp_scale;
+	string outputmode;
+	string outputfile;
 
 
 	//qe params
+	string QEpath;
+	string QEmpirunpath;
+	string QEpreamble; //in case something else needs to be executed before qe is invoked
 	string QEcalculation; //vc-relax
 	string QErestart_mode; //from_scratch
 	string QEprefix; //REQUIRED
@@ -95,7 +99,7 @@ private:
 	//parsers and writers
 	bool serializeXML(string filename) {return true;};
 	bool serializeH5(string filename) {return true;};
-	bool parseXML( tinyxml2::XMLDocument *doc );
+	bool parseXML( tinyxml2::XMLDocument *doc, string& errorstring );
 	bool readH5(string filename) {return true;};
 	void logParams();
 

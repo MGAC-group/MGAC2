@@ -22,10 +22,10 @@ private:
 	string infile;
 	string restart;
 	int worldSize;
-	int clientID;
+	int ID;
 
 	GASP2param params;
 
-	void parseInput(tinyxml2::XMLDocument *doc);
+	bool parseInput(tinyxml2::XMLDocument *doc, string & errors);
 
 };

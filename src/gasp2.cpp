@@ -8,35 +8,48 @@ using namespace std;
 
 GASP2control::GASP2control(int ID, string infile) {
 
+	this->ID = ID;
+
 	//parse the infile
 	tinyxml2::XMLDocument doc;
+	string errorstring;
 	if(!doc.LoadFile(infile.c_str()))
-		parseInput(&doc);
+		parseInput(&doc, errorstring);
 	else
 		exit(1);
-
 
 }
 
 //this constructor is invoked for a server
-//controller. the server acts as both client
-//and server
+//controller ONLY. the server acts as both client
+//and server by dispatching pthreads in addition
+//to managing the other clients
 GASP2control::GASP2control(time_t start, int size, string input, string restart) {
 	starttime = start;
 	worldSize = size;
 	this->restart = restart;
 	infile = input;
-	int ID = 0;
+	ID = 0;
 
 	//parse the infile with output handling!
 	tinyxml2::XMLDocument doc;
+	string errorstring;
 	doc.LoadFile(infile.c_str());
-	if(doc.ErrorID() == 0)
-		parseInput(&doc);
+	if(doc.ErrorID() == 0) {
+		if(parseInput(&doc, errorstring)==false) {
+			cout << "There was an error in the input file: " << errorstring << endl;
+			exit(1);
+		}
+
+	}
 	else {
-		cout << "!!! There was a problem with opening the input file! Aborting... " << endl;
+		cout << "!!! There was a problem with opening the input file!" << endl;
+		cout << "Check to see if the file exists or if the XML file" << endl;
+		cout << "is properly formed, with tags formatted correctly." << endl;
+		cout << "Aborting... " << endl;
 		exit(1);
 	}
+
 	//parse the restart if it exists
 
 
@@ -52,8 +65,21 @@ void GASP2control::client_prog() {
 
 }
 
-void GASP2control::parseInput(tinyxml2::XMLDocument *doc) {
-	params.parseXML(doc);
+bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
+
+	//pass the doc to gasp2param
+	if(params.parseXML(doc, errors)==false)
+		return false;
+
+
+
+
+	if(ID == 0) {
+		params.logParams();
+	}
+	return true;
+
+
 
 
 }

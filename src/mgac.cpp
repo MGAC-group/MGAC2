@@ -76,7 +76,7 @@ int main( int argc, char* argv[] ) {
     	char * dt = ctime(&prog_start);
     	cout << "------------------------------------------------------------" << endl;
     	cout << "MGAC v"<< version << " startup at " << dt;
-    	cout << endl << endl;
+    	cout << endl;
     	cout << "Users of this program should cite: " << endl;
     	cout << endl << endl;
     	cout << "------------------------------------------------------------" << endl << endl;
@@ -103,6 +103,7 @@ int main( int argc, char* argv[] ) {
     if(ID==0) {
     	time_t final = time(0);
     	char *dt = ctime(&final);
+    	cout << endl;
     	cout << "------------------------------------------------------------" << endl;
     	cout << "MGAC completed at " << dt;
     	cout << "------------------------------------------------------------" << endl;

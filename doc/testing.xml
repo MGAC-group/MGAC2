@@ -46,7 +46,7 @@
 		<pseudo elem="H" mass="1.000" name="H.pbe-rrkjus.UPF" />
 		<pseudo elem="O" mass="14.000" name="O.pbe-rrkjus.UPF" />
 		<pseudo elem="N" mass="15.000" name="N.pbe-rrkjus.UPF" />
-		<pseudo elem=C" mass="12.000" name="C.pbe-rrkjus.UPF" />
+		<pseudo elem="C" mass="12.000" name="C.pbe-rrkjus.UPF" />
 	</qe>
 	<custom scratch="path_to_scratch" script="path_to_script" />
 	<run crossover_probability="1.0" replacement_percentage="1.0" mutation_probability="0.01" number_of_generations="50" population_size="60" seed="0" test_seed="true" const_scale="1.0" lin_scale="1.0" exp_scale="1.0" calcmethod="qe" mode="steadystate" type="elitism" selector="roulette" scaling="linear" />
