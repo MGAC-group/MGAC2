@@ -25,6 +25,8 @@ private:
 	int ID;
 
 	GASP2param params;
+	GASP2struct root; //base structure which all other structures are derived from
+
 
 	bool parseInput(tinyxml2::XMLDocument *doc, string & errors);
 

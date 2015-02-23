@@ -22,6 +22,7 @@ svl
 add_library( 
 gasp2
 	src/gasp2.cpp 
+	src/gasp2common.cpp
 	src/gasp2param.cpp 
 	src/gasp2pop.cpp 
 	src/gasp2qe.cpp 
