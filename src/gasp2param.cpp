@@ -7,10 +7,10 @@ GASP2param::GASP2param() {
 	//this is where the bulk of defaults are set
 
 	//crystal params
-	distcell = 0.05;// ang
-	intradist = 0.5;// ang
-	maxvol = 100.0; //100.0
-	minvol = -50.0; //-50.0
+	//distcell = 0.05;// ang
+	//intradist = 0.5;// ang
+	//maxvol = 100.0; //100.0
+	//minvol = -50.0; //-50.0
 
 	//run params
 	calcmethod = "fitcell"; //fitcell, qe, custom
@@ -71,47 +71,48 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 //*************************
 	tinyxml2::XMLElement *crystal = doc->FirstChildElement("mgac")->FirstChildElement("crystal");
 	if(crystal) {
-		//expectvol
-		if(!crystal->QueryDoubleAttribute("expectvol", &dtemp)) {
-			expectvol = dtemp;
-			if(expectvol <= 0.0) {
-				errorstring = "expectvol must be greater than 0.0!\n"; return false;
-			}
-		}
-		else {
-			errorstring = "The expected volume (expectvol) was not specified but is required!\n"; return false;
-		}
-
-		//distcell
-		if(!crystal->QueryDoubleAttribute("distcell", &dtemp)) {
-			distcell = dtemp;
-			if(distcell <= 0.0) {
-				errorstring = "distcell must be greater than 0.0!\n";
-				return false;
-			}
-		}
-
-		//intradist
-		if(!crystal->QueryDoubleAttribute("intradist", &dtemp)) {
-			intradist = dtemp;
-			if(intradist <= 0.0) {
-				errorstring = "intradist must be greater than 0.0!\n";
-				return false;
-			}
-		}
-
-		//maxvol
-		if(!crystal->QueryDoubleAttribute("maxvol", &dtemp))
-			maxvol = dtemp;
-
-		//minvol
-		if(!crystal->QueryDoubleAttribute("minvol", &dtemp))
-			minvol = dtemp;
-
-		if(minvol > maxvol) {
-			errorstring = "minvol cannot be greater than maxvol! (defaults are max=+100.0, min=-50.0)\n";
-			return false;
-		}
+//AML: Wrong place
+//		//		//expectvol
+//		if(!crystal->QueryDoubleAttribute("expectvol", &dtemp)) {
+//			expectvol = dtemp;
+//			if(expectvol <= 0.0) {
+//				errorstring = "expectvol must be greater than 0.0!\n"; return false;
+//			}
+//		}
+//		else {
+//			errorstring = "The expected volume (expectvol) was not specified but is required!\n"; return false;
+//		}
+//
+//		//distcell
+//		if(!crystal->QueryDoubleAttribute("distcell", &dtemp)) {
+//			distcell = dtemp;
+//			if(distcell <= 0.0) {
+//				errorstring = "distcell must be greater than 0.0!\n";
+//				return false;
+//			}
+//		}
+//
+//		//intradist
+//		if(!crystal->QueryDoubleAttribute("intradist", &dtemp)) {
+//			intradist = dtemp;
+//			if(intradist <= 0.0) {
+//				errorstring = "intradist must be greater than 0.0!\n";
+//				return false;
+//			}
+//		}
+//
+//		//maxvol
+//		if(!crystal->QueryDoubleAttribute("maxvol", &dtemp))
+//			maxvol = dtemp;
+//
+//		//minvol
+//		if(!crystal->QueryDoubleAttribute("minvol", &dtemp))
+//			minvol = dtemp;
+//
+//		if(minvol > maxvol) {
+//			errorstring = "minvol cannot be greater than maxvol! (defaults are max=+100.0, min=-50.0)\n";
+//			return false;
+//		}
 
 		//name
 		stemp = crystal->Attribute("name");
@@ -121,13 +122,14 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 			errorstring = "A name was not specified but is required!\n"; return false;
 		}
 
-		//spacegroup
-		stemp = crystal->Attribute("spacegroup");
-		if(stemp)
-			spacegroup.append(stemp);
-		else {
-			errorstring = "A spacegroup was not specified but is required!\n"; return false;
-		}
+//AML: wrong place
+//		//spacegroup
+//		stemp = crystal->Attribute("spacegroup");
+//		if(stemp)
+//			spacegroup.append(stemp);
+//		else {
+//			errorstring = "A spacegroup was not specified but is required!\n"; return false;
+//		}
 
 	}
 	else {
@@ -365,14 +367,14 @@ void GASP2param::logParams() {
 	cout << "   Crystal name: " << name << endl;
 	cout << "   Calculation method: " << calcmethod << endl;
 	cout << endl;
-	cout << "   Crystal Parameters:" << endl;
-	cout << "      spacegroup   = " << setw(12) << spacegroup << endl;
+	//cout << "   Crystal Parameters:" << endl;
+	//cout << "      spacegroup   = " << setw(12) << spacegroup << endl;
 	cout << setprecision(2) << fixed;
-	cout << "      distcell     = " << setw(12) << distcell << endl;
-	cout << "      intradist    = " << setw(12) << intradist << endl;
-	cout << "      expectvol    = " << setw(12) << expectvol << endl;
-	cout << "      minvol       = " << setw(12) << minvol << endl;
-	cout << "      maxvol       = " << setw(12) << maxvol << endl;
+	//cout << "      distcell     = " << setw(12) << distcell << endl;
+	//cout << "      intradist    = " << setw(12) << intradist << endl;
+	//cout << "      expectvol    = " << setw(12) << expectvol << endl;
+	//cout << "      minvol       = " << setw(12) << minvol << endl;
+	//cout << "      maxvol       = " << setw(12) << maxvol << endl;
 	cout << endl;
 	cout << "   Running Parameters:" << endl;
 	cout << setprecision(0) << fixed;

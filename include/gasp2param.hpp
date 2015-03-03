@@ -32,13 +32,13 @@ private:
 	~GASP2param() {};
 
 	//crystal params
-	double distcell; //0.05 ang
-	double intradist; //0.5 ang
+	//double distcell; //0.05 ang
+	//double intradist; //0.5 ang
 	string name; //REQUIRED
-	double expectvol; //REQUIRED
-	double maxvol; //100.0
-	double minvol; //-50.0
-	string spacegroup; //REQUIRED
+	//double expectvol; //REQUIRED
+	//double maxvol; //100.0
+	//double minvol; //-50.0
+	//string spacegroup; //REQUIRED
 
 	//run params
 	string calcmethod; //REQUIRED: fitcell, qe, custom

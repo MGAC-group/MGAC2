@@ -40,6 +40,6 @@ mgac.x
 )
 target_link_libraries(
 mgac.x
-	gasp2
+	gasp2 uuid
 )
 add_dependencies( mgac.x gasp2 )

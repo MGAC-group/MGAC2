@@ -138,41 +138,60 @@ double vdw( Elem type ) {
 
 Elem getElemType(string in) {
 	Elem type;
-	switch(in) {
 	//UNK=0,C,H,N,O,P,Cl,F,S,Br,
-	case "C":
+	if(in == "C")
 		type = C;
-		break;
-	case "H":
+	else if(in == "H")
 		type = H;
-		break;
-	case "N":
+	else if(in == "N")
 		type = N;
-		break;
-	case "O":
+	else if(in == "O")
 		type = O;
-		break;
-	case "P":
+	else if(in == "P")
 		type = P;
-		break;
-	case "Cl":
+	else if(in == "Cl")
 		type = Cl;
-		break;
-	case "F":
+	else if(in == "F")
 		type = F;
-		break;
-	case "S":
+	else if(in == "S")
 		type = S;
-		break;
-	case "Br":
+	else if(in == "Br")
 		type = Br;
-		break;
-	default:
+	else
 		type = UNK;
-		break;
-	}
+
 	return type;
 }
+
+string getElemName(Elem in) {
+	string type;
+	//UNK=0,C,H,N,O,P,Cl,F,S,Br,
+	if(in == C)
+		type = "C";
+	else if(in == H)
+		type = "H";
+	else if(in == N)
+		type = "N";
+	else if(in == O)
+		type = "O";
+	else if(in == P)
+		type = "P";
+	else if(in == Cl)
+		type = "Cl";
+	else if(in == F)
+		type = "F";
+	else if(in == S)
+		type = "S";
+	else if(in == Br)
+		type = "Br";
+	else
+		type = "UNK";
+
+	return type;
+
+
+}
+
 
 vector<string> split(string in, char delim) {
 	vector<string> out;
@@ -212,7 +231,7 @@ UUID& UUID::operator=(UUID u) {
 		return *this;
 }
 
-bool UUID::operator==(const UUID &u, const UUID &v) {
+bool operator==(const UUID &u, const UUID &v) {
 	return (uuid_compare(u.uuid,v.uuid) == 0);
 }
 

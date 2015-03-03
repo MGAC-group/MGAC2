@@ -70,13 +70,14 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 	//pass the doc to gasp2param
 	if(params.parseXML(doc, errors)==false)
 		return false;
-	if(root.parseXML(doc, errors)==false)
+	if(root.parseXMLDoc(doc, errors)==false)
 		return false;
 
 
 
 	if(ID == 0) {
 		params.logParams();
+		root.logStruct();
 	}
 	return true;
 
