@@ -1,0 +1,5018 @@
+<spglist>
+  <spg id="1" nops="1" sym="P 1" sys="triclinic">
+    <op id="1">x,y,z</op>
+  </spg>
+
+  <spg id="2" nops="2" sym="P -1" sys="triclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,-z</op>
+  </spg>
+
+  <spg id="3" nops="2" sym="P 1 2 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,y,-z</op>
+  </spg>
+
+  <spg id="4" nops="2" sym="P 1 21 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,y+1/2,-z</op>
+  </spg>
+
+  <spg id="5" nops="4" sym="C 1 2 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,y,-z</op>
+    <op id="3">x+1/2,y+1/2,z</op>
+    <op id="4">-x+1/2,y+1/2,-z</op>
+  </spg>
+
+  <spg id="6" nops="2" sym="P 1 m 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">x,-y,z</op>
+  </spg>
+
+  <spg id="7" nops="2" sym="P 1 c 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">x,-y,z+1/2</op>
+  </spg>
+
+  <spg id="8" nops="4" sym="C 1 m 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">x,-y,z</op>
+    <op id="3">x+1/2,y+1/2,z</op>
+    <op id="4">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="9" nops="4" sym="C 1 c 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">x,-y,z+1/2</op>
+    <op id="3">x+1/2,y+1/2,z</op>
+    <op id="4">x+1/2,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="10" nops="4" sym="P 1 2/m 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,y,-z</op>
+    <op id="3">-x,-y,-z</op>
+    <op id="4">x,-y,z</op>
+  </spg>
+
+  <spg id="11" nops="4" sym="P 1 21/m 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,y+1/2,-z</op>
+    <op id="3">-x,-y,-z</op>
+    <op id="4">x,-y-1/2,z</op>
+  </spg>
+
+  <spg id="12" nops="8" sym="C 1 2/m 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,y,-z</op>
+    <op id="3">-x,-y,-z</op>
+    <op id="4">x,-y,z</op>
+    <op id="5">x+1/2,y+1/2,z</op>
+    <op id="6">-x+1/2,y+1/2,-z</op>
+    <op id="7">-x+1/2,-y+1/2,-z</op>
+    <op id="8">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="13" nops="4" sym="P 1 2/c 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,y,-z+1/2</op>
+    <op id="3">-x,-y,-z</op>
+    <op id="4">x,-y,z-1/2</op>
+  </spg>
+
+  <spg id="14" nops="4" sym="P 1 21/c 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,y+1/2,-z+1/2</op>
+    <op id="3">-x,-y,-z</op>
+    <op id="4">x,-y-1/2,z-1/2</op>
+  </spg>
+
+  <spg id="15" nops="8" sym="C 1 2/c 1" sys="monoclinic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,y,-z+1/2</op>
+    <op id="3">-x,-y,-z</op>
+    <op id="4">x,-y,z-1/2</op>
+    <op id="5">x+1/2,y+1/2,z</op>
+    <op id="6">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="7">-x+1/2,-y+1/2,-z</op>
+    <op id="8">x+1/2,-y+1/2,z-1/2</op>
+  </spg>
+
+  <spg id="16" nops="4" sym="P 2 2 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+  </spg>
+
+  <spg id="17" nops="4" sym="P 2 2 21" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z+1/2</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z+1/2</op>
+  </spg>
+
+  <spg id="18" nops="4" sym="P 21 21 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x+1/2,-y+1/2,-z</op>
+    <op id="4">-x+1/2,y+1/2,-z</op>
+  </spg>
+
+  <spg id="19" nops="4" sym="P 21 21 21" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z+1/2</op>
+    <op id="3">x+1/2,-y+1/2,-z</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+  </spg>
+
+  <spg id="20" nops="8" sym="C 2 2 21" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z+1/2</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z+1/2</op>
+    <op id="5">x+1/2,y+1/2,z</op>
+    <op id="6">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="7">x+1/2,-y+1/2,-z</op>
+    <op id="8">-x+1/2,y+1/2,-z+1/2</op>
+  </spg>
+
+  <spg id="21" nops="8" sym="C 2 2 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">x+1/2,y+1/2,z</op>
+    <op id="6">-x+1/2,-y+1/2,z</op>
+    <op id="7">x+1/2,-y+1/2,-z</op>
+    <op id="8">-x+1/2,y+1/2,-z</op>
+  </spg>
+
+  <spg id="22" nops="16" sym="F 2 2 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">x,y+1/2,z+1/2</op>
+    <op id="6">-x,-y+1/2,z+1/2</op>
+    <op id="7">x,-y+1/2,-z+1/2</op>
+    <op id="8">-x,y+1/2,-z+1/2</op>
+    <op id="9">x+1/2,y,z+1/2</op>
+    <op id="10">-x+1/2,-y,z+1/2</op>
+    <op id="11">x+1/2,-y,-z+1/2</op>
+    <op id="12">-x+1/2,y,-z+1/2</op>
+    <op id="13">x+1/2,y+1/2,z</op>
+    <op id="14">-x+1/2,-y+1/2,z</op>
+    <op id="15">x+1/2,-y+1/2,-z</op>
+    <op id="16">-x+1/2,y+1/2,-z</op>
+  </spg>
+
+  <spg id="23" nops="8" sym="I 2 2 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">x+1/2,y+1/2,z+1/2</op>
+    <op id="6">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="7">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="8">-x+1/2,y+1/2,-z+1/2</op>
+  </spg>
+
+  <spg id="24" nops="8" sym="I 21 21 21" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y+1/2,z</op>
+    <op id="3">x,-y,-z+1/2</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+    <op id="5">x+1/2,y+1/2,z+1/2</op>
+    <op id="6">-x+1/2,-y+1,z+1/2</op>
+    <op id="7">x+1/2,-y+1/2,-z+1</op>
+    <op id="8">-x+1/2,y+1,-z+1</op>
+  </spg>
+
+  <spg id="25" nops="4" sym="P m m 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y,z</op>
+    <op id="4">x,-y,z</op>
+  </spg>
+
+  <spg id="26" nops="4" sym="P m c 21" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z+1/2</op>
+    <op id="3">-x,y,z</op>
+    <op id="4">x,-y,z+1/2</op>
+  </spg>
+
+  <spg id="27" nops="4" sym="P c c 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y,z+1/2</op>
+    <op id="4">x,-y,z+1/2</op>
+  </spg>
+
+  <spg id="28" nops="4" sym="P m a 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x+1/2,y,z</op>
+    <op id="4">x+1/2,-y,z</op>
+  </spg>
+
+  <spg id="29" nops="4" sym="P c a 21" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z+1/2</op>
+    <op id="3">-x+1/2,y,z+1/2</op>
+    <op id="4">x+1/2,-y,z</op>
+  </spg>
+
+  <spg id="30" nops="4" sym="P n c 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y+1/2,z+1/2</op>
+    <op id="4">x,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="31" nops="4" sym="P m n 21" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z+1/2</op>
+    <op id="3">-x,y,z</op>
+    <op id="4">x+1/2,-y,z+1/2</op>
+  </spg>
+
+  <spg id="32" nops="4" sym="P b a 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x+1/2,y+1/2,z</op>
+    <op id="4">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="33" nops="4" sym="P n a 21" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z+1/2</op>
+    <op id="3">-x+1/2,y+1/2,z+1/2</op>
+    <op id="4">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="34" nops="4" sym="P n n 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x+1/2,y+1/2,z+1/2</op>
+    <op id="4">x+1/2,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="35" nops="8" sym="C m m 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y,z</op>
+    <op id="4">x,-y,z</op>
+    <op id="5">x+1/2,y+1/2,z</op>
+    <op id="6">-x+1/2,-y+1/2,z</op>
+    <op id="7">-x+1/2,y+1/2,z</op>
+    <op id="8">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="36" nops="8" sym="C m c 21" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z+1/2</op>
+    <op id="3">-x,y,z</op>
+    <op id="4">x,-y,z+1/2</op>
+    <op id="5">x+1/2,y+1/2,z</op>
+    <op id="6">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,z</op>
+    <op id="8">x+1/2,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="37" nops="8" sym="C c c 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y,z+1/2</op>
+    <op id="4">x,-y,z+1/2</op>
+    <op id="5">x+1/2,y+1/2,z</op>
+    <op id="6">-x+1/2,-y+1/2,z</op>
+    <op id="7">-x+1/2,y+1/2,z+1/2</op>
+    <op id="8">x+1/2,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="38" nops="8" sym="A m m 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y,z</op>
+    <op id="4">x,-y,z</op>
+    <op id="5">x,y+1/2,z+1/2</op>
+    <op id="6">-x,-y+1/2,z+1/2</op>
+    <op id="7">-x,y+1/2,z+1/2</op>
+    <op id="8">x,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="39" nops="8" sym="A b m 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y+1/2,z</op>
+    <op id="4">x,-y+1/2,z</op>
+    <op id="5">x,y+1/2,z+1/2</op>
+    <op id="6">-x,-y+1/2,z+1/2</op>
+    <op id="7">-x,y+1,z+1/2</op>
+    <op id="8">x,-y+1,z+1/2</op>
+  </spg>
+
+  <spg id="40" nops="8" sym="A m a 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x+1/2,y,z</op>
+    <op id="4">x+1/2,-y,z</op>
+    <op id="5">x,y+1/2,z+1/2</op>
+    <op id="6">-x,-y+1/2,z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,z+1/2</op>
+    <op id="8">x+1/2,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="41" nops="8" sym="A b a 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x+1/2,y+1/2,z</op>
+    <op id="4">x+1/2,-y+1/2,z</op>
+    <op id="5">x,y+1/2,z+1/2</op>
+    <op id="6">-x,-y+1/2,z+1/2</op>
+    <op id="7">-x+1/2,y+1,z+1/2</op>
+    <op id="8">x+1/2,-y+1,z+1/2</op>
+  </spg>
+
+  <spg id="42" nops="16" sym="F m m 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y,z</op>
+    <op id="4">x,-y,z</op>
+    <op id="5">x,y+1/2,z+1/2</op>
+    <op id="6">-x,-y+1/2,z+1/2</op>
+    <op id="7">-x,y+1/2,z+1/2</op>
+    <op id="8">x,-y+1/2,z+1/2</op>
+    <op id="9">x+1/2,y,z+1/2</op>
+    <op id="10">-x+1/2,-y,z+1/2</op>
+    <op id="11">-x+1/2,y,z+1/2</op>
+    <op id="12">x+1/2,-y,z+1/2</op>
+    <op id="13">x+1/2,y+1/2,z</op>
+    <op id="14">-x+1/2,-y+1/2,z</op>
+    <op id="15">-x+1/2,y+1/2,z</op>
+    <op id="16">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="43" nops="16" sym="F d d 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x+1/4,y+1/4,z+1/4</op>
+    <op id="4">x+3/4,-y+3/4,z+1/4</op>
+    <op id="5">x,y+1/2,z+1/2</op>
+    <op id="6">-x,-y+1/2,z+1/2</op>
+    <op id="7">-x+1/4,y+3/4,z+3/4</op>
+    <op id="8">x+3/4,-y+5/4,z+3/4</op>
+    <op id="9">x+1/2,y,z+1/2</op>
+    <op id="10">-x+1/2,-y,z+1/2</op>
+    <op id="11">-x+3/4,y+1/4,z+3/4</op>
+    <op id="12">x+5/4,-y+3/4,z+3/4</op>
+    <op id="13">x+1/2,y+1/2,z</op>
+    <op id="14">-x+1/2,-y+1/2,z</op>
+    <op id="15">-x+3/4,y+3/4,z+1/4</op>
+    <op id="16">x+5/4,-y+5/4,z+1/4</op>
+  </spg>
+
+  <spg id="44" nops="8" sym="I m m 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y,z</op>
+    <op id="4">x,-y,z</op>
+    <op id="5">x+1/2,y+1/2,z+1/2</op>
+    <op id="6">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,z+1/2</op>
+    <op id="8">x+1/2,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="45" nops="8" sym="I b a 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x,y,z+1/2</op>
+    <op id="4">x,-y,z+1/2</op>
+    <op id="5">x+1/2,y+1/2,z+1/2</op>
+    <op id="6">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,z+1</op>
+    <op id="8">x+1/2,-y+1/2,z+1</op>
+  </spg>
+
+  <spg id="46" nops="8" sym="I m a 2" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">-x+1/2,y,z</op>
+    <op id="4">x+1/2,-y,z</op>
+    <op id="5">x+1/2,y+1/2,z+1/2</op>
+    <op id="6">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="7">-x+1,y+1/2,z+1/2</op>
+    <op id="8">x+1,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="47" nops="8" sym="P m m m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x,-y,z</op>
+  </spg>
+
+  <spg id="48" nops="8" sym="P n n n :1" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="6">x+1/2,y+1/2,-z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,z+1/2</op>
+    <op id="8">x+1/2,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="49" nops="8" sym="P c c m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z+1/2</op>
+    <op id="4">-x,y,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z</op>
+    <op id="7">-x,y,z-1/2</op>
+    <op id="8">x,-y,z-1/2</op>
+  </spg>
+
+  <spg id="50" nops="8" sym="P b a n :1" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">-x+1/2,-y+1/2,-z</op>
+    <op id="6">x+1/2,y+1/2,-z</op>
+    <op id="7">-x+1/2,y+1/2,z</op>
+    <op id="8">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="51" nops="8" sym="P m m a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z</op>
+    <op id="3">x+1/2,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y,-z</op>
+    <op id="7">-x-1/2,y,z</op>
+    <op id="8">x,-y,z</op>
+  </spg>
+
+  <spg id="52" nops="8" sym="P n n a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z</op>
+    <op id="3">x,-y+1/2,-z+1/2</op>
+    <op id="4">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y,-z</op>
+    <op id="7">-x,y-1/2,z-1/2</op>
+    <op id="8">x-1/2,-y-1/2,z-1/2</op>
+  </spg>
+
+  <spg id="53" nops="8" sym="P m n a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z+1/2</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x+1/2,y,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y,-z-1/2</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x-1/2,-y,z-1/2</op>
+  </spg>
+
+  <spg id="54" nops="8" sym="P c c a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z</op>
+    <op id="3">x+1/2,-y,-z+1/2</op>
+    <op id="4">-x,y,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y,-z</op>
+    <op id="7">-x-1/2,y,z-1/2</op>
+    <op id="8">x,-y,z-1/2</op>
+  </spg>
+
+  <spg id="55" nops="8" sym="P b a m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x+1/2,-y+1/2,-z</op>
+    <op id="4">-x+1/2,y+1/2,-z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z</op>
+    <op id="7">-x-1/2,y-1/2,z</op>
+    <op id="8">x-1/2,-y-1/2,z</op>
+  </spg>
+
+  <spg id="56" nops="8" sym="P c c n" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y+1/2,z</op>
+    <op id="3">x+1/2,-y,-z+1/2</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y-1/2,-z</op>
+    <op id="7">-x-1/2,y,z-1/2</op>
+    <op id="8">x,-y-1/2,z-1/2</op>
+  </spg>
+
+  <spg id="57" nops="8" sym="P b c m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z+1/2</op>
+    <op id="3">x,-y+1/2,-z</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z-1/2</op>
+    <op id="7">-x,y-1/2,z</op>
+    <op id="8">x,-y-1/2,z-1/2</op>
+  </spg>
+
+  <spg id="58" nops="8" sym="P n n m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="4">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z</op>
+    <op id="7">-x-1/2,y-1/2,z-1/2</op>
+    <op id="8">x-1/2,-y-1/2,z-1/2</op>
+  </spg>
+
+  <spg id="59" nops="8" sym="P m m n :1" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x+1/2,-y+1/2,-z</op>
+    <op id="4">-x+1/2,y+1/2,-z</op>
+    <op id="5">-x+1/2,-y+1/2,-z</op>
+    <op id="6">x+1/2,y+1/2,-z</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x,-y,z</op>
+  </spg>
+
+  <spg id="60" nops="8" sym="P b c n" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="3">x+1/2,-y+1/2,-z</op>
+    <op id="4">-x,y,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y-1/2,-z-1/2</op>
+    <op id="7">-x-1/2,y-1/2,z</op>
+    <op id="8">x,-y,z-1/2</op>
+  </spg>
+
+  <spg id="61" nops="8" sym="P b c a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z+1/2</op>
+    <op id="3">x+1/2,-y+1/2,-z</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y,-z-1/2</op>
+    <op id="7">-x-1/2,y-1/2,z</op>
+    <op id="8">x,-y-1/2,z-1/2</op>
+  </spg>
+
+  <spg id="62" nops="8" sym="P n m a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z+1/2</op>
+    <op id="3">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="4">-x,y+1/2,-z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y,-z-1/2</op>
+    <op id="7">-x-1/2,y-1/2,z-1/2</op>
+    <op id="8">x,-y-1/2,z</op>
+  </spg>
+
+  <spg id="63" nops="16" sym="C m c m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z+1/2</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z-1/2</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x,-y,z-1/2</op>
+    <op id="9">x+1/2,y+1/2,z</op>
+    <op id="10">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="11">x+1/2,-y+1/2,-z</op>
+    <op id="12">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="13">-x+1/2,-y+1/2,-z</op>
+    <op id="14">x+1/2,y+1/2,-z-1/2</op>
+    <op id="15">-x+1/2,y+1/2,z</op>
+    <op id="16">x+1/2,-y+1/2,z-1/2</op>
+  </spg>
+
+  <spg id="64" nops="16" sym="C m c a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z+1/2</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x+1/2,y,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y,-z-1/2</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x-1/2,-y,z-1/2</op>
+    <op id="9">x+1/2,y+1/2,z</op>
+    <op id="10">-x+1,-y+1/2,z+1/2</op>
+    <op id="11">x+1/2,-y+1/2,-z</op>
+    <op id="12">-x+1,y+1/2,-z+1/2</op>
+    <op id="13">-x+1/2,-y+1/2,-z</op>
+    <op id="14">x,y+1/2,-z-1/2</op>
+    <op id="15">-x+1/2,y+1/2,z</op>
+    <op id="16">x,-y+1/2,z-1/2</op>
+  </spg>
+
+  <spg id="65" nops="16" sym="C m m m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x,-y,z</op>
+    <op id="9">x+1/2,y+1/2,z</op>
+    <op id="10">-x+1/2,-y+1/2,z</op>
+    <op id="11">x+1/2,-y+1/2,-z</op>
+    <op id="12">-x+1/2,y+1/2,-z</op>
+    <op id="13">-x+1/2,-y+1/2,-z</op>
+    <op id="14">x+1/2,y+1/2,-z</op>
+    <op id="15">-x+1/2,y+1/2,z</op>
+    <op id="16">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="66" nops="16" sym="C c c m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z+1/2</op>
+    <op id="4">-x,y,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z</op>
+    <op id="7">-x,y,z-1/2</op>
+    <op id="8">x,-y,z-1/2</op>
+    <op id="9">x+1/2,y+1/2,z</op>
+    <op id="10">-x+1/2,-y+1/2,z</op>
+    <op id="11">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="12">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="13">-x+1/2,-y+1/2,-z</op>
+    <op id="14">x+1/2,y+1/2,-z</op>
+    <op id="15">-x+1/2,y+1/2,z-1/2</op>
+    <op id="16">x+1/2,-y+1/2,z-1/2</op>
+  </spg>
+
+  <spg id="67" nops="16" sym="C m m a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x+1/2,y,-z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x-1/2,y,-z</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x-1/2,-y,z</op>
+    <op id="9">x+1/2,y+1/2,z</op>
+    <op id="10">-x+1,-y+1/2,z</op>
+    <op id="11">x+1/2,-y+1/2,-z</op>
+    <op id="12">-x+1,y+1/2,-z</op>
+    <op id="13">-x+1/2,-y+1/2,-z</op>
+    <op id="14">x,y+1/2,-z</op>
+    <op id="15">-x+1/2,y+1/2,z</op>
+    <op id="16">x,-y+1/2,z</op>
+  </spg>
+
+  <spg id="68" nops="16" sym="C c c a :1" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">-x+1/2,-y,-z+1/2</op>
+    <op id="6">x+1/2,y,-z+1/2</op>
+    <op id="7">-x+1/2,y,z+1/2</op>
+    <op id="8">x+1/2,-y,z+1/2</op>
+    <op id="9">x+1/2,y+1/2,z</op>
+    <op id="10">-x+1/2,-y+1/2,z</op>
+    <op id="11">x+1/2,-y+1/2,-z</op>
+    <op id="12">-x+1/2,y+1/2,-z</op>
+    <op id="13">-x+1,-y+1/2,-z+1/2</op>
+    <op id="14">x+1,y+1/2,-z+1/2</op>
+    <op id="15">-x+1,y+1/2,z+1/2</op>
+    <op id="16">x+1,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="69" nops="32" sym="F m m m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x,-y,z</op>
+    <op id="9">x,y+1/2,z+1/2</op>
+    <op id="10">-x,-y+1/2,z+1/2</op>
+    <op id="11">x,-y+1/2,-z+1/2</op>
+    <op id="12">-x,y+1/2,-z+1/2</op>
+    <op id="13">-x,-y+1/2,-z+1/2</op>
+    <op id="14">x,y+1/2,-z+1/2</op>
+    <op id="15">-x,y+1/2,z+1/2</op>
+    <op id="16">x,-y+1/2,z+1/2</op>
+    <op id="17">x+1/2,y,z+1/2</op>
+    <op id="18">-x+1/2,-y,z+1/2</op>
+    <op id="19">x+1/2,-y,-z+1/2</op>
+    <op id="20">-x+1/2,y,-z+1/2</op>
+    <op id="21">-x+1/2,-y,-z+1/2</op>
+    <op id="22">x+1/2,y,-z+1/2</op>
+    <op id="23">-x+1/2,y,z+1/2</op>
+    <op id="24">x+1/2,-y,z+1/2</op>
+    <op id="25">x+1/2,y+1/2,z</op>
+    <op id="26">-x+1/2,-y+1/2,z</op>
+    <op id="27">x+1/2,-y+1/2,-z</op>
+    <op id="28">-x+1/2,y+1/2,-z</op>
+    <op id="29">-x+1/2,-y+1/2,-z</op>
+    <op id="30">x+1/2,y+1/2,-z</op>
+    <op id="31">-x+1/2,y+1/2,z</op>
+    <op id="32">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="70" nops="32" sym="F d d d :1" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">-x+1/4,-y+1/4,-z+1/4</op>
+    <op id="6">x+1/4,y+1/4,-z+1/4</op>
+    <op id="7">-x+1/4,y+1/4,z+1/4</op>
+    <op id="8">x+1/4,-y+1/4,z+1/4</op>
+    <op id="9">x,y+1/2,z+1/2</op>
+    <op id="10">-x,-y+1/2,z+1/2</op>
+    <op id="11">x,-y+1/2,-z+1/2</op>
+    <op id="12">-x,y+1/2,-z+1/2</op>
+    <op id="13">-x+1/4,-y+3/4,-z+3/4</op>
+    <op id="14">x+1/4,y+3/4,-z+3/4</op>
+    <op id="15">-x+1/4,y+3/4,z+3/4</op>
+    <op id="16">x+1/4,-y+3/4,z+3/4</op>
+    <op id="17">x+1/2,y,z+1/2</op>
+    <op id="18">-x+1/2,-y,z+1/2</op>
+    <op id="19">x+1/2,-y,-z+1/2</op>
+    <op id="20">-x+1/2,y,-z+1/2</op>
+    <op id="21">-x+3/4,-y+1/4,-z+3/4</op>
+    <op id="22">x+3/4,y+1/4,-z+3/4</op>
+    <op id="23">-x+3/4,y+1/4,z+3/4</op>
+    <op id="24">x+3/4,-y+1/4,z+3/4</op>
+    <op id="25">x+1/2,y+1/2,z</op>
+    <op id="26">-x+1/2,-y+1/2,z</op>
+    <op id="27">x+1/2,-y+1/2,-z</op>
+    <op id="28">-x+1/2,y+1/2,-z</op>
+    <op id="29">-x+3/4,-y+3/4,-z+1/4</op>
+    <op id="30">x+3/4,y+3/4,-z+1/4</op>
+    <op id="31">-x+3/4,y+3/4,z+1/4</op>
+    <op id="32">x+3/4,-y+3/4,z+1/4</op>
+  </spg>
+
+  <spg id="71" nops="16" sym="I m m m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x,-y,z</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="11">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="12">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="13">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="14">x+1/2,y+1/2,-z+1/2</op>
+    <op id="15">-x+1/2,y+1/2,z+1/2</op>
+    <op id="16">x+1/2,-y+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="72" nops="16" sym="I b a m" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z+1/2</op>
+    <op id="4">-x,y,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y,-z</op>
+    <op id="7">-x,y,z-1/2</op>
+    <op id="8">x,-y,z-1/2</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="11">x+1/2,-y+1/2,-z+1</op>
+    <op id="12">-x+1/2,y+1/2,-z+1</op>
+    <op id="13">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="14">x+1/2,y+1/2,-z+1/2</op>
+    <op id="15">-x+1/2,y+1/2,z</op>
+    <op id="16">x+1/2,-y+1/2,z</op>
+  </spg>
+
+  <spg id="73" nops="16" sym="I b c a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y+1/2,z</op>
+    <op id="3">x,-y,-z+1/2</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y-1/2,-z</op>
+    <op id="7">-x,y,z-1/2</op>
+    <op id="8">x,-y-1/2,z-1/2</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-x+1/2,-y+1,z+1/2</op>
+    <op id="11">x+1/2,-y+1/2,-z+1</op>
+    <op id="12">-x+1/2,y+1,-z+1</op>
+    <op id="13">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="14">x+1/2,y,-z+1/2</op>
+    <op id="15">-x+1/2,y+1/2,z</op>
+    <op id="16">x+1/2,-y,z</op>
+  </spg>
+
+  <spg id="74" nops="16" sym="I m m a" sys="orthorhombic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y+1/2,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y+1/2,-z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">x,y-1/2,-z</op>
+    <op id="7">-x,y,z</op>
+    <op id="8">x,-y-1/2,z</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-x+1/2,-y+1,z+1/2</op>
+    <op id="11">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="12">-x+1/2,y+1,-z+1/2</op>
+    <op id="13">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="14">x+1/2,y,-z+1/2</op>
+    <op id="15">-x+1/2,y+1/2,z+1/2</op>
+    <op id="16">x+1/2,-y,z+1/2</op>
+  </spg>
+
+  <spg id="75" nops="4" sym="P 4" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+  </spg>
+
+  <spg id="76" nops="4" sym="P 41" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/4</op>
+    <op id="3">-x,-y,z+1/2</op>
+    <op id="4">y,-x,z+3/4</op>
+  </spg>
+
+  <spg id="77" nops="4" sym="P 42" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z+1/2</op>
+  </spg>
+
+  <spg id="78" nops="4" sym="P 43" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+3/4</op>
+    <op id="3">-x,-y,z+1/2</op>
+    <op id="4">y,-x,z+1/4</op>
+  </spg>
+
+  <spg id="79" nops="8" sym="I 4" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x+1/2,y+1/2,z+1/2</op>
+    <op id="6">-y+1/2,x+1/2,z+1/2</op>
+    <op id="7">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="8">y+1/2,-x+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="80" nops="8" sym="I 41" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x+1/2,z+1/4</op>
+    <op id="3">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="4">y+1/2,-x,z+3/4</op>
+    <op id="5">x+1/2,y+1/2,z+1/2</op>
+    <op id="6">-y+1/2,x+1,z+3/4</op>
+    <op id="7">-x+1,-y+1,z+1</op>
+    <op id="8">y+1,-x+1/2,z+5/4</op>
+  </spg>
+
+  <spg id="81" nops="4" sym="P -4" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+  </spg>
+
+  <spg id="82" nops="8" sym="I -4" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x+1/2,y+1/2,z+1/2</op>
+    <op id="6">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="7">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="8">-y+1/2,x+1/2,-z+1/2</op>
+  </spg>
+
+  <spg id="83" nops="8" sym="P 4/m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">y,-x,-z</op>
+    <op id="7">x,y,-z</op>
+    <op id="8">-y,x,-z</op>
+  </spg>
+
+  <spg id="84" nops="8" sym="P 42/m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z+1/2</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">y,-x,-z-1/2</op>
+    <op id="7">x,y,-z</op>
+    <op id="8">-y,x,-z-1/2</op>
+  </spg>
+
+  <spg id="85" nops="8" sym="P 4/n :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z</op>
+    <op id="5">-x+1/2,-y+1/2,-z</op>
+    <op id="6">y,-x,-z</op>
+    <op id="7">x+1/2,y+1/2,-z</op>
+    <op id="8">-y,x,-z</op>
+  </spg>
+
+  <spg id="86" nops="8" sym="P 42/n :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="6">y,-x,-z</op>
+    <op id="7">x+1/2,y+1/2,-z+1/2</op>
+    <op id="8">-y,x,-z</op>
+  </spg>
+
+  <spg id="87" nops="16" sym="I 4/m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">-x,-y,-z</op>
+    <op id="6">y,-x,-z</op>
+    <op id="7">x,y,-z</op>
+    <op id="8">-y,x,-z</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-y+1/2,x+1/2,z+1/2</op>
+    <op id="11">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="12">y+1/2,-x+1/2,z+1/2</op>
+    <op id="13">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="14">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="15">x+1/2,y+1/2,-z+1/2</op>
+    <op id="16">-y+1/2,x+1/2,-z+1/2</op>
+  </spg>
+
+  <spg id="88" nops="16" sym="I 41/a :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x+1/2,z+1/4</op>
+    <op id="3">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="4">y+1/2,-x,z+3/4</op>
+    <op id="5">-x,-y+1/2,-z+1/4</op>
+    <op id="6">y,-x,-z</op>
+    <op id="7">x-1/2,y,-z-1/4</op>
+    <op id="8">-y-1/2,x+1/2,-z-1/2</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-y+1/2,x+1,z+3/4</op>
+    <op id="11">-x+1,-y+1,z+1</op>
+    <op id="12">y+1,-x+1/2,z+5/4</op>
+    <op id="13">-x+1/2,-y+1,-z+3/4</op>
+    <op id="14">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="15">x,y+1/2,-z+1/4</op>
+    <op id="16">-y,x+1,-z</op>
+  </spg>
+
+  <spg id="89" nops="8" sym="P 4 2 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+  </spg>
+
+  <spg id="90" nops="8" sym="P 4 21 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z</op>
+    <op id="5">x+1/2,-y+1/2,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x+1/2,y+1/2,-z</op>
+    <op id="8">-y,-x,-z</op>
+  </spg>
+
+  <spg id="91" nops="8" sym="P 41 2 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/4</op>
+    <op id="3">-x,-y,z+1/2</op>
+    <op id="4">y,-x,z+3/4</op>
+    <op id="5">x,-y,-z+1/2</op>
+    <op id="6">y,x,-z+3/4</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z+1/4</op>
+  </spg>
+
+  <spg id="92" nops="8" sym="P 41 21 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/4</op>
+    <op id="3">-x,-y,z+1/2</op>
+    <op id="4">y+1/2,-x+1/2,z+3/4</op>
+    <op id="5">x+1/2,-y+1/2,-z+3/4</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x+1/2,y+1/2,-z+1/4</op>
+    <op id="8">-y,-x,-z+1/2</op>
+  </spg>
+
+  <spg id="93" nops="8" sym="P 42 2 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z+1/2</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z+1/2</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z+1/2</op>
+  </spg>
+
+  <spg id="94" nops="8" sym="P 42 21 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="8">-y,-x,-z</op>
+  </spg>
+
+  <spg id="95" nops="8" sym="P 43 2 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+3/4</op>
+    <op id="3">-x,-y,z+1/2</op>
+    <op id="4">y,-x,z+1/4</op>
+    <op id="5">x,-y,-z+1/2</op>
+    <op id="6">y,x,-z+1/4</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z+3/4</op>
+  </spg>
+
+  <spg id="96" nops="8" sym="P 43 21 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+3/4</op>
+    <op id="3">-x,-y,z+1/2</op>
+    <op id="4">y+1/2,-x+1/2,z+1/4</op>
+    <op id="5">x+1/2,-y+1/2,-z+1/4</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x+1/2,y+1/2,-z+3/4</op>
+    <op id="8">-y,-x,-z+1/2</op>
+  </spg>
+
+  <spg id="97" nops="16" sym="I 4 2 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-y+1/2,x+1/2,z+1/2</op>
+    <op id="11">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="12">y+1/2,-x+1/2,z+1/2</op>
+    <op id="13">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="14">y+1/2,x+1/2,-z+1/2</op>
+    <op id="15">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="16">-y+1/2,-x+1/2,-z+1/2</op>
+  </spg>
+
+  <spg id="98" nops="16" sym="I 41 2 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x+1/2,z+1/4</op>
+    <op id="3">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="4">y+1/2,-x,z+3/4</op>
+    <op id="5">x,-y+1/2,-z+1/4</op>
+    <op id="6">y+1/2,x+1/2,-z+1/2</op>
+    <op id="7">-x+1/2,y,-z+3/4</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-y+1/2,x+1,z+3/4</op>
+    <op id="11">-x+1,-y+1,z+1</op>
+    <op id="12">y+1,-x+1/2,z+5/4</op>
+    <op id="13">x+1/2,-y+1,-z+3/4</op>
+    <op id="14">y+1,x+1,-z+1</op>
+    <op id="15">-x+1,y+1/2,-z+5/4</op>
+    <op id="16">-y+1/2,-x+1/2,-z+1/2</op>
+  </spg>
+
+  <spg id="99" nops="8" sym="P 4 m m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">-x,y,z</op>
+    <op id="6">-y,-x,z</op>
+    <op id="7">x,-y,z</op>
+    <op id="8">y,x,z</op>
+  </spg>
+
+  <spg id="100" nops="8" sym="P 4 b m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">-x+1/2,y+1/2,z</op>
+    <op id="6">-y+1/2,-x+1/2,z</op>
+    <op id="7">x+1/2,-y+1/2,z</op>
+    <op id="8">y+1/2,x+1/2,z</op>
+  </spg>
+
+  <spg id="101" nops="8" sym="P 42 c m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z+1/2</op>
+    <op id="5">-x,y,z+1/2</op>
+    <op id="6">-y,-x,z</op>
+    <op id="7">x,-y,z+1/2</op>
+    <op id="8">y,x,z</op>
+  </spg>
+
+  <spg id="102" nops="8" sym="P 42 n m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">-x+1/2,y+1/2,z+1/2</op>
+    <op id="6">-y,-x,z</op>
+    <op id="7">x+1/2,-y+1/2,z+1/2</op>
+    <op id="8">y,x,z</op>
+  </spg>
+
+  <spg id="103" nops="8" sym="P 4 c c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">-x,y,z+1/2</op>
+    <op id="6">-y,-x,z+1/2</op>
+    <op id="7">x,-y,z+1/2</op>
+    <op id="8">y,x,z+1/2</op>
+  </spg>
+
+  <spg id="104" nops="8" sym="P 4 n c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">-x+1/2,y+1/2,z+1/2</op>
+    <op id="6">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="7">x+1/2,-y+1/2,z+1/2</op>
+    <op id="8">y+1/2,x+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="105" nops="8" sym="P 42 m c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z+1/2</op>
+    <op id="5">-x,y,z</op>
+    <op id="6">-y,-x,z+1/2</op>
+    <op id="7">x,-y,z</op>
+    <op id="8">y,x,z+1/2</op>
+  </spg>
+
+  <spg id="106" nops="8" sym="P 42 b c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z+1/2</op>
+    <op id="5">-x+1/2,y+1/2,z</op>
+    <op id="6">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="7">x+1/2,-y+1/2,z</op>
+    <op id="8">y+1/2,x+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="107" nops="16" sym="I 4 m m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">-x,y,z</op>
+    <op id="6">-y,-x,z</op>
+    <op id="7">x,-y,z</op>
+    <op id="8">y,x,z</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-y+1/2,x+1/2,z+1/2</op>
+    <op id="11">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="12">y+1/2,-x+1/2,z+1/2</op>
+    <op id="13">-x+1/2,y+1/2,z+1/2</op>
+    <op id="14">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="15">x+1/2,-y+1/2,z+1/2</op>
+    <op id="16">y+1/2,x+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="108" nops="16" sym="I 4 c m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">-x,y,z+1/2</op>
+    <op id="6">-y,-x,z+1/2</op>
+    <op id="7">x,-y,z+1/2</op>
+    <op id="8">y,x,z+1/2</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-y+1/2,x+1/2,z+1/2</op>
+    <op id="11">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="12">y+1/2,-x+1/2,z+1/2</op>
+    <op id="13">-x+1/2,y+1/2,z+1</op>
+    <op id="14">-y+1/2,-x+1/2,z+1</op>
+    <op id="15">x+1/2,-y+1/2,z+1</op>
+    <op id="16">y+1/2,x+1/2,z+1</op>
+  </spg>
+
+  <spg id="109" nops="16" sym="I 41 m d" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x+1/2,z+1/4</op>
+    <op id="3">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="4">y+1/2,-x,z+3/4</op>
+    <op id="5">-x,y,z</op>
+    <op id="6">-y,-x+1/2,z+1/4</op>
+    <op id="7">x+1/2,-y+1/2,z+1/2</op>
+    <op id="8">y+1/2,x,z+3/4</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-y+1/2,x+1,z+3/4</op>
+    <op id="11">-x+1,-y+1,z+1</op>
+    <op id="12">y+1,-x+1/2,z+5/4</op>
+    <op id="13">-x+1/2,y+1/2,z+1/2</op>
+    <op id="14">-y+1/2,-x+1,z+3/4</op>
+    <op id="15">x+1,-y+1,z+1</op>
+    <op id="16">y+1,x+1/2,z+5/4</op>
+  </spg>
+
+  <spg id="110" nops="16" sym="I 41 c d" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x+1/2,z+1/4</op>
+    <op id="3">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="4">y+1/2,-x,z+3/4</op>
+    <op id="5">-x,y,z+1/2</op>
+    <op id="6">-y,-x+1/2,z+3/4</op>
+    <op id="7">x+1/2,-y+1/2,z</op>
+    <op id="8">y+1/2,x,z+1/4</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">-y+1/2,x+1,z+3/4</op>
+    <op id="11">-x+1,-y+1,z+1</op>
+    <op id="12">y+1,-x+1/2,z+5/4</op>
+    <op id="13">-x+1/2,y+1/2,z+1</op>
+    <op id="14">-y+1/2,-x+1,z+5/4</op>
+    <op id="15">x+1,-y+1,z+1/2</op>
+    <op id="16">y+1,x+1/2,z+3/4</op>
+  </spg>
+
+  <spg id="111" nops="8" sym="P -4 2 m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">-y,-x,z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">y,x,z</op>
+  </spg>
+
+  <spg id="112" nops="8" sym="P -4 2 c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x,-y,-z+1/2</op>
+    <op id="6">-y,-x,z+1/2</op>
+    <op id="7">-x,y,-z+1/2</op>
+    <op id="8">y,x,z+1/2</op>
+  </spg>
+
+  <spg id="113" nops="8" sym="P -4 21 m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x+1/2,-y+1/2,-z</op>
+    <op id="6">-y+1/2,-x+1/2,z</op>
+    <op id="7">-x+1/2,y+1/2,-z</op>
+    <op id="8">y+1/2,x+1/2,z</op>
+  </spg>
+
+  <spg id="114" nops="8" sym="P -4 21 c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="6">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="8">y+1/2,x+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="115" nops="8" sym="P -4 m 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">-x,y,z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">x,-y,z</op>
+    <op id="8">-y,-x,-z</op>
+  </spg>
+
+  <spg id="116" nops="8" sym="P -4 c 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">-x,y,z+1/2</op>
+    <op id="6">y,x,-z+1/2</op>
+    <op id="7">x,-y,z+1/2</op>
+    <op id="8">-y,-x,-z+1/2</op>
+  </spg>
+
+  <spg id="117" nops="8" sym="P -4 b 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">-x+1/2,y+1/2,z</op>
+    <op id="6">y+1/2,x+1/2,-z</op>
+    <op id="7">x+1/2,-y+1/2,z</op>
+    <op id="8">-y+1/2,-x+1/2,-z</op>
+  </spg>
+
+  <spg id="118" nops="8" sym="P -4 n 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">-x+1/2,y+1/2,z+1/2</op>
+    <op id="6">y+1/2,x+1/2,-z+1/2</op>
+    <op id="7">x+1/2,-y+1/2,z+1/2</op>
+    <op id="8">-y+1/2,-x+1/2,-z+1/2</op>
+  </spg>
+
+  <spg id="119" nops="16" sym="I -4 m 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">-x,y,z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">x,-y,z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="11">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="12">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="13">-x+1/2,y+1/2,z+1/2</op>
+    <op id="14">y+1/2,x+1/2,-z+1/2</op>
+    <op id="15">x+1/2,-y+1/2,z+1/2</op>
+    <op id="16">-y+1/2,-x+1/2,-z+1/2</op>
+  </spg>
+
+  <spg id="120" nops="16" sym="I -4 c 2" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">-x,y,z+1/2</op>
+    <op id="6">y,x,-z+1/2</op>
+    <op id="7">x,-y,z+1/2</op>
+    <op id="8">-y,-x,-z+1/2</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="11">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="12">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="13">-x+1/2,y+1/2,z+1</op>
+    <op id="14">y+1/2,x+1/2,-z+1</op>
+    <op id="15">x+1/2,-y+1/2,z+1</op>
+    <op id="16">-y+1/2,-x+1/2,-z+1</op>
+  </spg>
+
+  <spg id="121" nops="16" sym="I -4 2 m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">-y,-x,z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">y,x,z</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="11">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="12">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="13">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="14">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="15">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="16">y+1/2,x+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="122" nops="16" sym="I -4 2 d" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x,-y+1/2,-z+1/4</op>
+    <op id="6">-y+1/2,-x,z+3/4</op>
+    <op id="7">-x,y+1/2,-z+1/4</op>
+    <op id="8">y+1/2,x,z+3/4</op>
+    <op id="9">x+1/2,y+1/2,z+1/2</op>
+    <op id="10">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="11">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="12">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="13">x+1/2,-y+1,-z+3/4</op>
+    <op id="14">-y+1,-x+1/2,z+5/4</op>
+    <op id="15">-x+1/2,y+1,-z+3/4</op>
+    <op id="16">y+1,x+1/2,z+5/4</op>
+  </spg>
+
+  <spg id="123" nops="16" sym="P 4/m m m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x,y,z</op>
+    <op id="14">-y,-x,z</op>
+    <op id="15">x,-y,z</op>
+    <op id="16">y,x,z</op>
+  </spg>
+
+  <spg id="124" nops="16" sym="P 4/m c c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z+1/2</op>
+    <op id="6">y,x,-z+1/2</op>
+    <op id="7">-x,y,-z+1/2</op>
+    <op id="8">-y,-x,-z+1/2</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x,y,z-1/2</op>
+    <op id="14">-y,-x,z-1/2</op>
+    <op id="15">x,-y,z-1/2</op>
+    <op id="16">y,x,z-1/2</op>
+  </spg>
+
+  <spg id="125" nops="16" sym="P 4/n b m :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">-x+1/2,-y+1/2,-z</op>
+    <op id="10">y+1/2,-x+1/2,-z</op>
+    <op id="11">x+1/2,y+1/2,-z</op>
+    <op id="12">-y+1/2,x+1/2,-z</op>
+    <op id="13">-x+1/2,y+1/2,z</op>
+    <op id="14">-y+1/2,-x+1/2,z</op>
+    <op id="15">x+1/2,-y+1/2,z</op>
+    <op id="16">y+1/2,x+1/2,z</op>
+  </spg>
+
+  <spg id="126" nops="16" sym="P 4/n n c :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="10">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="11">x+1/2,y+1/2,-z+1/2</op>
+    <op id="12">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="13">-x+1/2,y+1/2,z+1/2</op>
+    <op id="14">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="15">x+1/2,-y+1/2,z+1/2</op>
+    <op id="16">y+1/2,x+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="127" nops="16" sym="P 4/m b m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x+1/2,-y+1/2,-z</op>
+    <op id="6">y+1/2,x+1/2,-z</op>
+    <op id="7">-x+1/2,y+1/2,-z</op>
+    <op id="8">-y+1/2,-x+1/2,-z</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x-1/2,y-1/2,z</op>
+    <op id="14">-y-1/2,-x-1/2,z</op>
+    <op id="15">x-1/2,-y-1/2,z</op>
+    <op id="16">y-1/2,x-1/2,z</op>
+  </spg>
+
+  <spg id="128" nops="16" sym="P 4/m n c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="6">y+1/2,x+1/2,-z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="8">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x-1/2,y-1/2,z-1/2</op>
+    <op id="14">-y-1/2,-x-1/2,z-1/2</op>
+    <op id="15">x-1/2,-y-1/2,z-1/2</op>
+    <op id="16">y-1/2,x-1/2,z-1/2</op>
+  </spg>
+
+  <spg id="129" nops="16" sym="P 4/n m m :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z</op>
+    <op id="5">x+1/2,-y+1/2,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x+1/2,y+1/2,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">-x+1/2,-y+1/2,-z</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x+1/2,y+1/2,-z</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x,y,z</op>
+    <op id="14">-y+1/2,-x+1/2,z</op>
+    <op id="15">x,-y,z</op>
+    <op id="16">y+1/2,x+1/2,z</op>
+  </spg>
+
+  <spg id="130" nops="16" sym="P 4/n c c :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z</op>
+    <op id="5">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="6">y,x,-z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="8">-y,-x,-z+1/2</op>
+    <op id="9">-x+1/2,-y+1/2,-z</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x+1/2,y+1/2,-z</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x,y,z-1/2</op>
+    <op id="14">-y+1/2,-x+1/2,z-1/2</op>
+    <op id="15">x,-y,z-1/2</op>
+    <op id="16">y+1/2,x+1/2,z-1/2</op>
+  </spg>
+
+  <spg id="131" nops="16" sym="P 42/m m c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z+1/2</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z+1/2</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z+1/2</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y,-x,-z-1/2</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y,x,-z-1/2</op>
+    <op id="13">-x,y,z</op>
+    <op id="14">-y,-x,z-1/2</op>
+    <op id="15">x,-y,z</op>
+    <op id="16">y,x,z-1/2</op>
+  </spg>
+
+  <spg id="132" nops="16" sym="P 42/m c m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z+1/2</op>
+    <op id="5">x,-y,-z+1/2</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z+1/2</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y,-x,-z-1/2</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y,x,-z-1/2</op>
+    <op id="13">-x,y,z-1/2</op>
+    <op id="14">-y,-x,z</op>
+    <op id="15">x,-y,z-1/2</op>
+    <op id="16">y,x,z</op>
+  </spg>
+
+  <spg id="133" nops="16" sym="P 42/n b c :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">x,-y,-z+1/2</op>
+    <op id="6">y+1/2,x+1/2,-z</op>
+    <op id="7">-x,y,-z+1/2</op>
+    <op id="8">-y+1/2,-x+1/2,-z</op>
+    <op id="9">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x+1/2,y+1/2,-z+1/2</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x+1/2,y+1/2,z</op>
+    <op id="14">-y,-x,z+1/2</op>
+    <op id="15">x+1/2,-y+1/2,z</op>
+    <op id="16">y,x,z+1/2</op>
+  </spg>
+
+  <spg id="134" nops="16" sym="P 42/n n m :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y+1/2,x+1/2,-z+1/2</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="9">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x+1/2,y+1/2,-z+1/2</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x+1/2,y+1/2,z+1/2</op>
+    <op id="14">-y,-x,z</op>
+    <op id="15">x+1/2,-y+1/2,z+1/2</op>
+    <op id="16">y,x,z</op>
+  </spg>
+
+  <spg id="135" nops="16" sym="P 42/m b c" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z+1/2</op>
+    <op id="5">x+1/2,-y+1/2,-z</op>
+    <op id="6">y+1/2,x+1/2,-z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,-z</op>
+    <op id="8">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y,-x,-z-1/2</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y,x,-z-1/2</op>
+    <op id="13">-x-1/2,y-1/2,z</op>
+    <op id="14">-y-1/2,-x-1/2,z-1/2</op>
+    <op id="15">x-1/2,-y-1/2,z</op>
+    <op id="16">y-1/2,x-1/2,z-1/2</op>
+  </spg>
+
+  <spg id="136" nops="16" sym="P 42/m n m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y-1/2,-x-1/2,-z-1/2</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y-1/2,x-1/2,-z-1/2</op>
+    <op id="13">-x-1/2,y-1/2,z-1/2</op>
+    <op id="14">-y,-x,z</op>
+    <op id="15">x-1/2,-y-1/2,z-1/2</op>
+    <op id="16">y,x,z</op>
+  </spg>
+
+  <spg id="137" nops="16" sym="P 42/n m c :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x+1/2,y+1/2,-z+1/2</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x,y,z</op>
+    <op id="14">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="15">x,-y,z</op>
+    <op id="16">y+1/2,x+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="138" nops="16" sym="P 42/n c m :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">x+1/2,-y+1/2,-z</op>
+    <op id="6">y,x,-z+1/2</op>
+    <op id="7">-x+1/2,y+1/2,-z</op>
+    <op id="8">-y,-x,-z+1/2</op>
+    <op id="9">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x+1/2,y+1/2,-z+1/2</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x,y,z+1/2</op>
+    <op id="14">-y+1/2,-x+1/2,z</op>
+    <op id="15">x,-y,z+1/2</op>
+    <op id="16">y+1/2,x+1/2,z</op>
+  </spg>
+
+  <spg id="139" nops="32" sym="I 4/m m m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x,y,z</op>
+    <op id="14">-y,-x,z</op>
+    <op id="15">x,-y,z</op>
+    <op id="16">y,x,z</op>
+    <op id="17">x+1/2,y+1/2,z+1/2</op>
+    <op id="18">-y+1/2,x+1/2,z+1/2</op>
+    <op id="19">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="20">y+1/2,-x+1/2,z+1/2</op>
+    <op id="21">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="22">y+1/2,x+1/2,-z+1/2</op>
+    <op id="23">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="24">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="25">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="26">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="27">x+1/2,y+1/2,-z+1/2</op>
+    <op id="28">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="29">-x+1/2,y+1/2,z+1/2</op>
+    <op id="30">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="31">x+1/2,-y+1/2,z+1/2</op>
+    <op id="32">y+1/2,x+1/2,z+1/2</op>
+  </spg>
+
+  <spg id="140" nops="32" sym="I 4/m c m" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z+1/2</op>
+    <op id="6">y,x,-z+1/2</op>
+    <op id="7">-x,y,-z+1/2</op>
+    <op id="8">-y,-x,-z+1/2</op>
+    <op id="9">-x,-y,-z</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x,y,-z</op>
+    <op id="12">-y,x,-z</op>
+    <op id="13">-x,y,z-1/2</op>
+    <op id="14">-y,-x,z-1/2</op>
+    <op id="15">x,-y,z-1/2</op>
+    <op id="16">y,x,z-1/2</op>
+    <op id="17">x+1/2,y+1/2,z+1/2</op>
+    <op id="18">-y+1/2,x+1/2,z+1/2</op>
+    <op id="19">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="20">y+1/2,-x+1/2,z+1/2</op>
+    <op id="21">x+1/2,-y+1/2,-z+1</op>
+    <op id="22">y+1/2,x+1/2,-z+1</op>
+    <op id="23">-x+1/2,y+1/2,-z+1</op>
+    <op id="24">-y+1/2,-x+1/2,-z+1</op>
+    <op id="25">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="26">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="27">x+1/2,y+1/2,-z+1/2</op>
+    <op id="28">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="29">-x+1/2,y+1/2,z</op>
+    <op id="30">-y+1/2,-x+1/2,z</op>
+    <op id="31">x+1/2,-y+1/2,z</op>
+    <op id="32">y+1/2,x+1/2,z</op>
+  </spg>
+
+  <spg id="141" nops="32" sym="I 41/a m d :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x+1/2,z+1/4</op>
+    <op id="3">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="4">y+1/2,-x,z+3/4</op>
+    <op id="5">x,-y+1/2,-z+1/4</op>
+    <op id="6">y+1/2,x+1/2,-z+1/2</op>
+    <op id="7">-x+1/2,y,-z+3/4</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">-x,-y+1/2,-z+1/4</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x-1/2,y,-z-1/4</op>
+    <op id="12">-y-1/2,x+1/2,-z-1/2</op>
+    <op id="13">-x,y,z</op>
+    <op id="14">-y-1/2,-x,z-1/4</op>
+    <op id="15">x-1/2,-y+1/2,z-1/2</op>
+    <op id="16">y,x+1/2,z+1/4</op>
+    <op id="17">x+1/2,y+1/2,z+1/2</op>
+    <op id="18">-y+1/2,x+1,z+3/4</op>
+    <op id="19">-x+1,-y+1,z+1</op>
+    <op id="20">y+1,-x+1/2,z+5/4</op>
+    <op id="21">x+1/2,-y+1,-z+3/4</op>
+    <op id="22">y+1,x+1,-z+1</op>
+    <op id="23">-x+1,y+1/2,-z+5/4</op>
+    <op id="24">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="25">-x+1/2,-y+1,-z+3/4</op>
+    <op id="26">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="27">x,y+1/2,-z+1/4</op>
+    <op id="28">-y,x+1,-z</op>
+    <op id="29">-x+1/2,y+1/2,z+1/2</op>
+    <op id="30">-y,-x+1/2,z+1/4</op>
+    <op id="31">x,-y+1,z</op>
+    <op id="32">y+1/2,x+1,z+3/4</op>
+  </spg>
+
+  <spg id="142" nops="32" sym="I 41/a c d :1" sys="tetragonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x+1/2,z+1/4</op>
+    <op id="3">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="4">y+1/2,-x,z+3/4</op>
+    <op id="5">x+1/2,-y,-z+1/4</op>
+    <op id="6">y,x,-z+1/2</op>
+    <op id="7">-x,y+1/2,-z+3/4</op>
+    <op id="8">-y+1/2,-x+1/2,-z</op>
+    <op id="9">-x,-y+1/2,-z+1/4</op>
+    <op id="10">y,-x,-z</op>
+    <op id="11">x-1/2,y,-z-1/4</op>
+    <op id="12">-y-1/2,x+1/2,-z-1/2</op>
+    <op id="13">-x-1/2,y+1/2,z</op>
+    <op id="14">-y,-x+1/2,z-1/4</op>
+    <op id="15">x,-y,z-1/2</op>
+    <op id="16">y-1/2,x,z+1/4</op>
+    <op id="17">x+1/2,y+1/2,z+1/2</op>
+    <op id="18">-y+1/2,x+1,z+3/4</op>
+    <op id="19">-x+1,-y+1,z+1</op>
+    <op id="20">y+1,-x+1/2,z+5/4</op>
+    <op id="21">x+1,-y+1/2,-z+3/4</op>
+    <op id="22">y+1/2,x+1/2,-z+1</op>
+    <op id="23">-x+1/2,y+1,-z+5/4</op>
+    <op id="24">-y+1,-x+1,-z+1/2</op>
+    <op id="25">-x+1/2,-y+1,-z+3/4</op>
+    <op id="26">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="27">x,y+1/2,-z+1/4</op>
+    <op id="28">-y,x+1,-z</op>
+    <op id="29">-x,y+1,z+1/2</op>
+    <op id="30">-y+1/2,-x+1,z+1/4</op>
+    <op id="31">x+1/2,-y+1/2,z</op>
+    <op id="32">y,x+1/2,z+3/4</op>
+  </spg>
+
+  <spg id="143" nops="3" sym="P 3" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+  </spg>
+
+  <spg id="144" nops="3" sym="P 31" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z+1/3</op>
+    <op id="3">-x+y,-x,z+2/3</op>
+  </spg>
+
+  <spg id="145" nops="3" sym="P 32" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z+2/3</op>
+    <op id="3">-x+y,-x,z+1/3</op>
+  </spg>
+
+  <spg id="146" nops="9" sym="R 3 :H" sys="rhombohedral">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">x+2/3,y+1/3,z+1/3</op>
+    <op id="5">-y+2/3,x-y+1/3,z+1/3</op>
+    <op id="6">-x+y+2/3,-x+1/3,z+1/3</op>
+    <op id="7">x+1/3,y+2/3,z+2/3</op>
+    <op id="8">-y+1/3,x-y+2/3,z+2/3</op>
+    <op id="9">-x+y+1/3,-x+2/3,z+2/3</op>
+  </spg>
+
+  <spg id="147" nops="6" sym="P -3" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">-x,-y,-z</op>
+    <op id="5">y,-x+y,-z</op>
+    <op id="6">x-y,x,-z</op>
+  </spg>
+
+  <spg id="148" nops="18" sym="R -3 :H" sys="rhombohedral">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">-x,-y,-z</op>
+    <op id="5">y,-x+y,-z</op>
+    <op id="6">x-y,x,-z</op>
+    <op id="7">x+2/3,y+1/3,z+1/3</op>
+    <op id="8">-y+2/3,x-y+1/3,z+1/3</op>
+    <op id="9">-x+y+2/3,-x+1/3,z+1/3</op>
+    <op id="10">-x+2/3,-y+1/3,-z+1/3</op>
+    <op id="11">y+2/3,-x+y+1/3,-z+1/3</op>
+    <op id="12">x-y+2/3,x+1/3,-z+1/3</op>
+    <op id="13">x+1/3,y+2/3,z+2/3</op>
+    <op id="14">-y+1/3,x-y+2/3,z+2/3</op>
+    <op id="15">-x+y+1/3,-x+2/3,z+2/3</op>
+    <op id="16">-x+1/3,-y+2/3,-z+2/3</op>
+    <op id="17">y+1/3,-x+y+2/3,-z+2/3</op>
+    <op id="18">x-y+1/3,x+2/3,-z+2/3</op>
+  </spg>
+
+  <spg id="149" nops="6" sym="P 3 1 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">-y,-x,-z</op>
+    <op id="5">x,x-y,-z</op>
+    <op id="6">-x+y,y,-z</op>
+  </spg>
+
+  <spg id="150" nops="6" sym="P 3 2 1" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">y,x,-z</op>
+    <op id="5">-x,-x+y,-z</op>
+    <op id="6">x-y,-y,-z</op>
+  </spg>
+
+  <spg id="151" nops="6" sym="P 31 1 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z+1/3</op>
+    <op id="3">-x+y,-x,z+2/3</op>
+    <op id="4">-y,-x,-z+2/3</op>
+    <op id="5">x,x-y,-z</op>
+    <op id="6">-x+y,y,-z+1/3</op>
+  </spg>
+
+  <spg id="152" nops="6" sym="P 31 2 1" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z+1/3</op>
+    <op id="3">-x+y,-x,z+2/3</op>
+    <op id="4">y,x,-z</op>
+    <op id="5">-x,-x+y,-z+1/3</op>
+    <op id="6">x-y,-y,-z+2/3</op>
+  </spg>
+
+  <spg id="153" nops="6" sym="P 32 1 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z+2/3</op>
+    <op id="3">-x+y,-x,z+1/3</op>
+    <op id="4">-y,-x,-z+1/3</op>
+    <op id="5">x,x-y,-z</op>
+    <op id="6">-x+y,y,-z+2/3</op>
+  </spg>
+
+  <spg id="154" nops="6" sym="P 32 2 1" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z+2/3</op>
+    <op id="3">-x+y,-x,z+1/3</op>
+    <op id="4">y,x,-z</op>
+    <op id="5">-x,-x+y,-z+2/3</op>
+    <op id="6">x-y,-y,-z+1/3</op>
+  </spg>
+
+  <spg id="155" nops="18" sym="R 3 2 :H" sys="rhombohedral">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">y,x,-z</op>
+    <op id="5">-x,-x+y,-z</op>
+    <op id="6">x-y,-y,-z</op>
+    <op id="7">x+2/3,y+1/3,z+1/3</op>
+    <op id="8">-y+2/3,x-y+1/3,z+1/3</op>
+    <op id="9">-x+y+2/3,-x+1/3,z+1/3</op>
+    <op id="10">y+2/3,x+1/3,-z+1/3</op>
+    <op id="11">-x+2/3,-x+y+1/3,-z+1/3</op>
+    <op id="12">x-y+2/3,-y+1/3,-z+1/3</op>
+    <op id="13">x+1/3,y+2/3,z+2/3</op>
+    <op id="14">-y+1/3,x-y+2/3,z+2/3</op>
+    <op id="15">-x+y+1/3,-x+2/3,z+2/3</op>
+    <op id="16">y+1/3,x+2/3,-z+2/3</op>
+    <op id="17">-x+1/3,-x+y+2/3,-z+2/3</op>
+    <op id="18">x-y+1/3,-y+2/3,-z+2/3</op>
+  </spg>
+
+  <spg id="156" nops="6" sym="P 3 m 1" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">-y,-x,z</op>
+    <op id="5">x,x-y,z</op>
+    <op id="6">-x+y,y,z</op>
+  </spg>
+
+  <spg id="157" nops="6" sym="P 3 1 m" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">y,x,z</op>
+    <op id="5">-x,-x+y,z</op>
+    <op id="6">x-y,-y,z</op>
+  </spg>
+
+  <spg id="158" nops="6" sym="P 3 c 1" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">-y,-x,z+1/2</op>
+    <op id="5">x,x-y,z+1/2</op>
+    <op id="6">-x+y,y,z+1/2</op>
+  </spg>
+
+  <spg id="159" nops="6" sym="P 3 1 c" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">y,x,z+1/2</op>
+    <op id="5">-x,-x+y,z+1/2</op>
+    <op id="6">x-y,-y,z+1/2</op>
+  </spg>
+
+  <spg id="160" nops="18" sym="R 3 m :H" sys="rhombohedral">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">-y,-x,z</op>
+    <op id="5">x,x-y,z</op>
+    <op id="6">-x+y,y,z</op>
+    <op id="7">x+2/3,y+1/3,z+1/3</op>
+    <op id="8">-y+2/3,x-y+1/3,z+1/3</op>
+    <op id="9">-x+y+2/3,-x+1/3,z+1/3</op>
+    <op id="10">-y+2/3,-x+1/3,z+1/3</op>
+    <op id="11">x+2/3,x-y+1/3,z+1/3</op>
+    <op id="12">-x+y+2/3,y+1/3,z+1/3</op>
+    <op id="13">x+1/3,y+2/3,z+2/3</op>
+    <op id="14">-y+1/3,x-y+2/3,z+2/3</op>
+    <op id="15">-x+y+1/3,-x+2/3,z+2/3</op>
+    <op id="16">-y+1/3,-x+2/3,z+2/3</op>
+    <op id="17">x+1/3,x-y+2/3,z+2/3</op>
+    <op id="18">-x+y+1/3,y+2/3,z+2/3</op>
+  </spg>
+
+  <spg id="161" nops="18" sym="R 3 c :H" sys="rhombohedral">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">-y,-x,z+1/2</op>
+    <op id="5">x,x-y,z+1/2</op>
+    <op id="6">-x+y,y,z+1/2</op>
+    <op id="7">x+2/3,y+1/3,z+1/3</op>
+    <op id="8">-y+2/3,x-y+1/3,z+1/3</op>
+    <op id="9">-x+y+2/3,-x+1/3,z+1/3</op>
+    <op id="10">-y+2/3,-x+1/3,z+5/6</op>
+    <op id="11">x+2/3,x-y+1/3,z+5/6</op>
+    <op id="12">-x+y+2/3,y+1/3,z+5/6</op>
+    <op id="13">x+1/3,y+2/3,z+2/3</op>
+    <op id="14">-y+1/3,x-y+2/3,z+2/3</op>
+    <op id="15">-x+y+1/3,-x+2/3,z+2/3</op>
+    <op id="16">-y+1/3,-x+2/3,z+7/6</op>
+    <op id="17">x+1/3,x-y+2/3,z+7/6</op>
+    <op id="18">-x+y+1/3,y+2/3,z+7/6</op>
+  </spg>
+
+  <spg id="162" nops="12" sym="P -3 1 m" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">-y,-x,-z</op>
+    <op id="5">x,x-y,-z</op>
+    <op id="6">-x+y,y,-z</op>
+    <op id="7">-x,-y,-z</op>
+    <op id="8">y,-x+y,-z</op>
+    <op id="9">x-y,x,-z</op>
+    <op id="10">y,x,z</op>
+    <op id="11">-x,-x+y,z</op>
+    <op id="12">x-y,-y,z</op>
+  </spg>
+
+  <spg id="163" nops="12" sym="P -3 1 c" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">-y,-x,-z+1/2</op>
+    <op id="5">x,x-y,-z+1/2</op>
+    <op id="6">-x+y,y,-z+1/2</op>
+    <op id="7">-x,-y,-z</op>
+    <op id="8">y,-x+y,-z</op>
+    <op id="9">x-y,x,-z</op>
+    <op id="10">y,x,z-1/2</op>
+    <op id="11">-x,-x+y,z-1/2</op>
+    <op id="12">x-y,-y,z-1/2</op>
+  </spg>
+
+  <spg id="164" nops="12" sym="P -3 m 1" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">y,x,-z</op>
+    <op id="5">-x,-x+y,-z</op>
+    <op id="6">x-y,-y,-z</op>
+    <op id="7">-x,-y,-z</op>
+    <op id="8">y,-x+y,-z</op>
+    <op id="9">x-y,x,-z</op>
+    <op id="10">-y,-x,z</op>
+    <op id="11">x,x-y,z</op>
+    <op id="12">-x+y,y,z</op>
+  </spg>
+
+  <spg id="165" nops="12" sym="P -3 c 1" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">y,x,-z+1/2</op>
+    <op id="5">-x,-x+y,-z+1/2</op>
+    <op id="6">x-y,-y,-z+1/2</op>
+    <op id="7">-x,-y,-z</op>
+    <op id="8">y,-x+y,-z</op>
+    <op id="9">x-y,x,-z</op>
+    <op id="10">-y,-x,z-1/2</op>
+    <op id="11">x,x-y,z-1/2</op>
+    <op id="12">-x+y,y,z-1/2</op>
+  </spg>
+
+  <spg id="166" nops="36" sym="R -3 m :H" sys="rhombohedral">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">y,x,-z</op>
+    <op id="5">-x,-x+y,-z</op>
+    <op id="6">x-y,-y,-z</op>
+    <op id="7">-x,-y,-z</op>
+    <op id="8">y,-x+y,-z</op>
+    <op id="9">x-y,x,-z</op>
+    <op id="10">-y,-x,z</op>
+    <op id="11">x,x-y,z</op>
+    <op id="12">-x+y,y,z</op>
+    <op id="13">x+2/3,y+1/3,z+1/3</op>
+    <op id="14">-y+2/3,x-y+1/3,z+1/3</op>
+    <op id="15">-x+y+2/3,-x+1/3,z+1/3</op>
+    <op id="16">y+2/3,x+1/3,-z+1/3</op>
+    <op id="17">-x+2/3,-x+y+1/3,-z+1/3</op>
+    <op id="18">x-y+2/3,-y+1/3,-z+1/3</op>
+    <op id="19">-x+2/3,-y+1/3,-z+1/3</op>
+    <op id="20">y+2/3,-x+y+1/3,-z+1/3</op>
+    <op id="21">x-y+2/3,x+1/3,-z+1/3</op>
+    <op id="22">-y+2/3,-x+1/3,z+1/3</op>
+    <op id="23">x+2/3,x-y+1/3,z+1/3</op>
+    <op id="24">-x+y+2/3,y+1/3,z+1/3</op>
+    <op id="25">x+1/3,y+2/3,z+2/3</op>
+    <op id="26">-y+1/3,x-y+2/3,z+2/3</op>
+    <op id="27">-x+y+1/3,-x+2/3,z+2/3</op>
+    <op id="28">y+1/3,x+2/3,-z+2/3</op>
+    <op id="29">-x+1/3,-x+y+2/3,-z+2/3</op>
+    <op id="30">x-y+1/3,-y+2/3,-z+2/3</op>
+    <op id="31">-x+1/3,-y+2/3,-z+2/3</op>
+    <op id="32">y+1/3,-x+y+2/3,-z+2/3</op>
+    <op id="33">x-y+1/3,x+2/3,-z+2/3</op>
+    <op id="34">-y+1/3,-x+2/3,z+2/3</op>
+    <op id="35">x+1/3,x-y+2/3,z+2/3</op>
+    <op id="36">-x+y+1/3,y+2/3,z+2/3</op>
+  </spg>
+
+  <spg id="167" nops="36" sym="R -3 c :H" sys="rhombohedral">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x-y,z</op>
+    <op id="3">-x+y,-x,z</op>
+    <op id="4">y,x,-z+1/2</op>
+    <op id="5">-x,-x+y,-z+1/2</op>
+    <op id="6">x-y,-y,-z+1/2</op>
+    <op id="7">-x,-y,-z</op>
+    <op id="8">y,-x+y,-z</op>
+    <op id="9">x-y,x,-z</op>
+    <op id="10">-y,-x,z-1/2</op>
+    <op id="11">x,x-y,z-1/2</op>
+    <op id="12">-x+y,y,z-1/2</op>
+    <op id="13">x+2/3,y+1/3,z+1/3</op>
+    <op id="14">-y+2/3,x-y+1/3,z+1/3</op>
+    <op id="15">-x+y+2/3,-x+1/3,z+1/3</op>
+    <op id="16">y+2/3,x+1/3,-z+5/6</op>
+    <op id="17">-x+2/3,-x+y+1/3,-z+5/6</op>
+    <op id="18">x-y+2/3,-y+1/3,-z+5/6</op>
+    <op id="19">-x+2/3,-y+1/3,-z+1/3</op>
+    <op id="20">y+2/3,-x+y+1/3,-z+1/3</op>
+    <op id="21">x-y+2/3,x+1/3,-z+1/3</op>
+    <op id="22">-y+2/3,-x+1/3,z-1/6</op>
+    <op id="23">x+2/3,x-y+1/3,z-1/6</op>
+    <op id="24">-x+y+2/3,y+1/3,z-1/6</op>
+    <op id="25">x+1/3,y+2/3,z+2/3</op>
+    <op id="26">-y+1/3,x-y+2/3,z+2/3</op>
+    <op id="27">-x+y+1/3,-x+2/3,z+2/3</op>
+    <op id="28">y+1/3,x+2/3,-z+7/6</op>
+    <op id="29">-x+1/3,-x+y+2/3,-z+7/6</op>
+    <op id="30">x-y+1/3,-y+2/3,-z+7/6</op>
+    <op id="31">-x+1/3,-y+2/3,-z+2/3</op>
+    <op id="32">y+1/3,-x+y+2/3,-z+2/3</op>
+    <op id="33">x-y+1/3,x+2/3,-z+2/3</op>
+    <op id="34">-y+1/3,-x+2/3,z+1/6</op>
+    <op id="35">x+1/3,x-y+2/3,z+1/6</op>
+    <op id="36">-x+y+1/3,y+2/3,z+1/6</op>
+  </spg>
+
+  <spg id="168" nops="6" sym="P 6" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z</op>
+  </spg>
+
+  <spg id="169" nops="6" sym="P 61" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/6</op>
+    <op id="3">-y,x-y,z+1/3</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z+2/3</op>
+    <op id="6">y,-x+y,z+5/6</op>
+  </spg>
+
+  <spg id="170" nops="6" sym="P 65" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+5/6</op>
+    <op id="3">-y,x-y,z+2/3</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z+1/3</op>
+    <op id="6">y,-x+y,z+1/6</op>
+  </spg>
+
+  <spg id="171" nops="6" sym="P 62" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/3</op>
+    <op id="3">-y,x-y,z+2/3</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z+1/3</op>
+    <op id="6">y,-x+y,z+2/3</op>
+  </spg>
+
+  <spg id="172" nops="6" sym="P 64" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+2/3</op>
+    <op id="3">-y,x-y,z+1/3</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z+2/3</op>
+    <op id="6">y,-x+y,z+1/3</op>
+  </spg>
+
+  <spg id="173" nops="6" sym="P 63" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/2</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z+1/2</op>
+  </spg>
+
+  <spg id="174" nops="6" sym="P -6" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+y,-x,-z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">x,y,-z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">-y,x-y,-z</op>
+  </spg>
+
+  <spg id="175" nops="12" sym="P 6/m" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z</op>
+    <op id="7">-x,-y,-z</op>
+    <op id="8">-x+y,-x,-z</op>
+    <op id="9">y,-x+y,-z</op>
+    <op id="10">x,y,-z</op>
+    <op id="11">x-y,x,-z</op>
+    <op id="12">-y,x-y,-z</op>
+  </spg>
+
+  <spg id="176" nops="12" sym="P 63/m" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/2</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z+1/2</op>
+    <op id="7">-x,-y,-z</op>
+    <op id="8">-x+y,-x,-z-1/2</op>
+    <op id="9">y,-x+y,-z</op>
+    <op id="10">x,y,-z-1/2</op>
+    <op id="11">x-y,x,-z</op>
+    <op id="12">-y,x-y,-z-1/2</op>
+  </spg>
+
+  <spg id="177" nops="12" sym="P 6 2 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z</op>
+    <op id="7">-y,-x,-z</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">x,x-y,-z</op>
+    <op id="10">y,x,-z</op>
+    <op id="11">-x+y,y,-z</op>
+    <op id="12">-x,-x+y,-z</op>
+  </spg>
+
+  <spg id="178" nops="12" sym="P 61 2 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/6</op>
+    <op id="3">-y,x-y,z+1/3</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z+2/3</op>
+    <op id="6">y,-x+y,z+5/6</op>
+    <op id="7">-y,-x,-z+5/6</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">x,x-y,-z+1/6</op>
+    <op id="10">y,x,-z+1/3</op>
+    <op id="11">-x+y,y,-z+1/2</op>
+    <op id="12">-x,-x+y,-z+2/3</op>
+  </spg>
+
+  <spg id="179" nops="12" sym="P 65 2 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+5/6</op>
+    <op id="3">-y,x-y,z+2/3</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z+1/3</op>
+    <op id="6">y,-x+y,z+1/6</op>
+    <op id="7">-y,-x,-z+1/6</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">x,x-y,-z+5/6</op>
+    <op id="10">y,x,-z+2/3</op>
+    <op id="11">-x+y,y,-z+1/2</op>
+    <op id="12">-x,-x+y,-z+1/3</op>
+  </spg>
+
+  <spg id="180" nops="12" sym="P 62 2 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/3</op>
+    <op id="3">-y,x-y,z+2/3</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z+1/3</op>
+    <op id="6">y,-x+y,z+2/3</op>
+    <op id="7">-y,-x,-z+2/3</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">x,x-y,-z+1/3</op>
+    <op id="10">y,x,-z+2/3</op>
+    <op id="11">-x+y,y,-z</op>
+    <op id="12">-x,-x+y,-z+1/3</op>
+  </spg>
+
+  <spg id="181" nops="12" sym="P 64 2 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+2/3</op>
+    <op id="3">-y,x-y,z+1/3</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z+2/3</op>
+    <op id="6">y,-x+y,z+1/3</op>
+    <op id="7">-y,-x,-z+1/3</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">x,x-y,-z+2/3</op>
+    <op id="10">y,x,-z+1/3</op>
+    <op id="11">-x+y,y,-z</op>
+    <op id="12">-x,-x+y,-z+2/3</op>
+  </spg>
+
+  <spg id="182" nops="12" sym="P 63 2 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/2</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z+1/2</op>
+    <op id="7">-y,-x,-z+1/2</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">x,x-y,-z+1/2</op>
+    <op id="10">y,x,-z</op>
+    <op id="11">-x+y,y,-z+1/2</op>
+    <op id="12">-x,-x+y,-z</op>
+  </spg>
+
+  <spg id="183" nops="12" sym="P 6 m m" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z</op>
+    <op id="7">y,x,z</op>
+    <op id="8">-x+y,y,z</op>
+    <op id="9">-x,-x+y,z</op>
+    <op id="10">-y,-x,z</op>
+    <op id="11">x-y,-y,z</op>
+    <op id="12">x,x-y,z</op>
+  </spg>
+
+  <spg id="184" nops="12" sym="P 6 c c" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z</op>
+    <op id="7">y,x,z+1/2</op>
+    <op id="8">-x+y,y,z+1/2</op>
+    <op id="9">-x,-x+y,z+1/2</op>
+    <op id="10">-y,-x,z+1/2</op>
+    <op id="11">x-y,-y,z+1/2</op>
+    <op id="12">x,x-y,z+1/2</op>
+  </spg>
+
+  <spg id="185" nops="12" sym="P 63 c m" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/2</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z+1/2</op>
+    <op id="7">y,x,z</op>
+    <op id="8">-x+y,y,z+1/2</op>
+    <op id="9">-x,-x+y,z</op>
+    <op id="10">-y,-x,z+1/2</op>
+    <op id="11">x-y,-y,z</op>
+    <op id="12">x,x-y,z+1/2</op>
+  </spg>
+
+  <spg id="186" nops="12" sym="P 63 m c" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/2</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z+1/2</op>
+    <op id="7">y,x,z+1/2</op>
+    <op id="8">-x+y,y,z</op>
+    <op id="9">-x,-x+y,z+1/2</op>
+    <op id="10">-y,-x,z</op>
+    <op id="11">x-y,-y,z+1/2</op>
+    <op id="12">x,x-y,z</op>
+  </spg>
+
+  <spg id="187" nops="12" sym="P -6 m 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+y,-x,-z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">x,y,-z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">-y,x-y,-z</op>
+    <op id="7">-y,-x,-z</op>
+    <op id="8">-x+y,y,z</op>
+    <op id="9">x,x-y,-z</op>
+    <op id="10">-y,-x,z</op>
+    <op id="11">-x+y,y,-z</op>
+    <op id="12">x,x-y,z</op>
+  </spg>
+
+  <spg id="188" nops="12" sym="P -6 c 2" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+y,-x,-z+1/2</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">x,y,-z+1/2</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">-y,x-y,-z+1/2</op>
+    <op id="7">-y,-x,-z</op>
+    <op id="8">-x+y,y,z+1/2</op>
+    <op id="9">x,x-y,-z</op>
+    <op id="10">-y,-x,z+1/2</op>
+    <op id="11">-x+y,y,-z</op>
+    <op id="12">x,x-y,z+1/2</op>
+  </spg>
+
+  <spg id="189" nops="12" sym="P -6 2 m" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+y,-x,-z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">x,y,-z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">-y,x-y,-z</op>
+    <op id="7">y,x,z</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">-x,-x+y,z</op>
+    <op id="10">y,x,-z</op>
+    <op id="11">x-y,-y,z</op>
+    <op id="12">-x,-x+y,-z</op>
+  </spg>
+
+  <spg id="190" nops="12" sym="P -6 2 c" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+y,-x,-z+1/2</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">x,y,-z+1/2</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">-y,x-y,-z+1/2</op>
+    <op id="7">y,x,z+1/2</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">-x,-x+y,z+1/2</op>
+    <op id="10">y,x,-z</op>
+    <op id="11">x-y,-y,z+1/2</op>
+    <op id="12">-x,-x+y,-z</op>
+  </spg>
+
+  <spg id="191" nops="24" sym="P 6/m m m" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z</op>
+    <op id="7">-y,-x,-z</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">x,x-y,-z</op>
+    <op id="10">y,x,-z</op>
+    <op id="11">-x+y,y,-z</op>
+    <op id="12">-x,-x+y,-z</op>
+    <op id="13">-x,-y,-z</op>
+    <op id="14">-x+y,-x,-z</op>
+    <op id="15">y,-x+y,-z</op>
+    <op id="16">x,y,-z</op>
+    <op id="17">x-y,x,-z</op>
+    <op id="18">-y,x-y,-z</op>
+    <op id="19">y,x,z</op>
+    <op id="20">-x+y,y,z</op>
+    <op id="21">-x,-x+y,z</op>
+    <op id="22">-y,-x,z</op>
+    <op id="23">x-y,-y,z</op>
+    <op id="24">x,x-y,z</op>
+  </spg>
+
+  <spg id="192" nops="24" sym="P 6/m c c" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z</op>
+    <op id="7">-y,-x,-z+1/2</op>
+    <op id="8">x-y,-y,-z+1/2</op>
+    <op id="9">x,x-y,-z+1/2</op>
+    <op id="10">y,x,-z+1/2</op>
+    <op id="11">-x+y,y,-z+1/2</op>
+    <op id="12">-x,-x+y,-z+1/2</op>
+    <op id="13">-x,-y,-z</op>
+    <op id="14">-x+y,-x,-z</op>
+    <op id="15">y,-x+y,-z</op>
+    <op id="16">x,y,-z</op>
+    <op id="17">x-y,x,-z</op>
+    <op id="18">-y,x-y,-z</op>
+    <op id="19">y,x,z-1/2</op>
+    <op id="20">-x+y,y,z-1/2</op>
+    <op id="21">-x,-x+y,z-1/2</op>
+    <op id="22">-y,-x,z-1/2</op>
+    <op id="23">x-y,-y,z-1/2</op>
+    <op id="24">x,x-y,z-1/2</op>
+  </spg>
+
+  <spg id="193" nops="24" sym="P 63/m c m" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/2</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z+1/2</op>
+    <op id="7">-y,-x,-z</op>
+    <op id="8">x-y,-y,-z+1/2</op>
+    <op id="9">x,x-y,-z</op>
+    <op id="10">y,x,-z+1/2</op>
+    <op id="11">-x+y,y,-z</op>
+    <op id="12">-x,-x+y,-z+1/2</op>
+    <op id="13">-x,-y,-z</op>
+    <op id="14">-x+y,-x,-z-1/2</op>
+    <op id="15">y,-x+y,-z</op>
+    <op id="16">x,y,-z-1/2</op>
+    <op id="17">x-y,x,-z</op>
+    <op id="18">-y,x-y,-z-1/2</op>
+    <op id="19">y,x,z</op>
+    <op id="20">-x+y,y,z-1/2</op>
+    <op id="21">-x,-x+y,z</op>
+    <op id="22">-y,-x,z-1/2</op>
+    <op id="23">x-y,-y,z</op>
+    <op id="24">x,x-y,z-1/2</op>
+  </spg>
+
+  <spg id="194" nops="24" sym="P 63/m m c" sys="hexagonal">
+    <op id="1">x,y,z</op>
+    <op id="2">x-y,x,z+1/2</op>
+    <op id="3">-y,x-y,z</op>
+    <op id="4">-x,-y,z+1/2</op>
+    <op id="5">-x+y,-x,z</op>
+    <op id="6">y,-x+y,z+1/2</op>
+    <op id="7">-y,-x,-z+1/2</op>
+    <op id="8">x-y,-y,-z</op>
+    <op id="9">x,x-y,-z+1/2</op>
+    <op id="10">y,x,-z</op>
+    <op id="11">-x+y,y,-z+1/2</op>
+    <op id="12">-x,-x+y,-z</op>
+    <op id="13">-x,-y,-z</op>
+    <op id="14">-x+y,-x,-z-1/2</op>
+    <op id="15">y,-x+y,-z</op>
+    <op id="16">x,y,-z-1/2</op>
+    <op id="17">x-y,x,-z</op>
+    <op id="18">-y,x-y,-z-1/2</op>
+    <op id="19">y,x,z-1/2</op>
+    <op id="20">-x+y,y,z</op>
+    <op id="21">-x,-x+y,z-1/2</op>
+    <op id="22">-y,-x,z</op>
+    <op id="23">x-y,-y,z-1/2</op>
+    <op id="24">x,x-y,z</op>
+  </spg>
+
+  <spg id="195" nops="12" sym="P 2 3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x,y</op>
+    <op id="7">z,-x,-y</op>
+    <op id="8">-z,x,-y</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x</op>
+    <op id="11">-y,z,-x</op>
+    <op id="12">-y,-z,x</op>
+  </spg>
+
+  <spg id="196" nops="48" sym="F 2 3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x,y</op>
+    <op id="7">z,-x,-y</op>
+    <op id="8">-z,x,-y</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x</op>
+    <op id="11">-y,z,-x</op>
+    <op id="12">-y,-z,x</op>
+    <op id="13">x,y+1/2,z+1/2</op>
+    <op id="14">-x,-y+1/2,z+1/2</op>
+    <op id="15">x,-y+1/2,-z+1/2</op>
+    <op id="16">-x,y+1/2,-z+1/2</op>
+    <op id="17">z,x+1/2,y+1/2</op>
+    <op id="18">-z,-x+1/2,y+1/2</op>
+    <op id="19">z,-x+1/2,-y+1/2</op>
+    <op id="20">-z,x+1/2,-y+1/2</op>
+    <op id="21">y,z+1/2,x+1/2</op>
+    <op id="22">y,-z+1/2,-x+1/2</op>
+    <op id="23">-y,z+1/2,-x+1/2</op>
+    <op id="24">-y,-z+1/2,x+1/2</op>
+    <op id="25">x+1/2,y,z+1/2</op>
+    <op id="26">-x+1/2,-y,z+1/2</op>
+    <op id="27">x+1/2,-y,-z+1/2</op>
+    <op id="28">-x+1/2,y,-z+1/2</op>
+    <op id="29">z+1/2,x,y+1/2</op>
+    <op id="30">-z+1/2,-x,y+1/2</op>
+    <op id="31">z+1/2,-x,-y+1/2</op>
+    <op id="32">-z+1/2,x,-y+1/2</op>
+    <op id="33">y+1/2,z,x+1/2</op>
+    <op id="34">y+1/2,-z,-x+1/2</op>
+    <op id="35">-y+1/2,z,-x+1/2</op>
+    <op id="36">-y+1/2,-z,x+1/2</op>
+    <op id="37">x+1/2,y+1/2,z</op>
+    <op id="38">-x+1/2,-y+1/2,z</op>
+    <op id="39">x+1/2,-y+1/2,-z</op>
+    <op id="40">-x+1/2,y+1/2,-z</op>
+    <op id="41">z+1/2,x+1/2,y</op>
+    <op id="42">-z+1/2,-x+1/2,y</op>
+    <op id="43">z+1/2,-x+1/2,-y</op>
+    <op id="44">-z+1/2,x+1/2,-y</op>
+    <op id="45">y+1/2,z+1/2,x</op>
+    <op id="46">y+1/2,-z+1/2,-x</op>
+    <op id="47">-y+1/2,z+1/2,-x</op>
+    <op id="48">-y+1/2,-z+1/2,x</op>
+  </spg>
+
+  <spg id="197" nops="24" sym="I 2 3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x,y</op>
+    <op id="7">z,-x,-y</op>
+    <op id="8">-z,x,-y</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x</op>
+    <op id="11">-y,z,-x</op>
+    <op id="12">-y,-z,x</op>
+    <op id="13">x+1/2,y+1/2,z+1/2</op>
+    <op id="14">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="15">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="16">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="17">z+1/2,x+1/2,y+1/2</op>
+    <op id="18">-z+1/2,-x+1/2,y+1/2</op>
+    <op id="19">z+1/2,-x+1/2,-y+1/2</op>
+    <op id="20">-z+1/2,x+1/2,-y+1/2</op>
+    <op id="21">y+1/2,z+1/2,x+1/2</op>
+    <op id="22">y+1/2,-z+1/2,-x+1/2</op>
+    <op id="23">-y+1/2,z+1/2,-x+1/2</op>
+    <op id="24">-y+1/2,-z+1/2,x+1/2</op>
+  </spg>
+
+  <spg id="198" nops="12" sym="P 21 3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z+1/2</op>
+    <op id="3">x+1/2,-y+1/2,-z</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z+1/2,-x,y+1/2</op>
+    <op id="7">z+1/2,-x+1/2,-y</op>
+    <op id="8">-z,x+1/2,-y+1/2</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y+1/2,-z+1/2,-x</op>
+    <op id="11">-y,z+1/2,-x+1/2</op>
+    <op id="12">-y+1/2,-z,x+1/2</op>
+  </spg>
+
+  <spg id="199" nops="24" sym="I 21 3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y+1/2,z</op>
+    <op id="3">x,-y,-z+1/2</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x+1/2,y</op>
+    <op id="7">z,-x,-y+1/2</op>
+    <op id="8">-z,x+1/2,-y+1/2</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x+1/2</op>
+    <op id="11">-y,z+1/2,-x+1/2</op>
+    <op id="12">-y+1/2,-z,x+1/2</op>
+    <op id="13">x+1/2,y+1/2,z+1/2</op>
+    <op id="14">-x+1/2,-y+1,z+1/2</op>
+    <op id="15">x+1/2,-y+1/2,-z+1</op>
+    <op id="16">-x+1/2,y+1,-z+1</op>
+    <op id="17">z+1/2,x+1/2,y+1/2</op>
+    <op id="18">-z+1/2,-x+1,y+1/2</op>
+    <op id="19">z+1/2,-x+1/2,-y+1</op>
+    <op id="20">-z+1/2,x+1,-y+1</op>
+    <op id="21">y+1/2,z+1/2,x+1/2</op>
+    <op id="22">y+1/2,-z+1/2,-x+1</op>
+    <op id="23">-y+1/2,z+1,-x+1</op>
+    <op id="24">-y+1,-z+1/2,x+1</op>
+  </spg>
+
+  <spg id="200" nops="24" sym="P m -3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x,y</op>
+    <op id="7">z,-x,-y</op>
+    <op id="8">-z,x,-y</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x</op>
+    <op id="11">-y,z,-x</op>
+    <op id="12">-y,-z,x</op>
+    <op id="13">-x,-y,-z</op>
+    <op id="14">x,y,-z</op>
+    <op id="15">-x,y,z</op>
+    <op id="16">x,-y,z</op>
+    <op id="17">-z,-x,-y</op>
+    <op id="18">z,x,-y</op>
+    <op id="19">-z,x,y</op>
+    <op id="20">z,-x,y</op>
+    <op id="21">-y,-z,-x</op>
+    <op id="22">-y,z,x</op>
+    <op id="23">y,-z,x</op>
+    <op id="24">y,z,-x</op>
+  </spg>
+
+  <spg id="201" nops="24" sym="P n -3 :1" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x,y</op>
+    <op id="7">z,-x,-y</op>
+    <op id="8">-z,x,-y</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x</op>
+    <op id="11">-y,z,-x</op>
+    <op id="12">-y,-z,x</op>
+    <op id="13">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="14">x+1/2,y+1/2,-z+1/2</op>
+    <op id="15">-x+1/2,y+1/2,z+1/2</op>
+    <op id="16">x+1/2,-y+1/2,z+1/2</op>
+    <op id="17">-z+1/2,-x+1/2,-y+1/2</op>
+    <op id="18">z+1/2,x+1/2,-y+1/2</op>
+    <op id="19">-z+1/2,x+1/2,y+1/2</op>
+    <op id="20">z+1/2,-x+1/2,y+1/2</op>
+    <op id="21">-y+1/2,-z+1/2,-x+1/2</op>
+    <op id="22">-y+1/2,z+1/2,x+1/2</op>
+    <op id="23">y+1/2,-z+1/2,x+1/2</op>
+    <op id="24">y+1/2,z+1/2,-x+1/2</op>
+  </spg>
+
+  <spg id="202" nops="96" sym="F m -3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x,y</op>
+    <op id="7">z,-x,-y</op>
+    <op id="8">-z,x,-y</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x</op>
+    <op id="11">-y,z,-x</op>
+    <op id="12">-y,-z,x</op>
+    <op id="13">-x,-y,-z</op>
+    <op id="14">x,y,-z</op>
+    <op id="15">-x,y,z</op>
+    <op id="16">x,-y,z</op>
+    <op id="17">-z,-x,-y</op>
+    <op id="18">z,x,-y</op>
+    <op id="19">-z,x,y</op>
+    <op id="20">z,-x,y</op>
+    <op id="21">-y,-z,-x</op>
+    <op id="22">-y,z,x</op>
+    <op id="23">y,-z,x</op>
+    <op id="24">y,z,-x</op>
+    <op id="25">x,y+1/2,z+1/2</op>
+    <op id="26">-x,-y+1/2,z+1/2</op>
+    <op id="27">x,-y+1/2,-z+1/2</op>
+    <op id="28">-x,y+1/2,-z+1/2</op>
+    <op id="29">z,x+1/2,y+1/2</op>
+    <op id="30">-z,-x+1/2,y+1/2</op>
+    <op id="31">z,-x+1/2,-y+1/2</op>
+    <op id="32">-z,x+1/2,-y+1/2</op>
+    <op id="33">y,z+1/2,x+1/2</op>
+    <op id="34">y,-z+1/2,-x+1/2</op>
+    <op id="35">-y,z+1/2,-x+1/2</op>
+    <op id="36">-y,-z+1/2,x+1/2</op>
+    <op id="37">-x,-y+1/2,-z+1/2</op>
+    <op id="38">x,y+1/2,-z+1/2</op>
+    <op id="39">-x,y+1/2,z+1/2</op>
+    <op id="40">x,-y+1/2,z+1/2</op>
+    <op id="41">-z,-x+1/2,-y+1/2</op>
+    <op id="42">z,x+1/2,-y+1/2</op>
+    <op id="43">-z,x+1/2,y+1/2</op>
+    <op id="44">z,-x+1/2,y+1/2</op>
+    <op id="45">-y,-z+1/2,-x+1/2</op>
+    <op id="46">-y,z+1/2,x+1/2</op>
+    <op id="47">y,-z+1/2,x+1/2</op>
+    <op id="48">y,z+1/2,-x+1/2</op>
+    <op id="49">x+1/2,y,z+1/2</op>
+    <op id="50">-x+1/2,-y,z+1/2</op>
+    <op id="51">x+1/2,-y,-z+1/2</op>
+    <op id="52">-x+1/2,y,-z+1/2</op>
+    <op id="53">z+1/2,x,y+1/2</op>
+    <op id="54">-z+1/2,-x,y+1/2</op>
+    <op id="55">z+1/2,-x,-y+1/2</op>
+    <op id="56">-z+1/2,x,-y+1/2</op>
+    <op id="57">y+1/2,z,x+1/2</op>
+    <op id="58">y+1/2,-z,-x+1/2</op>
+    <op id="59">-y+1/2,z,-x+1/2</op>
+    <op id="60">-y+1/2,-z,x+1/2</op>
+    <op id="61">-x+1/2,-y,-z+1/2</op>
+    <op id="62">x+1/2,y,-z+1/2</op>
+    <op id="63">-x+1/2,y,z+1/2</op>
+    <op id="64">x+1/2,-y,z+1/2</op>
+    <op id="65">-z+1/2,-x,-y+1/2</op>
+    <op id="66">z+1/2,x,-y+1/2</op>
+    <op id="67">-z+1/2,x,y+1/2</op>
+    <op id="68">z+1/2,-x,y+1/2</op>
+    <op id="69">-y+1/2,-z,-x+1/2</op>
+    <op id="70">-y+1/2,z,x+1/2</op>
+    <op id="71">y+1/2,-z,x+1/2</op>
+    <op id="72">y+1/2,z,-x+1/2</op>
+    <op id="73">x+1/2,y+1/2,z</op>
+    <op id="74">-x+1/2,-y+1/2,z</op>
+    <op id="75">x+1/2,-y+1/2,-z</op>
+    <op id="76">-x+1/2,y+1/2,-z</op>
+    <op id="77">z+1/2,x+1/2,y</op>
+    <op id="78">-z+1/2,-x+1/2,y</op>
+    <op id="79">z+1/2,-x+1/2,-y</op>
+    <op id="80">-z+1/2,x+1/2,-y</op>
+    <op id="81">y+1/2,z+1/2,x</op>
+    <op id="82">y+1/2,-z+1/2,-x</op>
+    <op id="83">-y+1/2,z+1/2,-x</op>
+    <op id="84">-y+1/2,-z+1/2,x</op>
+    <op id="85">-x+1/2,-y+1/2,-z</op>
+    <op id="86">x+1/2,y+1/2,-z</op>
+    <op id="87">-x+1/2,y+1/2,z</op>
+    <op id="88">x+1/2,-y+1/2,z</op>
+    <op id="89">-z+1/2,-x+1/2,-y</op>
+    <op id="90">z+1/2,x+1/2,-y</op>
+    <op id="91">-z+1/2,x+1/2,y</op>
+    <op id="92">z+1/2,-x+1/2,y</op>
+    <op id="93">-y+1/2,-z+1/2,-x</op>
+    <op id="94">-y+1/2,z+1/2,x</op>
+    <op id="95">y+1/2,-z+1/2,x</op>
+    <op id="96">y+1/2,z+1/2,-x</op>
+  </spg>
+
+  <spg id="203" nops="96" sym="F d -3 :1" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x,y</op>
+    <op id="7">z,-x,-y</op>
+    <op id="8">-z,x,-y</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x</op>
+    <op id="11">-y,z,-x</op>
+    <op id="12">-y,-z,x</op>
+    <op id="13">-x+1/4,-y+1/4,-z+1/4</op>
+    <op id="14">x+1/4,y+1/4,-z+1/4</op>
+    <op id="15">-x+1/4,y+1/4,z+1/4</op>
+    <op id="16">x+1/4,-y+1/4,z+1/4</op>
+    <op id="17">-z+1/4,-x+1/4,-y+1/4</op>
+    <op id="18">z+1/4,x+1/4,-y+1/4</op>
+    <op id="19">-z+1/4,x+1/4,y+1/4</op>
+    <op id="20">z+1/4,-x+1/4,y+1/4</op>
+    <op id="21">-y+1/4,-z+1/4,-x+1/4</op>
+    <op id="22">-y+1/4,z+1/4,x+1/4</op>
+    <op id="23">y+1/4,-z+1/4,x+1/4</op>
+    <op id="24">y+1/4,z+1/4,-x+1/4</op>
+    <op id="25">x,y+1/2,z+1/2</op>
+    <op id="26">-x,-y+1/2,z+1/2</op>
+    <op id="27">x,-y+1/2,-z+1/2</op>
+    <op id="28">-x,y+1/2,-z+1/2</op>
+    <op id="29">z,x+1/2,y+1/2</op>
+    <op id="30">-z,-x+1/2,y+1/2</op>
+    <op id="31">z,-x+1/2,-y+1/2</op>
+    <op id="32">-z,x+1/2,-y+1/2</op>
+    <op id="33">y,z+1/2,x+1/2</op>
+    <op id="34">y,-z+1/2,-x+1/2</op>
+    <op id="35">-y,z+1/2,-x+1/2</op>
+    <op id="36">-y,-z+1/2,x+1/2</op>
+    <op id="37">-x+1/4,-y+3/4,-z+3/4</op>
+    <op id="38">x+1/4,y+3/4,-z+3/4</op>
+    <op id="39">-x+1/4,y+3/4,z+3/4</op>
+    <op id="40">x+1/4,-y+3/4,z+3/4</op>
+    <op id="41">-z+1/4,-x+3/4,-y+3/4</op>
+    <op id="42">z+1/4,x+3/4,-y+3/4</op>
+    <op id="43">-z+1/4,x+3/4,y+3/4</op>
+    <op id="44">z+1/4,-x+3/4,y+3/4</op>
+    <op id="45">-y+1/4,-z+3/4,-x+3/4</op>
+    <op id="46">-y+1/4,z+3/4,x+3/4</op>
+    <op id="47">y+1/4,-z+3/4,x+3/4</op>
+    <op id="48">y+1/4,z+3/4,-x+3/4</op>
+    <op id="49">x+1/2,y,z+1/2</op>
+    <op id="50">-x+1/2,-y,z+1/2</op>
+    <op id="51">x+1/2,-y,-z+1/2</op>
+    <op id="52">-x+1/2,y,-z+1/2</op>
+    <op id="53">z+1/2,x,y+1/2</op>
+    <op id="54">-z+1/2,-x,y+1/2</op>
+    <op id="55">z+1/2,-x,-y+1/2</op>
+    <op id="56">-z+1/2,x,-y+1/2</op>
+    <op id="57">y+1/2,z,x+1/2</op>
+    <op id="58">y+1/2,-z,-x+1/2</op>
+    <op id="59">-y+1/2,z,-x+1/2</op>
+    <op id="60">-y+1/2,-z,x+1/2</op>
+    <op id="61">-x+3/4,-y+1/4,-z+3/4</op>
+    <op id="62">x+3/4,y+1/4,-z+3/4</op>
+    <op id="63">-x+3/4,y+1/4,z+3/4</op>
+    <op id="64">x+3/4,-y+1/4,z+3/4</op>
+    <op id="65">-z+3/4,-x+1/4,-y+3/4</op>
+    <op id="66">z+3/4,x+1/4,-y+3/4</op>
+    <op id="67">-z+3/4,x+1/4,y+3/4</op>
+    <op id="68">z+3/4,-x+1/4,y+3/4</op>
+    <op id="69">-y+3/4,-z+1/4,-x+3/4</op>
+    <op id="70">-y+3/4,z+1/4,x+3/4</op>
+    <op id="71">y+3/4,-z+1/4,x+3/4</op>
+    <op id="72">y+3/4,z+1/4,-x+3/4</op>
+    <op id="73">x+1/2,y+1/2,z</op>
+    <op id="74">-x+1/2,-y+1/2,z</op>
+    <op id="75">x+1/2,-y+1/2,-z</op>
+    <op id="76">-x+1/2,y+1/2,-z</op>
+    <op id="77">z+1/2,x+1/2,y</op>
+    <op id="78">-z+1/2,-x+1/2,y</op>
+    <op id="79">z+1/2,-x+1/2,-y</op>
+    <op id="80">-z+1/2,x+1/2,-y</op>
+    <op id="81">y+1/2,z+1/2,x</op>
+    <op id="82">y+1/2,-z+1/2,-x</op>
+    <op id="83">-y+1/2,z+1/2,-x</op>
+    <op id="84">-y+1/2,-z+1/2,x</op>
+    <op id="85">-x+3/4,-y+3/4,-z+1/4</op>
+    <op id="86">x+3/4,y+3/4,-z+1/4</op>
+    <op id="87">-x+3/4,y+3/4,z+1/4</op>
+    <op id="88">x+3/4,-y+3/4,z+1/4</op>
+    <op id="89">-z+3/4,-x+3/4,-y+1/4</op>
+    <op id="90">z+3/4,x+3/4,-y+1/4</op>
+    <op id="91">-z+3/4,x+3/4,y+1/4</op>
+    <op id="92">z+3/4,-x+3/4,y+1/4</op>
+    <op id="93">-y+3/4,-z+3/4,-x+1/4</op>
+    <op id="94">-y+3/4,z+3/4,x+1/4</op>
+    <op id="95">y+3/4,-z+3/4,x+1/4</op>
+    <op id="96">y+3/4,z+3/4,-x+1/4</op>
+  </spg>
+
+  <spg id="204" nops="48" sym="I m -3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y,z</op>
+    <op id="3">x,-y,-z</op>
+    <op id="4">-x,y,-z</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x,y</op>
+    <op id="7">z,-x,-y</op>
+    <op id="8">-z,x,-y</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x</op>
+    <op id="11">-y,z,-x</op>
+    <op id="12">-y,-z,x</op>
+    <op id="13">-x,-y,-z</op>
+    <op id="14">x,y,-z</op>
+    <op id="15">-x,y,z</op>
+    <op id="16">x,-y,z</op>
+    <op id="17">-z,-x,-y</op>
+    <op id="18">z,x,-y</op>
+    <op id="19">-z,x,y</op>
+    <op id="20">z,-x,y</op>
+    <op id="21">-y,-z,-x</op>
+    <op id="22">-y,z,x</op>
+    <op id="23">y,-z,x</op>
+    <op id="24">y,z,-x</op>
+    <op id="25">x+1/2,y+1/2,z+1/2</op>
+    <op id="26">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="27">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="28">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="29">z+1/2,x+1/2,y+1/2</op>
+    <op id="30">-z+1/2,-x+1/2,y+1/2</op>
+    <op id="31">z+1/2,-x+1/2,-y+1/2</op>
+    <op id="32">-z+1/2,x+1/2,-y+1/2</op>
+    <op id="33">y+1/2,z+1/2,x+1/2</op>
+    <op id="34">y+1/2,-z+1/2,-x+1/2</op>
+    <op id="35">-y+1/2,z+1/2,-x+1/2</op>
+    <op id="36">-y+1/2,-z+1/2,x+1/2</op>
+    <op id="37">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="38">x+1/2,y+1/2,-z+1/2</op>
+    <op id="39">-x+1/2,y+1/2,z+1/2</op>
+    <op id="40">x+1/2,-y+1/2,z+1/2</op>
+    <op id="41">-z+1/2,-x+1/2,-y+1/2</op>
+    <op id="42">z+1/2,x+1/2,-y+1/2</op>
+    <op id="43">-z+1/2,x+1/2,y+1/2</op>
+    <op id="44">z+1/2,-x+1/2,y+1/2</op>
+    <op id="45">-y+1/2,-z+1/2,-x+1/2</op>
+    <op id="46">-y+1/2,z+1/2,x+1/2</op>
+    <op id="47">y+1/2,-z+1/2,x+1/2</op>
+    <op id="48">y+1/2,z+1/2,-x+1/2</op>
+  </spg>
+
+  <spg id="205" nops="24" sym="P a -3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x+1/2,-y,z+1/2</op>
+    <op id="3">x+1/2,-y+1/2,-z</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z+1/2,-x,y+1/2</op>
+    <op id="7">z+1/2,-x+1/2,-y</op>
+    <op id="8">-z,x+1/2,-y+1/2</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y+1/2,-z+1/2,-x</op>
+    <op id="11">-y,z+1/2,-x+1/2</op>
+    <op id="12">-y+1/2,-z,x+1/2</op>
+    <op id="13">-x,-y,-z</op>
+    <op id="14">x-1/2,y,-z-1/2</op>
+    <op id="15">-x-1/2,y-1/2,z</op>
+    <op id="16">x,-y-1/2,z-1/2</op>
+    <op id="17">-z,-x,-y</op>
+    <op id="18">z-1/2,x,-y-1/2</op>
+    <op id="19">-z-1/2,x-1/2,y</op>
+    <op id="20">z,-x-1/2,y-1/2</op>
+    <op id="21">-y,-z,-x</op>
+    <op id="22">-y-1/2,z-1/2,x</op>
+    <op id="23">y,-z-1/2,x-1/2</op>
+    <op id="24">y-1/2,z,-x-1/2</op>
+  </spg>
+
+  <spg id="206" nops="48" sym="I a -3" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-x,-y+1/2,z</op>
+    <op id="3">x,-y,-z+1/2</op>
+    <op id="4">-x,y+1/2,-z+1/2</op>
+    <op id="5">z,x,y</op>
+    <op id="6">-z,-x+1/2,y</op>
+    <op id="7">z,-x,-y+1/2</op>
+    <op id="8">-z,x+1/2,-y+1/2</op>
+    <op id="9">y,z,x</op>
+    <op id="10">y,-z,-x+1/2</op>
+    <op id="11">-y,z+1/2,-x+1/2</op>
+    <op id="12">-y+1/2,-z,x+1/2</op>
+    <op id="13">-x,-y,-z</op>
+    <op id="14">x,y-1/2,-z</op>
+    <op id="15">-x,y,z-1/2</op>
+    <op id="16">x,-y-1/2,z-1/2</op>
+    <op id="17">-z,-x,-y</op>
+    <op id="18">z,x-1/2,-y</op>
+    <op id="19">-z,x,y-1/2</op>
+    <op id="20">z,-x-1/2,y-1/2</op>
+    <op id="21">-y,-z,-x</op>
+    <op id="22">-y,z,x-1/2</op>
+    <op id="23">y,-z-1/2,x-1/2</op>
+    <op id="24">y-1/2,z,-x-1/2</op>
+    <op id="25">x+1/2,y+1/2,z+1/2</op>
+    <op id="26">-x+1/2,-y+1,z+1/2</op>
+    <op id="27">x+1/2,-y+1/2,-z+1</op>
+    <op id="28">-x+1/2,y+1,-z+1</op>
+    <op id="29">z+1/2,x+1/2,y+1/2</op>
+    <op id="30">-z+1/2,-x+1,y+1/2</op>
+    <op id="31">z+1/2,-x+1/2,-y+1</op>
+    <op id="32">-z+1/2,x+1,-y+1</op>
+    <op id="33">y+1/2,z+1/2,x+1/2</op>
+    <op id="34">y+1/2,-z+1/2,-x+1</op>
+    <op id="35">-y+1/2,z+1,-x+1</op>
+    <op id="36">-y+1,-z+1/2,x+1</op>
+    <op id="37">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="38">x+1/2,y,-z+1/2</op>
+    <op id="39">-x+1/2,y+1/2,z</op>
+    <op id="40">x+1/2,-y,z</op>
+    <op id="41">-z+1/2,-x+1/2,-y+1/2</op>
+    <op id="42">z+1/2,x,-y+1/2</op>
+    <op id="43">-z+1/2,x+1/2,y</op>
+    <op id="44">z+1/2,-x,y</op>
+    <op id="45">-y+1/2,-z+1/2,-x+1/2</op>
+    <op id="46">-y+1/2,z+1/2,x</op>
+    <op id="47">y+1/2,-z,x</op>
+    <op id="48">y,z+1/2,-x</op>
+  </spg>
+
+  <spg id="207" nops="24" sym="P 4 3 2" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x,z,y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x,-z,y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x,z,-y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x,-z,-y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z,y,-x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z,-y,-x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z,-y,x</op>
+    <op id="24">-z,y,x</op>
+  </spg>
+
+  <spg id="208" nops="24" sym="P 42 3 2" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y+1/2,x+1/2,-z+1/2</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+1/2,z+1/2,y+1/2</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x+1/2,-z+1/2,y+1/2</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x+1/2,z+1/2,-y+1/2</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x+1/2,-z+1/2,-y+1/2</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z+1/2,y+1/2,-x+1/2</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z+1/2,-y+1/2,-x+1/2</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z+1/2,-y+1/2,x+1/2</op>
+    <op id="24">-z+1/2,y+1/2,x+1/2</op>
+  </spg>
+
+  <spg id="209" nops="96" sym="F 4 3 2" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x,z,y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x,-z,y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x,z,-y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x,-z,-y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z,y,-x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z,-y,-x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z,-y,x</op>
+    <op id="24">-z,y,x</op>
+    <op id="25">x,y+1/2,z+1/2</op>
+    <op id="26">-y,x+1/2,z+1/2</op>
+    <op id="27">-x,-y+1/2,z+1/2</op>
+    <op id="28">y,-x+1/2,z+1/2</op>
+    <op id="29">x,-y+1/2,-z+1/2</op>
+    <op id="30">y,x+1/2,-z+1/2</op>
+    <op id="31">-x,y+1/2,-z+1/2</op>
+    <op id="32">-y,-x+1/2,-z+1/2</op>
+    <op id="33">z,x+1/2,y+1/2</op>
+    <op id="34">-x,z+1/2,y+1/2</op>
+    <op id="35">-z,-x+1/2,y+1/2</op>
+    <op id="36">x,-z+1/2,y+1/2</op>
+    <op id="37">z,-x+1/2,-y+1/2</op>
+    <op id="38">x,z+1/2,-y+1/2</op>
+    <op id="39">-z,x+1/2,-y+1/2</op>
+    <op id="40">-x,-z+1/2,-y+1/2</op>
+    <op id="41">y,z+1/2,x+1/2</op>
+    <op id="42">y,-z+1/2,-x+1/2</op>
+    <op id="43">z,y+1/2,-x+1/2</op>
+    <op id="44">-y,z+1/2,-x+1/2</op>
+    <op id="45">-z,-y+1/2,-x+1/2</op>
+    <op id="46">-y,-z+1/2,x+1/2</op>
+    <op id="47">z,-y+1/2,x+1/2</op>
+    <op id="48">-z,y+1/2,x+1/2</op>
+    <op id="49">x+1/2,y,z+1/2</op>
+    <op id="50">-y+1/2,x,z+1/2</op>
+    <op id="51">-x+1/2,-y,z+1/2</op>
+    <op id="52">y+1/2,-x,z+1/2</op>
+    <op id="53">x+1/2,-y,-z+1/2</op>
+    <op id="54">y+1/2,x,-z+1/2</op>
+    <op id="55">-x+1/2,y,-z+1/2</op>
+    <op id="56">-y+1/2,-x,-z+1/2</op>
+    <op id="57">z+1/2,x,y+1/2</op>
+    <op id="58">-x+1/2,z,y+1/2</op>
+    <op id="59">-z+1/2,-x,y+1/2</op>
+    <op id="60">x+1/2,-z,y+1/2</op>
+    <op id="61">z+1/2,-x,-y+1/2</op>
+    <op id="62">x+1/2,z,-y+1/2</op>
+    <op id="63">-z+1/2,x,-y+1/2</op>
+    <op id="64">-x+1/2,-z,-y+1/2</op>
+    <op id="65">y+1/2,z,x+1/2</op>
+    <op id="66">y+1/2,-z,-x+1/2</op>
+    <op id="67">z+1/2,y,-x+1/2</op>
+    <op id="68">-y+1/2,z,-x+1/2</op>
+    <op id="69">-z+1/2,-y,-x+1/2</op>
+    <op id="70">-y+1/2,-z,x+1/2</op>
+    <op id="71">z+1/2,-y,x+1/2</op>
+    <op id="72">-z+1/2,y,x+1/2</op>
+    <op id="73">x+1/2,y+1/2,z</op>
+    <op id="74">-y+1/2,x+1/2,z</op>
+    <op id="75">-x+1/2,-y+1/2,z</op>
+    <op id="76">y+1/2,-x+1/2,z</op>
+    <op id="77">x+1/2,-y+1/2,-z</op>
+    <op id="78">y+1/2,x+1/2,-z</op>
+    <op id="79">-x+1/2,y+1/2,-z</op>
+    <op id="80">-y+1/2,-x+1/2,-z</op>
+    <op id="81">z+1/2,x+1/2,y</op>
+    <op id="82">-x+1/2,z+1/2,y</op>
+    <op id="83">-z+1/2,-x+1/2,y</op>
+    <op id="84">x+1/2,-z+1/2,y</op>
+    <op id="85">z+1/2,-x+1/2,-y</op>
+    <op id="86">x+1/2,z+1/2,-y</op>
+    <op id="87">-z+1/2,x+1/2,-y</op>
+    <op id="88">-x+1/2,-z+1/2,-y</op>
+    <op id="89">y+1/2,z+1/2,x</op>
+    <op id="90">y+1/2,-z+1/2,-x</op>
+    <op id="91">z+1/2,y+1/2,-x</op>
+    <op id="92">-y+1/2,z+1/2,-x</op>
+    <op id="93">-z+1/2,-y+1/2,-x</op>
+    <op id="94">-y+1/2,-z+1/2,x</op>
+    <op id="95">z+1/2,-y+1/2,x</op>
+    <op id="96">-z+1/2,y+1/2,x</op>
+  </spg>
+
+  <spg id="210" nops="96" sym="F 41 3 2" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/4,x+1/4,z+1/4</op>
+    <op id="3">-x,-y+1/2,z+1/2</op>
+    <op id="4">y+3/4,-x+1/4,z+3/4</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y+1/4,x+1/4,-z+1/4</op>
+    <op id="7">-x,y+1/2,-z+1/2</op>
+    <op id="8">-y+3/4,-x+1/4,-z+3/4</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+1/4,z+1/4,y+1/4</op>
+    <op id="11">-z,-x+1/2,y+1/2</op>
+    <op id="12">x+3/4,-z+1/4,y+3/4</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x+1/4,z+1/4,-y+1/4</op>
+    <op id="15">-z,x+1/2,-y+1/2</op>
+    <op id="16">-x+3/4,-z+1/4,-y+3/4</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y+1/2,-z,-x+1/2</op>
+    <op id="19">z+1/4,y+3/4,-x+3/4</op>
+    <op id="20">-y+1/2,z+1/2,-x</op>
+    <op id="21">-z+1/4,-y+1/4,-x+1/4</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z+1/4,-y+3/4,x+3/4</op>
+    <op id="24">-z+3/4,y+3/4,x+1/4</op>
+    <op id="25">x,y+1/2,z+1/2</op>
+    <op id="26">-y+1/4,x+3/4,z+3/4</op>
+    <op id="27">-x,-y+1,z+1</op>
+    <op id="28">y+3/4,-x+3/4,z+5/4</op>
+    <op id="29">x,-y+1/2,-z+1/2</op>
+    <op id="30">y+1/4,x+3/4,-z+3/4</op>
+    <op id="31">-x,y+1,-z+1</op>
+    <op id="32">-y+3/4,-x+3/4,-z+5/4</op>
+    <op id="33">z,x+1/2,y+1/2</op>
+    <op id="34">-x+1/4,z+3/4,y+3/4</op>
+    <op id="35">-z,-x+1,y+1</op>
+    <op id="36">x+3/4,-z+3/4,y+5/4</op>
+    <op id="37">z,-x+1/2,-y+1/2</op>
+    <op id="38">x+1/4,z+3/4,-y+3/4</op>
+    <op id="39">-z,x+1,-y+1</op>
+    <op id="40">-x+3/4,-z+3/4,-y+5/4</op>
+    <op id="41">y,z+1/2,x+1/2</op>
+    <op id="42">y+1/2,-z+1/2,-x+1</op>
+    <op id="43">z+1/4,y+5/4,-x+5/4</op>
+    <op id="44">-y+1/2,z+1,-x+1/2</op>
+    <op id="45">-z+1/4,-y+3/4,-x+3/4</op>
+    <op id="46">-y,-z+1/2,x+1/2</op>
+    <op id="47">z+1/4,-y+5/4,x+5/4</op>
+    <op id="48">-z+3/4,y+5/4,x+3/4</op>
+    <op id="49">x+1/2,y,z+1/2</op>
+    <op id="50">-y+3/4,x+1/4,z+3/4</op>
+    <op id="51">-x+1/2,-y+1/2,z+1</op>
+    <op id="52">y+5/4,-x+1/4,z+5/4</op>
+    <op id="53">x+1/2,-y,-z+1/2</op>
+    <op id="54">y+3/4,x+1/4,-z+3/4</op>
+    <op id="55">-x+1/2,y+1/2,-z+1</op>
+    <op id="56">-y+5/4,-x+1/4,-z+5/4</op>
+    <op id="57">z+1/2,x,y+1/2</op>
+    <op id="58">-x+3/4,z+1/4,y+3/4</op>
+    <op id="59">-z+1/2,-x+1/2,y+1</op>
+    <op id="60">x+5/4,-z+1/4,y+5/4</op>
+    <op id="61">z+1/2,-x,-y+1/2</op>
+    <op id="62">x+3/4,z+1/4,-y+3/4</op>
+    <op id="63">-z+1/2,x+1/2,-y+1</op>
+    <op id="64">-x+5/4,-z+1/4,-y+5/4</op>
+    <op id="65">y+1/2,z,x+1/2</op>
+    <op id="66">y+1,-z,-x+1</op>
+    <op id="67">z+3/4,y+3/4,-x+5/4</op>
+    <op id="68">-y+1,z+1/2,-x+1/2</op>
+    <op id="69">-z+3/4,-y+1/4,-x+3/4</op>
+    <op id="70">-y+1/2,-z,x+1/2</op>
+    <op id="71">z+3/4,-y+3/4,x+5/4</op>
+    <op id="72">-z+5/4,y+3/4,x+3/4</op>
+    <op id="73">x+1/2,y+1/2,z</op>
+    <op id="74">-y+3/4,x+3/4,z+1/4</op>
+    <op id="75">-x+1/2,-y+1,z+1/2</op>
+    <op id="76">y+5/4,-x+3/4,z+3/4</op>
+    <op id="77">x+1/2,-y+1/2,-z</op>
+    <op id="78">y+3/4,x+3/4,-z+1/4</op>
+    <op id="79">-x+1/2,y+1,-z+1/2</op>
+    <op id="80">-y+5/4,-x+3/4,-z+3/4</op>
+    <op id="81">z+1/2,x+1/2,y</op>
+    <op id="82">-x+3/4,z+3/4,y+1/4</op>
+    <op id="83">-z+1/2,-x+1,y+1/2</op>
+    <op id="84">x+5/4,-z+3/4,y+3/4</op>
+    <op id="85">z+1/2,-x+1/2,-y</op>
+    <op id="86">x+3/4,z+3/4,-y+1/4</op>
+    <op id="87">-z+1/2,x+1,-y+1/2</op>
+    <op id="88">-x+5/4,-z+3/4,-y+3/4</op>
+    <op id="89">y+1/2,z+1/2,x</op>
+    <op id="90">y+1,-z+1/2,-x+1/2</op>
+    <op id="91">z+3/4,y+5/4,-x+3/4</op>
+    <op id="92">-y+1,z+1,-x</op>
+    <op id="93">-z+3/4,-y+3/4,-x+1/4</op>
+    <op id="94">-y+1/2,-z+1/2,x</op>
+    <op id="95">z+3/4,-y+5/4,x+3/4</op>
+    <op id="96">-z+5/4,y+5/4,x+1/4</op>
+  </spg>
+
+  <spg id="211" nops="48" sym="I 4 3 2" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x,z,y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x,-z,y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x,z,-y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x,-z,-y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z,y,-x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z,-y,-x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z,-y,x</op>
+    <op id="24">-z,y,x</op>
+    <op id="25">x+1/2,y+1/2,z+1/2</op>
+    <op id="26">-y+1/2,x+1/2,z+1/2</op>
+    <op id="27">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="28">y+1/2,-x+1/2,z+1/2</op>
+    <op id="29">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="30">y+1/2,x+1/2,-z+1/2</op>
+    <op id="31">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="32">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="33">z+1/2,x+1/2,y+1/2</op>
+    <op id="34">-x+1/2,z+1/2,y+1/2</op>
+    <op id="35">-z+1/2,-x+1/2,y+1/2</op>
+    <op id="36">x+1/2,-z+1/2,y+1/2</op>
+    <op id="37">z+1/2,-x+1/2,-y+1/2</op>
+    <op id="38">x+1/2,z+1/2,-y+1/2</op>
+    <op id="39">-z+1/2,x+1/2,-y+1/2</op>
+    <op id="40">-x+1/2,-z+1/2,-y+1/2</op>
+    <op id="41">y+1/2,z+1/2,x+1/2</op>
+    <op id="42">y+1/2,-z+1/2,-x+1/2</op>
+    <op id="43">z+1/2,y+1/2,-x+1/2</op>
+    <op id="44">-y+1/2,z+1/2,-x+1/2</op>
+    <op id="45">-z+1/2,-y+1/2,-x+1/2</op>
+    <op id="46">-y+1/2,-z+1/2,x+1/2</op>
+    <op id="47">z+1/2,-y+1/2,x+1/2</op>
+    <op id="48">-z+1/2,y+1/2,x+1/2</op>
+  </spg>
+
+  <spg id="212" nops="24" sym="P 43 3 2" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+3/4,x+1/4,z+3/4</op>
+    <op id="3">-x+1/2,-y,z+1/2</op>
+    <op id="4">y+3/4,-x+3/4,z+1/4</op>
+    <op id="5">x+1/2,-y+1/2,-z</op>
+    <op id="6">y+1/4,x+3/4,-z+3/4</op>
+    <op id="7">-x,y+1/2,-z+1/2</op>
+    <op id="8">-y+1/4,-x+1/4,-z+1/4</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+3/4,z+1/4,y+3/4</op>
+    <op id="11">-z+1/2,-x,y+1/2</op>
+    <op id="12">x+3/4,-z+3/4,y+1/4</op>
+    <op id="13">z+1/2,-x+1/2,-y</op>
+    <op id="14">x+1/4,z+3/4,-y+3/4</op>
+    <op id="15">-z,x+1/2,-y+1/2</op>
+    <op id="16">-x+1/4,-z+1/4,-y+1/4</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y+1/2,-z+1/2,-x</op>
+    <op id="19">z+1/4,y+3/4,-x+3/4</op>
+    <op id="20">-y,z+1/2,-x+1/2</op>
+    <op id="21">-z+1/4,-y+1/4,-x+1/4</op>
+    <op id="22">-y+1/2,-z,x+1/2</op>
+    <op id="23">z+3/4,-y+3/4,x+1/4</op>
+    <op id="24">-z+3/4,y+1/4,x+3/4</op>
+  </spg>
+
+  <spg id="213" nops="24" sym="P 41 3 2" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/4,x+3/4,z+1/4</op>
+    <op id="3">-x+1/2,-y,z+1/2</op>
+    <op id="4">y+1/4,-x+1/4,z+3/4</op>
+    <op id="5">x+1/2,-y+1/2,-z</op>
+    <op id="6">y+3/4,x+1/4,-z+1/4</op>
+    <op id="7">-x,y+1/2,-z+1/2</op>
+    <op id="8">-y+3/4,-x+3/4,-z+3/4</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+1/4,z+3/4,y+1/4</op>
+    <op id="11">-z+1/2,-x,y+1/2</op>
+    <op id="12">x+1/4,-z+1/4,y+3/4</op>
+    <op id="13">z+1/2,-x+1/2,-y</op>
+    <op id="14">x+3/4,z+1/4,-y+1/4</op>
+    <op id="15">-z,x+1/2,-y+1/2</op>
+    <op id="16">-x+3/4,-z+3/4,-y+3/4</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y+1/2,-z+1/2,-x</op>
+    <op id="19">z+3/4,y+1/4,-x+1/4</op>
+    <op id="20">-y,z+1/2,-x+1/2</op>
+    <op id="21">-z+3/4,-y+3/4,-x+3/4</op>
+    <op id="22">-y+1/2,-z,x+1/2</op>
+    <op id="23">z+1/4,-y+1/4,x+3/4</op>
+    <op id="24">-z+1/4,y+3/4,x+1/4</op>
+  </spg>
+
+  <spg id="214" nops="48" sym="I 41 3 2" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/4,x+3/4,z+1/4</op>
+    <op id="3">-x+1/2,-y,z+1/2</op>
+    <op id="4">y+1/4,-x+1/4,z+3/4</op>
+    <op id="5">x,-y,-z+1/2</op>
+    <op id="6">y+1/4,x+3/4,-z+3/4</op>
+    <op id="7">-x+1/2,y,-z</op>
+    <op id="8">-y+1/4,-x+1/4,-z+1/4</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+1/4,z+3/4,y+1/4</op>
+    <op id="11">-z+1/2,-x,y+1/2</op>
+    <op id="12">x+1/4,-z+1/4,y+3/4</op>
+    <op id="13">z,-x,-y+1/2</op>
+    <op id="14">x+1/4,z+3/4,-y+3/4</op>
+    <op id="15">-z+1/2,x,-y</op>
+    <op id="16">-x+1/4,-z+1/4,-y+1/4</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y+1/2,-z+1/2,-x</op>
+    <op id="19">z+3/4,y+1/4,-x+1/4</op>
+    <op id="20">-y,z+1/2,-x+1/2</op>
+    <op id="21">-z+1/4,-y+1/4,-x+1/4</op>
+    <op id="22">-y+1/2,-z,x+1/2</op>
+    <op id="23">z+3/4,-y+3/4,x+1/4</op>
+    <op id="24">-z+3/4,y+1/4,x+3/4</op>
+    <op id="25">x+1/2,y+1/2,z+1/2</op>
+    <op id="26">-y+3/4,x+5/4,z+3/4</op>
+    <op id="27">-x+1,-y+1/2,z+1</op>
+    <op id="28">y+3/4,-x+3/4,z+5/4</op>
+    <op id="29">x+1/2,-y+1/2,-z+1</op>
+    <op id="30">y+3/4,x+5/4,-z+5/4</op>
+    <op id="31">-x+1,y+1/2,-z+1/2</op>
+    <op id="32">-y+3/4,-x+3/4,-z+3/4</op>
+    <op id="33">z+1/2,x+1/2,y+1/2</op>
+    <op id="34">-x+3/4,z+5/4,y+3/4</op>
+    <op id="35">-z+1,-x+1/2,y+1</op>
+    <op id="36">x+3/4,-z+3/4,y+5/4</op>
+    <op id="37">z+1/2,-x+1/2,-y+1</op>
+    <op id="38">x+3/4,z+5/4,-y+5/4</op>
+    <op id="39">-z+1,x+1/2,-y+1/2</op>
+    <op id="40">-x+3/4,-z+3/4,-y+3/4</op>
+    <op id="41">y+1/2,z+1/2,x+1/2</op>
+    <op id="42">y+1,-z+1,-x+1/2</op>
+    <op id="43">z+5/4,y+3/4,-x+3/4</op>
+    <op id="44">-y+1/2,z+1,-x+1</op>
+    <op id="45">-z+3/4,-y+3/4,-x+3/4</op>
+    <op id="46">-y+1,-z+1/2,x+1</op>
+    <op id="47">z+5/4,-y+5/4,x+3/4</op>
+    <op id="48">-z+5/4,y+3/4,x+5/4</op>
+  </spg>
+
+  <spg id="215" nops="24" sym="P -4 3 m" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">-y,-x,z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">y,x,z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">x,-z,-y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">-x,z,-y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">-x,-z,y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">x,z,y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">-z,-y,x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">z,y,x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">-z,y,-x</op>
+    <op id="24">z,-y,-x</op>
+  </spg>
+
+  <spg id="216" nops="96" sym="F -4 3 m" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">-y,-x,z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">y,x,z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">x,-z,-y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">-x,z,-y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">-x,-z,y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">x,z,y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">-z,-y,x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">z,y,x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">-z,y,-x</op>
+    <op id="24">z,-y,-x</op>
+    <op id="25">x,y+1/2,z+1/2</op>
+    <op id="26">y,-x+1/2,-z+1/2</op>
+    <op id="27">-x,-y+1/2,z+1/2</op>
+    <op id="28">-y,x+1/2,-z+1/2</op>
+    <op id="29">x,-y+1/2,-z+1/2</op>
+    <op id="30">-y,-x+1/2,z+1/2</op>
+    <op id="31">-x,y+1/2,-z+1/2</op>
+    <op id="32">y,x+1/2,z+1/2</op>
+    <op id="33">z,x+1/2,y+1/2</op>
+    <op id="34">x,-z+1/2,-y+1/2</op>
+    <op id="35">-z,-x+1/2,y+1/2</op>
+    <op id="36">-x,z+1/2,-y+1/2</op>
+    <op id="37">z,-x+1/2,-y+1/2</op>
+    <op id="38">-x,-z+1/2,y+1/2</op>
+    <op id="39">-z,x+1/2,-y+1/2</op>
+    <op id="40">x,z+1/2,y+1/2</op>
+    <op id="41">y,z+1/2,x+1/2</op>
+    <op id="42">y,-z+1/2,-x+1/2</op>
+    <op id="43">-z,-y+1/2,x+1/2</op>
+    <op id="44">-y,z+1/2,-x+1/2</op>
+    <op id="45">z,y+1/2,x+1/2</op>
+    <op id="46">-y,-z+1/2,x+1/2</op>
+    <op id="47">-z,y+1/2,-x+1/2</op>
+    <op id="48">z,-y+1/2,-x+1/2</op>
+    <op id="49">x+1/2,y,z+1/2</op>
+    <op id="50">y+1/2,-x,-z+1/2</op>
+    <op id="51">-x+1/2,-y,z+1/2</op>
+    <op id="52">-y+1/2,x,-z+1/2</op>
+    <op id="53">x+1/2,-y,-z+1/2</op>
+    <op id="54">-y+1/2,-x,z+1/2</op>
+    <op id="55">-x+1/2,y,-z+1/2</op>
+    <op id="56">y+1/2,x,z+1/2</op>
+    <op id="57">z+1/2,x,y+1/2</op>
+    <op id="58">x+1/2,-z,-y+1/2</op>
+    <op id="59">-z+1/2,-x,y+1/2</op>
+    <op id="60">-x+1/2,z,-y+1/2</op>
+    <op id="61">z+1/2,-x,-y+1/2</op>
+    <op id="62">-x+1/2,-z,y+1/2</op>
+    <op id="63">-z+1/2,x,-y+1/2</op>
+    <op id="64">x+1/2,z,y+1/2</op>
+    <op id="65">y+1/2,z,x+1/2</op>
+    <op id="66">y+1/2,-z,-x+1/2</op>
+    <op id="67">-z+1/2,-y,x+1/2</op>
+    <op id="68">-y+1/2,z,-x+1/2</op>
+    <op id="69">z+1/2,y,x+1/2</op>
+    <op id="70">-y+1/2,-z,x+1/2</op>
+    <op id="71">-z+1/2,y,-x+1/2</op>
+    <op id="72">z+1/2,-y,-x+1/2</op>
+    <op id="73">x+1/2,y+1/2,z</op>
+    <op id="74">y+1/2,-x+1/2,-z</op>
+    <op id="75">-x+1/2,-y+1/2,z</op>
+    <op id="76">-y+1/2,x+1/2,-z</op>
+    <op id="77">x+1/2,-y+1/2,-z</op>
+    <op id="78">-y+1/2,-x+1/2,z</op>
+    <op id="79">-x+1/2,y+1/2,-z</op>
+    <op id="80">y+1/2,x+1/2,z</op>
+    <op id="81">z+1/2,x+1/2,y</op>
+    <op id="82">x+1/2,-z+1/2,-y</op>
+    <op id="83">-z+1/2,-x+1/2,y</op>
+    <op id="84">-x+1/2,z+1/2,-y</op>
+    <op id="85">z+1/2,-x+1/2,-y</op>
+    <op id="86">-x+1/2,-z+1/2,y</op>
+    <op id="87">-z+1/2,x+1/2,-y</op>
+    <op id="88">x+1/2,z+1/2,y</op>
+    <op id="89">y+1/2,z+1/2,x</op>
+    <op id="90">y+1/2,-z+1/2,-x</op>
+    <op id="91">-z+1/2,-y+1/2,x</op>
+    <op id="92">-y+1/2,z+1/2,-x</op>
+    <op id="93">z+1/2,y+1/2,x</op>
+    <op id="94">-y+1/2,-z+1/2,x</op>
+    <op id="95">-z+1/2,y+1/2,-x</op>
+    <op id="96">z+1/2,-y+1/2,-x</op>
+  </spg>
+
+  <spg id="217" nops="48" sym="I -4 3 m" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">y,-x,-z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y,x,-z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">-y,-x,z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">y,x,z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">x,-z,-y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">-x,z,-y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">-x,-z,y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">x,z,y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">-z,-y,x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">z,y,x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">-z,y,-x</op>
+    <op id="24">z,-y,-x</op>
+    <op id="25">x+1/2,y+1/2,z+1/2</op>
+    <op id="26">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="27">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="28">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="29">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="30">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="31">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="32">y+1/2,x+1/2,z+1/2</op>
+    <op id="33">z+1/2,x+1/2,y+1/2</op>
+    <op id="34">x+1/2,-z+1/2,-y+1/2</op>
+    <op id="35">-z+1/2,-x+1/2,y+1/2</op>
+    <op id="36">-x+1/2,z+1/2,-y+1/2</op>
+    <op id="37">z+1/2,-x+1/2,-y+1/2</op>
+    <op id="38">-x+1/2,-z+1/2,y+1/2</op>
+    <op id="39">-z+1/2,x+1/2,-y+1/2</op>
+    <op id="40">x+1/2,z+1/2,y+1/2</op>
+    <op id="41">y+1/2,z+1/2,x+1/2</op>
+    <op id="42">y+1/2,-z+1/2,-x+1/2</op>
+    <op id="43">-z+1/2,-y+1/2,x+1/2</op>
+    <op id="44">-y+1/2,z+1/2,-x+1/2</op>
+    <op id="45">z+1/2,y+1/2,x+1/2</op>
+    <op id="46">-y+1/2,-z+1/2,x+1/2</op>
+    <op id="47">-z+1/2,y+1/2,-x+1/2</op>
+    <op id="48">z+1/2,-y+1/2,-x+1/2</op>
+  </spg>
+
+  <spg id="218" nops="24" sym="P -4 3 n" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">y+1/2,x+1/2,z+1/2</op>
+    <op id="9">z,x,y</op>
+    <op id="10">x+1/2,-z+1/2,-y+1/2</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">-x+1/2,z+1/2,-y+1/2</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">-x+1/2,-z+1/2,y+1/2</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">x+1/2,z+1/2,y+1/2</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">-z+1/2,-y+1/2,x+1/2</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">z+1/2,y+1/2,x+1/2</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">-z+1/2,y+1/2,-x+1/2</op>
+    <op id="24">z+1/2,-y+1/2,-x+1/2</op>
+  </spg>
+
+  <spg id="219" nops="96" sym="F -4 3 c" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">y+1/2,-x,-z</op>
+    <op id="3">-x+1/2,-y+1/2,z</op>
+    <op id="4">-y,x+1/2,-z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">-y+1/2,-x,z</op>
+    <op id="7">-x+1/2,y+1/2,-z</op>
+    <op id="8">y,x+1/2,z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">x+1/2,-z,-y</op>
+    <op id="11">-z+1/2,-x+1/2,y</op>
+    <op id="12">-x,z+1/2,-y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">-x+1/2,-z,y</op>
+    <op id="15">-z+1/2,x+1/2,-y</op>
+    <op id="16">x,z+1/2,y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z+1/2,-x+1/2</op>
+    <op id="19">-z,-y,x+1/2</op>
+    <op id="20">-y+1/2,z,-x+1/2</op>
+    <op id="21">z+1/2,y,x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">-z,y,-x+1/2</op>
+    <op id="24">z+1/2,-y+1/2,-x+1/2</op>
+    <op id="25">x,y+1/2,z+1/2</op>
+    <op id="26">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="27">-x+1/2,-y+1,z+1/2</op>
+    <op id="28">-y,x+1,-z+1/2</op>
+    <op id="29">x,-y+1/2,-z+1/2</op>
+    <op id="30">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="31">-x+1/2,y+1,-z+1/2</op>
+    <op id="32">y,x+1,z+1/2</op>
+    <op id="33">z,x+1/2,y+1/2</op>
+    <op id="34">x+1/2,-z+1/2,-y+1/2</op>
+    <op id="35">-z+1/2,-x+1,y+1/2</op>
+    <op id="36">-x,z+1,-y+1/2</op>
+    <op id="37">z,-x+1/2,-y+1/2</op>
+    <op id="38">-x+1/2,-z+1/2,y+1/2</op>
+    <op id="39">-z+1/2,x+1,-y+1/2</op>
+    <op id="40">x,z+1,y+1/2</op>
+    <op id="41">y,z+1/2,x+1/2</op>
+    <op id="42">y,-z+1,-x+1</op>
+    <op id="43">-z,-y+1/2,x+1</op>
+    <op id="44">-y+1/2,z+1/2,-x+1</op>
+    <op id="45">z+1/2,y+1/2,x+1/2</op>
+    <op id="46">-y,-z+1/2,x+1/2</op>
+    <op id="47">-z,y+1/2,-x+1</op>
+    <op id="48">z+1/2,-y+1,-x+1</op>
+    <op id="49">x+1/2,y,z+1/2</op>
+    <op id="50">y+1,-x,-z+1/2</op>
+    <op id="51">-x+1,-y+1/2,z+1/2</op>
+    <op id="52">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="53">x+1/2,-y,-z+1/2</op>
+    <op id="54">-y+1,-x,z+1/2</op>
+    <op id="55">-x+1,y+1/2,-z+1/2</op>
+    <op id="56">y+1/2,x+1/2,z+1/2</op>
+    <op id="57">z+1/2,x,y+1/2</op>
+    <op id="58">x+1,-z,-y+1/2</op>
+    <op id="59">-z+1,-x+1/2,y+1/2</op>
+    <op id="60">-x+1/2,z+1/2,-y+1/2</op>
+    <op id="61">z+1/2,-x,-y+1/2</op>
+    <op id="62">-x+1,-z,y+1/2</op>
+    <op id="63">-z+1,x+1/2,-y+1/2</op>
+    <op id="64">x+1/2,z+1/2,y+1/2</op>
+    <op id="65">y+1/2,z,x+1/2</op>
+    <op id="66">y+1/2,-z+1/2,-x+1</op>
+    <op id="67">-z+1/2,-y,x+1</op>
+    <op id="68">-y+1,z,-x+1</op>
+    <op id="69">z+1,y,x+1/2</op>
+    <op id="70">-y+1/2,-z,x+1/2</op>
+    <op id="71">-z+1/2,y,-x+1</op>
+    <op id="72">z+1,-y+1/2,-x+1</op>
+    <op id="73">x+1/2,y+1/2,z</op>
+    <op id="74">y+1,-x+1/2,-z</op>
+    <op id="75">-x+1,-y+1,z</op>
+    <op id="76">-y+1/2,x+1,-z</op>
+    <op id="77">x+1/2,-y+1/2,-z</op>
+    <op id="78">-y+1,-x+1/2,z</op>
+    <op id="79">-x+1,y+1,-z</op>
+    <op id="80">y+1/2,x+1,z</op>
+    <op id="81">z+1/2,x+1/2,y</op>
+    <op id="82">x+1,-z+1/2,-y</op>
+    <op id="83">-z+1,-x+1,y</op>
+    <op id="84">-x+1/2,z+1,-y</op>
+    <op id="85">z+1/2,-x+1/2,-y</op>
+    <op id="86">-x+1,-z+1/2,y</op>
+    <op id="87">-z+1,x+1,-y</op>
+    <op id="88">x+1/2,z+1,y</op>
+    <op id="89">y+1/2,z+1/2,x</op>
+    <op id="90">y+1/2,-z+1,-x+1/2</op>
+    <op id="91">-z+1/2,-y+1/2,x+1/2</op>
+    <op id="92">-y+1,z+1/2,-x+1/2</op>
+    <op id="93">z+1,y+1/2,x</op>
+    <op id="94">-y+1/2,-z+1/2,x</op>
+    <op id="95">-z+1/2,y+1/2,-x+1/2</op>
+    <op id="96">z+1,-y+1,-x+1/2</op>
+  </spg>
+
+  <spg id="220" nops="48" sym="I -4 3 d" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">y+1/4,-x+3/4,-z+1/4</op>
+    <op id="3">-x,-y+1/2,z</op>
+    <op id="4">-y+3/4,x+3/4,-z+1/4</op>
+    <op id="5">x,-y,-z+1/2</op>
+    <op id="6">-y+1/4,-x+3/4,z+3/4</op>
+    <op id="7">-x,y+1/2,-z+1/2</op>
+    <op id="8">y+3/4,x+3/4,z+3/4</op>
+    <op id="9">z,x,y</op>
+    <op id="10">x+1/4,-z+3/4,-y+1/4</op>
+    <op id="11">-z,-x+1/2,y</op>
+    <op id="12">-x+3/4,z+3/4,-y+1/4</op>
+    <op id="13">z,-x,-y+1/2</op>
+    <op id="14">-x+1/4,-z+3/4,y+3/4</op>
+    <op id="15">-z,x+1/2,-y+1/2</op>
+    <op id="16">x+3/4,z+3/4,y+3/4</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x+1/2</op>
+    <op id="19">-z+1/4,-y+3/4,x+3/4</op>
+    <op id="20">-y,z+1/2,-x+1/2</op>
+    <op id="21">z+1/4,y+1/4,x+1/4</op>
+    <op id="22">-y+1/2,-z,x+1/2</op>
+    <op id="23">-z+1/4,y+1/4,-x+3/4</op>
+    <op id="24">z+3/4,-y+1/4,-x+3/4</op>
+    <op id="25">x+1/2,y+1/2,z+1/2</op>
+    <op id="26">y+3/4,-x+5/4,-z+3/4</op>
+    <op id="27">-x+1/2,-y+1,z+1/2</op>
+    <op id="28">-y+5/4,x+5/4,-z+3/4</op>
+    <op id="29">x+1/2,-y+1/2,-z+1</op>
+    <op id="30">-y+3/4,-x+5/4,z+5/4</op>
+    <op id="31">-x+1/2,y+1,-z+1</op>
+    <op id="32">y+5/4,x+5/4,z+5/4</op>
+    <op id="33">z+1/2,x+1/2,y+1/2</op>
+    <op id="34">x+3/4,-z+5/4,-y+3/4</op>
+    <op id="35">-z+1/2,-x+1,y+1/2</op>
+    <op id="36">-x+5/4,z+5/4,-y+3/4</op>
+    <op id="37">z+1/2,-x+1/2,-y+1</op>
+    <op id="38">-x+3/4,-z+5/4,y+5/4</op>
+    <op id="39">-z+1/2,x+1,-y+1</op>
+    <op id="40">x+5/4,z+5/4,y+5/4</op>
+    <op id="41">y+1/2,z+1/2,x+1/2</op>
+    <op id="42">y+1/2,-z+1/2,-x+1</op>
+    <op id="43">-z+3/4,-y+5/4,x+5/4</op>
+    <op id="44">-y+1/2,z+1,-x+1</op>
+    <op id="45">z+3/4,y+3/4,x+3/4</op>
+    <op id="46">-y+1,-z+1/2,x+1</op>
+    <op id="47">-z+3/4,y+3/4,-x+5/4</op>
+    <op id="48">z+5/4,-y+3/4,-x+5/4</op>
+  </spg>
+
+  <spg id="221" nops="48" sym="P m -3 m" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x,z,y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x,-z,y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x,z,-y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x,-z,-y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z,y,-x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z,-y,-x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z,-y,x</op>
+    <op id="24">-z,y,x</op>
+    <op id="25">-x,-y,-z</op>
+    <op id="26">y,-x,-z</op>
+    <op id="27">x,y,-z</op>
+    <op id="28">-y,x,-z</op>
+    <op id="29">-x,y,z</op>
+    <op id="30">-y,-x,z</op>
+    <op id="31">x,-y,z</op>
+    <op id="32">y,x,z</op>
+    <op id="33">-z,-x,-y</op>
+    <op id="34">x,-z,-y</op>
+    <op id="35">z,x,-y</op>
+    <op id="36">-x,z,-y</op>
+    <op id="37">-z,x,y</op>
+    <op id="38">-x,-z,y</op>
+    <op id="39">z,-x,y</op>
+    <op id="40">x,z,y</op>
+    <op id="41">-y,-z,-x</op>
+    <op id="42">-y,z,x</op>
+    <op id="43">-z,-y,x</op>
+    <op id="44">y,-z,x</op>
+    <op id="45">z,y,x</op>
+    <op id="46">y,z,-x</op>
+    <op id="47">-z,y,-x</op>
+    <op id="48">z,-y,-x</op>
+  </spg>
+
+  <spg id="222" nops="48" sym="P n -3 n :1" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x,z,y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x,-z,y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x,z,-y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x,-z,-y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z,y,-x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z,-y,-x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z,-y,x</op>
+    <op id="24">-z,y,x</op>
+    <op id="25">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="26">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="27">x+1/2,y+1/2,-z+1/2</op>
+    <op id="28">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="29">-x+1/2,y+1/2,z+1/2</op>
+    <op id="30">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="31">x+1/2,-y+1/2,z+1/2</op>
+    <op id="32">y+1/2,x+1/2,z+1/2</op>
+    <op id="33">-z+1/2,-x+1/2,-y+1/2</op>
+    <op id="34">x+1/2,-z+1/2,-y+1/2</op>
+    <op id="35">z+1/2,x+1/2,-y+1/2</op>
+    <op id="36">-x+1/2,z+1/2,-y+1/2</op>
+    <op id="37">-z+1/2,x+1/2,y+1/2</op>
+    <op id="38">-x+1/2,-z+1/2,y+1/2</op>
+    <op id="39">z+1/2,-x+1/2,y+1/2</op>
+    <op id="40">x+1/2,z+1/2,y+1/2</op>
+    <op id="41">-y+1/2,-z+1/2,-x+1/2</op>
+    <op id="42">-y+1/2,z+1/2,x+1/2</op>
+    <op id="43">-z+1/2,-y+1/2,x+1/2</op>
+    <op id="44">y+1/2,-z+1/2,x+1/2</op>
+    <op id="45">z+1/2,y+1/2,x+1/2</op>
+    <op id="46">y+1/2,z+1/2,-x+1/2</op>
+    <op id="47">-z+1/2,y+1/2,-x+1/2</op>
+    <op id="48">z+1/2,-y+1/2,-x+1/2</op>
+  </spg>
+
+  <spg id="223" nops="48" sym="P m -3 n" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y+1/2,x+1/2,-z+1/2</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+1/2,z+1/2,y+1/2</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x+1/2,-z+1/2,y+1/2</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x+1/2,z+1/2,-y+1/2</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x+1/2,-z+1/2,-y+1/2</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z+1/2,y+1/2,-x+1/2</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z+1/2,-y+1/2,-x+1/2</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z+1/2,-y+1/2,x+1/2</op>
+    <op id="24">-z+1/2,y+1/2,x+1/2</op>
+    <op id="25">-x,-y,-z</op>
+    <op id="26">y-1/2,-x-1/2,-z-1/2</op>
+    <op id="27">x,y,-z</op>
+    <op id="28">-y-1/2,x-1/2,-z-1/2</op>
+    <op id="29">-x,y,z</op>
+    <op id="30">-y-1/2,-x-1/2,z-1/2</op>
+    <op id="31">x,-y,z</op>
+    <op id="32">y-1/2,x-1/2,z-1/2</op>
+    <op id="33">-z,-x,-y</op>
+    <op id="34">x-1/2,-z-1/2,-y-1/2</op>
+    <op id="35">z,x,-y</op>
+    <op id="36">-x-1/2,z-1/2,-y-1/2</op>
+    <op id="37">-z,x,y</op>
+    <op id="38">-x-1/2,-z-1/2,y-1/2</op>
+    <op id="39">z,-x,y</op>
+    <op id="40">x-1/2,z-1/2,y-1/2</op>
+    <op id="41">-y,-z,-x</op>
+    <op id="42">-y,z,x</op>
+    <op id="43">-z-1/2,-y-1/2,x-1/2</op>
+    <op id="44">y,-z,x</op>
+    <op id="45">z-1/2,y-1/2,x-1/2</op>
+    <op id="46">y,z,-x</op>
+    <op id="47">-z-1/2,y-1/2,-x-1/2</op>
+    <op id="48">z-1/2,-y-1/2,-x-1/2</op>
+  </spg>
+
+  <spg id="224" nops="48" sym="P n -3 m :1" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x+1/2,z+1/2</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y+1/2,-x+1/2,z+1/2</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y+1/2,x+1/2,-z+1/2</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+1/2,z+1/2,y+1/2</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x+1/2,-z+1/2,y+1/2</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x+1/2,z+1/2,-y+1/2</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x+1/2,-z+1/2,-y+1/2</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z+1/2,y+1/2,-x+1/2</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z+1/2,-y+1/2,-x+1/2</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z+1/2,-y+1/2,x+1/2</op>
+    <op id="24">-z+1/2,y+1/2,x+1/2</op>
+    <op id="25">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="26">y,-x,-z</op>
+    <op id="27">x+1/2,y+1/2,-z+1/2</op>
+    <op id="28">-y,x,-z</op>
+    <op id="29">-x+1/2,y+1/2,z+1/2</op>
+    <op id="30">-y,-x,z</op>
+    <op id="31">x+1/2,-y+1/2,z+1/2</op>
+    <op id="32">y,x,z</op>
+    <op id="33">-z+1/2,-x+1/2,-y+1/2</op>
+    <op id="34">x,-z,-y</op>
+    <op id="35">z+1/2,x+1/2,-y+1/2</op>
+    <op id="36">-x,z,-y</op>
+    <op id="37">-z+1/2,x+1/2,y+1/2</op>
+    <op id="38">-x,-z,y</op>
+    <op id="39">z+1/2,-x+1/2,y+1/2</op>
+    <op id="40">x,z,y</op>
+    <op id="41">-y+1/2,-z+1/2,-x+1/2</op>
+    <op id="42">-y+1/2,z+1/2,x+1/2</op>
+    <op id="43">-z,-y,x</op>
+    <op id="44">y+1/2,-z+1/2,x+1/2</op>
+    <op id="45">z,y,x</op>
+    <op id="46">y+1/2,z+1/2,-x+1/2</op>
+    <op id="47">-z,y,-x</op>
+    <op id="48">z,-y,-x</op>
+  </spg>
+
+  <spg id="225" nops="192" sym="F m -3 m" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x,z,y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x,-z,y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x,z,-y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x,-z,-y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z,y,-x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z,-y,-x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z,-y,x</op>
+    <op id="24">-z,y,x</op>
+    <op id="25">-x,-y,-z</op>
+    <op id="26">y,-x,-z</op>
+    <op id="27">x,y,-z</op>
+    <op id="28">-y,x,-z</op>
+    <op id="29">-x,y,z</op>
+    <op id="30">-y,-x,z</op>
+    <op id="31">x,-y,z</op>
+    <op id="32">y,x,z</op>
+    <op id="33">-z,-x,-y</op>
+    <op id="34">x,-z,-y</op>
+    <op id="35">z,x,-y</op>
+    <op id="36">-x,z,-y</op>
+    <op id="37">-z,x,y</op>
+    <op id="38">-x,-z,y</op>
+    <op id="39">z,-x,y</op>
+    <op id="40">x,z,y</op>
+    <op id="41">-y,-z,-x</op>
+    <op id="42">-y,z,x</op>
+    <op id="43">-z,-y,x</op>
+    <op id="44">y,-z,x</op>
+    <op id="45">z,y,x</op>
+    <op id="46">y,z,-x</op>
+    <op id="47">-z,y,-x</op>
+    <op id="48">z,-y,-x</op>
+    <op id="49">x,y+1/2,z+1/2</op>
+    <op id="50">-y,x+1/2,z+1/2</op>
+    <op id="51">-x,-y+1/2,z+1/2</op>
+    <op id="52">y,-x+1/2,z+1/2</op>
+    <op id="53">x,-y+1/2,-z+1/2</op>
+    <op id="54">y,x+1/2,-z+1/2</op>
+    <op id="55">-x,y+1/2,-z+1/2</op>
+    <op id="56">-y,-x+1/2,-z+1/2</op>
+    <op id="57">z,x+1/2,y+1/2</op>
+    <op id="58">-x,z+1/2,y+1/2</op>
+    <op id="59">-z,-x+1/2,y+1/2</op>
+    <op id="60">x,-z+1/2,y+1/2</op>
+    <op id="61">z,-x+1/2,-y+1/2</op>
+    <op id="62">x,z+1/2,-y+1/2</op>
+    <op id="63">-z,x+1/2,-y+1/2</op>
+    <op id="64">-x,-z+1/2,-y+1/2</op>
+    <op id="65">y,z+1/2,x+1/2</op>
+    <op id="66">y,-z+1/2,-x+1/2</op>
+    <op id="67">z,y+1/2,-x+1/2</op>
+    <op id="68">-y,z+1/2,-x+1/2</op>
+    <op id="69">-z,-y+1/2,-x+1/2</op>
+    <op id="70">-y,-z+1/2,x+1/2</op>
+    <op id="71">z,-y+1/2,x+1/2</op>
+    <op id="72">-z,y+1/2,x+1/2</op>
+    <op id="73">-x,-y+1/2,-z+1/2</op>
+    <op id="74">y,-x+1/2,-z+1/2</op>
+    <op id="75">x,y+1/2,-z+1/2</op>
+    <op id="76">-y,x+1/2,-z+1/2</op>
+    <op id="77">-x,y+1/2,z+1/2</op>
+    <op id="78">-y,-x+1/2,z+1/2</op>
+    <op id="79">x,-y+1/2,z+1/2</op>
+    <op id="80">y,x+1/2,z+1/2</op>
+    <op id="81">-z,-x+1/2,-y+1/2</op>
+    <op id="82">x,-z+1/2,-y+1/2</op>
+    <op id="83">z,x+1/2,-y+1/2</op>
+    <op id="84">-x,z+1/2,-y+1/2</op>
+    <op id="85">-z,x+1/2,y+1/2</op>
+    <op id="86">-x,-z+1/2,y+1/2</op>
+    <op id="87">z,-x+1/2,y+1/2</op>
+    <op id="88">x,z+1/2,y+1/2</op>
+    <op id="89">-y,-z+1/2,-x+1/2</op>
+    <op id="90">-y,z+1/2,x+1/2</op>
+    <op id="91">-z,-y+1/2,x+1/2</op>
+    <op id="92">y,-z+1/2,x+1/2</op>
+    <op id="93">z,y+1/2,x+1/2</op>
+    <op id="94">y,z+1/2,-x+1/2</op>
+    <op id="95">-z,y+1/2,-x+1/2</op>
+    <op id="96">z,-y+1/2,-x+1/2</op>
+    <op id="97">x+1/2,y,z+1/2</op>
+    <op id="98">-y+1/2,x,z+1/2</op>
+    <op id="99">-x+1/2,-y,z+1/2</op>
+    <op id="100">y+1/2,-x,z+1/2</op>
+    <op id="101">x+1/2,-y,-z+1/2</op>
+    <op id="102">y+1/2,x,-z+1/2</op>
+    <op id="103">-x+1/2,y,-z+1/2</op>
+    <op id="104">-y+1/2,-x,-z+1/2</op>
+    <op id="105">z+1/2,x,y+1/2</op>
+    <op id="106">-x+1/2,z,y+1/2</op>
+    <op id="107">-z+1/2,-x,y+1/2</op>
+    <op id="108">x+1/2,-z,y+1/2</op>
+    <op id="109">z+1/2,-x,-y+1/2</op>
+    <op id="110">x+1/2,z,-y+1/2</op>
+    <op id="111">-z+1/2,x,-y+1/2</op>
+    <op id="112">-x+1/2,-z,-y+1/2</op>
+    <op id="113">y+1/2,z,x+1/2</op>
+    <op id="114">y+1/2,-z,-x+1/2</op>
+    <op id="115">z+1/2,y,-x+1/2</op>
+    <op id="116">-y+1/2,z,-x+1/2</op>
+    <op id="117">-z+1/2,-y,-x+1/2</op>
+    <op id="118">-y+1/2,-z,x+1/2</op>
+    <op id="119">z+1/2,-y,x+1/2</op>
+    <op id="120">-z+1/2,y,x+1/2</op>
+    <op id="121">-x+1/2,-y,-z+1/2</op>
+    <op id="122">y+1/2,-x,-z+1/2</op>
+    <op id="123">x+1/2,y,-z+1/2</op>
+    <op id="124">-y+1/2,x,-z+1/2</op>
+    <op id="125">-x+1/2,y,z+1/2</op>
+    <op id="126">-y+1/2,-x,z+1/2</op>
+    <op id="127">x+1/2,-y,z+1/2</op>
+    <op id="128">y+1/2,x,z+1/2</op>
+    <op id="129">-z+1/2,-x,-y+1/2</op>
+    <op id="130">x+1/2,-z,-y+1/2</op>
+    <op id="131">z+1/2,x,-y+1/2</op>
+    <op id="132">-x+1/2,z,-y+1/2</op>
+    <op id="133">-z+1/2,x,y+1/2</op>
+    <op id="134">-x+1/2,-z,y+1/2</op>
+    <op id="135">z+1/2,-x,y+1/2</op>
+    <op id="136">x+1/2,z,y+1/2</op>
+    <op id="137">-y+1/2,-z,-x+1/2</op>
+    <op id="138">-y+1/2,z,x+1/2</op>
+    <op id="139">-z+1/2,-y,x+1/2</op>
+    <op id="140">y+1/2,-z,x+1/2</op>
+    <op id="141">z+1/2,y,x+1/2</op>
+    <op id="142">y+1/2,z,-x+1/2</op>
+    <op id="143">-z+1/2,y,-x+1/2</op>
+    <op id="144">z+1/2,-y,-x+1/2</op>
+    <op id="145">x+1/2,y+1/2,z</op>
+    <op id="146">-y+1/2,x+1/2,z</op>
+    <op id="147">-x+1/2,-y+1/2,z</op>
+    <op id="148">y+1/2,-x+1/2,z</op>
+    <op id="149">x+1/2,-y+1/2,-z</op>
+    <op id="150">y+1/2,x+1/2,-z</op>
+    <op id="151">-x+1/2,y+1/2,-z</op>
+    <op id="152">-y+1/2,-x+1/2,-z</op>
+    <op id="153">z+1/2,x+1/2,y</op>
+    <op id="154">-x+1/2,z+1/2,y</op>
+    <op id="155">-z+1/2,-x+1/2,y</op>
+    <op id="156">x+1/2,-z+1/2,y</op>
+    <op id="157">z+1/2,-x+1/2,-y</op>
+    <op id="158">x+1/2,z+1/2,-y</op>
+    <op id="159">-z+1/2,x+1/2,-y</op>
+    <op id="160">-x+1/2,-z+1/2,-y</op>
+    <op id="161">y+1/2,z+1/2,x</op>
+    <op id="162">y+1/2,-z+1/2,-x</op>
+    <op id="163">z+1/2,y+1/2,-x</op>
+    <op id="164">-y+1/2,z+1/2,-x</op>
+    <op id="165">-z+1/2,-y+1/2,-x</op>
+    <op id="166">-y+1/2,-z+1/2,x</op>
+    <op id="167">z+1/2,-y+1/2,x</op>
+    <op id="168">-z+1/2,y+1/2,x</op>
+    <op id="169">-x+1/2,-y+1/2,-z</op>
+    <op id="170">y+1/2,-x+1/2,-z</op>
+    <op id="171">x+1/2,y+1/2,-z</op>
+    <op id="172">-y+1/2,x+1/2,-z</op>
+    <op id="173">-x+1/2,y+1/2,z</op>
+    <op id="174">-y+1/2,-x+1/2,z</op>
+    <op id="175">x+1/2,-y+1/2,z</op>
+    <op id="176">y+1/2,x+1/2,z</op>
+    <op id="177">-z+1/2,-x+1/2,-y</op>
+    <op id="178">x+1/2,-z+1/2,-y</op>
+    <op id="179">z+1/2,x+1/2,-y</op>
+    <op id="180">-x+1/2,z+1/2,-y</op>
+    <op id="181">-z+1/2,x+1/2,y</op>
+    <op id="182">-x+1/2,-z+1/2,y</op>
+    <op id="183">z+1/2,-x+1/2,y</op>
+    <op id="184">x+1/2,z+1/2,y</op>
+    <op id="185">-y+1/2,-z+1/2,-x</op>
+    <op id="186">-y+1/2,z+1/2,x</op>
+    <op id="187">-z+1/2,-y+1/2,x</op>
+    <op id="188">y+1/2,-z+1/2,x</op>
+    <op id="189">z+1/2,y+1/2,x</op>
+    <op id="190">y+1/2,z+1/2,-x</op>
+    <op id="191">-z+1/2,y+1/2,-x</op>
+    <op id="192">z+1/2,-y+1/2,-x</op>
+  </spg>
+
+  <spg id="226" nops="192" sym="F m -3 c" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/2,x,z</op>
+    <op id="3">-x+1/2,-y+1/2,z</op>
+    <op id="4">y,-x+1/2,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y+1/2,x,-z</op>
+    <op id="7">-x+1/2,y+1/2,-z</op>
+    <op id="8">-y,-x+1/2,-z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+1/2,z,y</op>
+    <op id="11">-z+1/2,-x+1/2,y</op>
+    <op id="12">x,-z+1/2,y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x+1/2,z,-y</op>
+    <op id="15">-z+1/2,x+1/2,-y</op>
+    <op id="16">-x,-z+1/2,-y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z+1/2,-x+1/2</op>
+    <op id="19">z,y,-x+1/2</op>
+    <op id="20">-y+1/2,z,-x+1/2</op>
+    <op id="21">-z+1/2,-y,-x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z,-y,x+1/2</op>
+    <op id="24">-z+1/2,y+1/2,x+1/2</op>
+    <op id="25">-x,-y,-z</op>
+    <op id="26">y-1/2,-x,-z</op>
+    <op id="27">x-1/2,y-1/2,-z</op>
+    <op id="28">-y,x-1/2,-z</op>
+    <op id="29">-x,y,z</op>
+    <op id="30">-y-1/2,-x,z</op>
+    <op id="31">x-1/2,-y-1/2,z</op>
+    <op id="32">y,x-1/2,z</op>
+    <op id="33">-z,-x,-y</op>
+    <op id="34">x-1/2,-z,-y</op>
+    <op id="35">z-1/2,x-1/2,-y</op>
+    <op id="36">-x,z-1/2,-y</op>
+    <op id="37">-z,x,y</op>
+    <op id="38">-x-1/2,-z,y</op>
+    <op id="39">z-1/2,-x-1/2,y</op>
+    <op id="40">x,z-1/2,y</op>
+    <op id="41">-y,-z,-x</op>
+    <op id="42">-y,z-1/2,x-1/2</op>
+    <op id="43">-z,-y,x-1/2</op>
+    <op id="44">y-1/2,-z,x-1/2</op>
+    <op id="45">z-1/2,y,x</op>
+    <op id="46">y,z,-x</op>
+    <op id="47">-z,y,-x-1/2</op>
+    <op id="48">z-1/2,-y-1/2,-x-1/2</op>
+    <op id="49">x,y+1/2,z+1/2</op>
+    <op id="50">-y+1/2,x+1/2,z+1/2</op>
+    <op id="51">-x+1/2,-y+1,z+1/2</op>
+    <op id="52">y,-x+1,z+1/2</op>
+    <op id="53">x,-y+1/2,-z+1/2</op>
+    <op id="54">y+1/2,x+1/2,-z+1/2</op>
+    <op id="55">-x+1/2,y+1,-z+1/2</op>
+    <op id="56">-y,-x+1,-z+1/2</op>
+    <op id="57">z,x+1/2,y+1/2</op>
+    <op id="58">-x+1/2,z+1/2,y+1/2</op>
+    <op id="59">-z+1/2,-x+1,y+1/2</op>
+    <op id="60">x,-z+1,y+1/2</op>
+    <op id="61">z,-x+1/2,-y+1/2</op>
+    <op id="62">x+1/2,z+1/2,-y+1/2</op>
+    <op id="63">-z+1/2,x+1,-y+1/2</op>
+    <op id="64">-x,-z+1,-y+1/2</op>
+    <op id="65">y,z+1/2,x+1/2</op>
+    <op id="66">y,-z+1,-x+1</op>
+    <op id="67">z,y+1/2,-x+1</op>
+    <op id="68">-y+1/2,z+1/2,-x+1</op>
+    <op id="69">-z+1/2,-y+1/2,-x+1/2</op>
+    <op id="70">-y,-z+1/2,x+1/2</op>
+    <op id="71">z,-y+1/2,x+1</op>
+    <op id="72">-z+1/2,y+1,x+1</op>
+    <op id="73">-x,-y+1/2,-z+1/2</op>
+    <op id="74">y-1/2,-x+1/2,-z+1/2</op>
+    <op id="75">x-1/2,y,-z+1/2</op>
+    <op id="76">-y,x,-z+1/2</op>
+    <op id="77">-x,y+1/2,z+1/2</op>
+    <op id="78">-y-1/2,-x+1/2,z+1/2</op>
+    <op id="79">x-1/2,-y,z+1/2</op>
+    <op id="80">y,x,z+1/2</op>
+    <op id="81">-z,-x+1/2,-y+1/2</op>
+    <op id="82">x-1/2,-z+1/2,-y+1/2</op>
+    <op id="83">z-1/2,x,-y+1/2</op>
+    <op id="84">-x,z,-y+1/2</op>
+    <op id="85">-z,x+1/2,y+1/2</op>
+    <op id="86">-x-1/2,-z+1/2,y+1/2</op>
+    <op id="87">z-1/2,-x,y+1/2</op>
+    <op id="88">x,z,y+1/2</op>
+    <op id="89">-y,-z+1/2,-x+1/2</op>
+    <op id="90">-y,z,x</op>
+    <op id="91">-z,-y+1/2,x</op>
+    <op id="92">y-1/2,-z+1/2,x</op>
+    <op id="93">z-1/2,y+1/2,x+1/2</op>
+    <op id="94">y,z+1/2,-x+1/2</op>
+    <op id="95">-z,y+1/2,-x</op>
+    <op id="96">z-1/2,-y,-x</op>
+    <op id="97">x+1/2,y,z+1/2</op>
+    <op id="98">-y+1,x,z+1/2</op>
+    <op id="99">-x+1,-y+1/2,z+1/2</op>
+    <op id="100">y+1/2,-x+1/2,z+1/2</op>
+    <op id="101">x+1/2,-y,-z+1/2</op>
+    <op id="102">y+1,x,-z+1/2</op>
+    <op id="103">-x+1,y+1/2,-z+1/2</op>
+    <op id="104">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="105">z+1/2,x,y+1/2</op>
+    <op id="106">-x+1,z,y+1/2</op>
+    <op id="107">-z+1,-x+1/2,y+1/2</op>
+    <op id="108">x+1/2,-z+1/2,y+1/2</op>
+    <op id="109">z+1/2,-x,-y+1/2</op>
+    <op id="110">x+1,z,-y+1/2</op>
+    <op id="111">-z+1,x+1/2,-y+1/2</op>
+    <op id="112">-x+1/2,-z+1/2,-y+1/2</op>
+    <op id="113">y+1/2,z,x+1/2</op>
+    <op id="114">y+1/2,-z+1/2,-x+1</op>
+    <op id="115">z+1/2,y,-x+1</op>
+    <op id="116">-y+1,z,-x+1</op>
+    <op id="117">-z+1,-y,-x+1/2</op>
+    <op id="118">-y+1/2,-z,x+1/2</op>
+    <op id="119">z+1/2,-y,x+1</op>
+    <op id="120">-z+1,y+1/2,x+1</op>
+    <op id="121">-x+1/2,-y,-z+1/2</op>
+    <op id="122">y,-x,-z+1/2</op>
+    <op id="123">x,y-1/2,-z+1/2</op>
+    <op id="124">-y+1/2,x-1/2,-z+1/2</op>
+    <op id="125">-x+1/2,y,z+1/2</op>
+    <op id="126">-y,-x,z+1/2</op>
+    <op id="127">x,-y-1/2,z+1/2</op>
+    <op id="128">y+1/2,x-1/2,z+1/2</op>
+    <op id="129">-z+1/2,-x,-y+1/2</op>
+    <op id="130">x,-z,-y+1/2</op>
+    <op id="131">z,x-1/2,-y+1/2</op>
+    <op id="132">-x+1/2,z-1/2,-y+1/2</op>
+    <op id="133">-z+1/2,x,y+1/2</op>
+    <op id="134">-x,-z,y+1/2</op>
+    <op id="135">z,-x-1/2,y+1/2</op>
+    <op id="136">x+1/2,z-1/2,y+1/2</op>
+    <op id="137">-y+1/2,-z,-x+1/2</op>
+    <op id="138">-y+1/2,z-1/2,x</op>
+    <op id="139">-z+1/2,-y,x</op>
+    <op id="140">y,-z,x</op>
+    <op id="141">z,y,x+1/2</op>
+    <op id="142">y+1/2,z,-x+1/2</op>
+    <op id="143">-z+1/2,y,-x</op>
+    <op id="144">z,-y-1/2,-x</op>
+    <op id="145">x+1/2,y+1/2,z</op>
+    <op id="146">-y+1,x+1/2,z</op>
+    <op id="147">-x+1,-y+1,z</op>
+    <op id="148">y+1/2,-x+1,z</op>
+    <op id="149">x+1/2,-y+1/2,-z</op>
+    <op id="150">y+1,x+1/2,-z</op>
+    <op id="151">-x+1,y+1,-z</op>
+    <op id="152">-y+1/2,-x+1,-z</op>
+    <op id="153">z+1/2,x+1/2,y</op>
+    <op id="154">-x+1,z+1/2,y</op>
+    <op id="155">-z+1,-x+1,y</op>
+    <op id="156">x+1/2,-z+1,y</op>
+    <op id="157">z+1/2,-x+1/2,-y</op>
+    <op id="158">x+1,z+1/2,-y</op>
+    <op id="159">-z+1,x+1,-y</op>
+    <op id="160">-x+1/2,-z+1,-y</op>
+    <op id="161">y+1/2,z+1/2,x</op>
+    <op id="162">y+1/2,-z+1,-x+1/2</op>
+    <op id="163">z+1/2,y+1/2,-x+1/2</op>
+    <op id="164">-y+1,z+1/2,-x+1/2</op>
+    <op id="165">-z+1,-y+1/2,-x</op>
+    <op id="166">-y+1/2,-z+1/2,x</op>
+    <op id="167">z+1/2,-y+1/2,x+1/2</op>
+    <op id="168">-z+1,y+1,x+1/2</op>
+    <op id="169">-x+1/2,-y+1/2,-z</op>
+    <op id="170">y,-x+1/2,-z</op>
+    <op id="171">x,y,-z</op>
+    <op id="172">-y+1/2,x,-z</op>
+    <op id="173">-x+1/2,y+1/2,z</op>
+    <op id="174">-y,-x+1/2,z</op>
+    <op id="175">x,-y,z</op>
+    <op id="176">y+1/2,x,z</op>
+    <op id="177">-z+1/2,-x+1/2,-y</op>
+    <op id="178">x,-z+1/2,-y</op>
+    <op id="179">z,x,-y</op>
+    <op id="180">-x+1/2,z,-y</op>
+    <op id="181">-z+1/2,x+1/2,y</op>
+    <op id="182">-x,-z+1/2,y</op>
+    <op id="183">z,-x,y</op>
+    <op id="184">x+1/2,z,y</op>
+    <op id="185">-y+1/2,-z+1/2,-x</op>
+    <op id="186">-y+1/2,z,x-1/2</op>
+    <op id="187">-z+1/2,-y+1/2,x-1/2</op>
+    <op id="188">y,-z+1/2,x-1/2</op>
+    <op id="189">z,y+1/2,x</op>
+    <op id="190">y+1/2,z+1/2,-x</op>
+    <op id="191">-z+1/2,y+1/2,-x-1/2</op>
+    <op id="192">z,-y,-x-1/2</op>
+  </spg>
+
+  <spg id="227" nops="192" sym="F d -3 m :1" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/4,x+1/4,z+1/4</op>
+    <op id="3">-x,-y+1/2,z+1/2</op>
+    <op id="4">y+3/4,-x+1/4,z+3/4</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y+1/4,x+1/4,-z+1/4</op>
+    <op id="7">-x,y+1/2,-z+1/2</op>
+    <op id="8">-y+3/4,-x+1/4,-z+3/4</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+1/4,z+1/4,y+1/4</op>
+    <op id="11">-z,-x+1/2,y+1/2</op>
+    <op id="12">x+3/4,-z+1/4,y+3/4</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x+1/4,z+1/4,-y+1/4</op>
+    <op id="15">-z,x+1/2,-y+1/2</op>
+    <op id="16">-x+3/4,-z+1/4,-y+3/4</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y+1/2,-z,-x+1/2</op>
+    <op id="19">z+1/4,y+3/4,-x+3/4</op>
+    <op id="20">-y+1/2,z+1/2,-x</op>
+    <op id="21">-z+1/4,-y+1/4,-x+1/4</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z+1/4,-y+3/4,x+3/4</op>
+    <op id="24">-z+3/4,y+3/4,x+1/4</op>
+    <op id="25">-x+1/4,-y+1/4,-z+1/4</op>
+    <op id="26">y,-x,-z</op>
+    <op id="27">x+1/4,y-1/4,-z-1/4</op>
+    <op id="28">-y-1/2,x,-z-1/2</op>
+    <op id="29">-x+1/4,y+1/4,z+1/4</op>
+    <op id="30">-y,-x,z</op>
+    <op id="31">x+1/4,-y-1/4,z-1/4</op>
+    <op id="32">y-1/2,x,z-1/2</op>
+    <op id="33">-z+1/4,-x+1/4,-y+1/4</op>
+    <op id="34">x,-z,-y</op>
+    <op id="35">z+1/4,x-1/4,-y-1/4</op>
+    <op id="36">-x-1/2,z,-y-1/2</op>
+    <op id="37">-z+1/4,x+1/4,y+1/4</op>
+    <op id="38">-x,-z,y</op>
+    <op id="39">z+1/4,-x-1/4,y-1/4</op>
+    <op id="40">x-1/2,z,y-1/2</op>
+    <op id="41">-y+1/4,-z+1/4,-x+1/4</op>
+    <op id="42">-y-1/4,z+1/4,x-1/4</op>
+    <op id="43">-z,-y-1/2,x-1/2</op>
+    <op id="44">y-1/4,-z-1/4,x+1/4</op>
+    <op id="45">z,y,x</op>
+    <op id="46">y+1/4,z+1/4,-x+1/4</op>
+    <op id="47">-z,y-1/2,-x-1/2</op>
+    <op id="48">z-1/2,-y-1/2,-x</op>
+    <op id="49">x,y+1/2,z+1/2</op>
+    <op id="50">-y+1/4,x+3/4,z+3/4</op>
+    <op id="51">-x,-y+1,z+1</op>
+    <op id="52">y+3/4,-x+3/4,z+5/4</op>
+    <op id="53">x,-y+1/2,-z+1/2</op>
+    <op id="54">y+1/4,x+3/4,-z+3/4</op>
+    <op id="55">-x,y+1,-z+1</op>
+    <op id="56">-y+3/4,-x+3/4,-z+5/4</op>
+    <op id="57">z,x+1/2,y+1/2</op>
+    <op id="58">-x+1/4,z+3/4,y+3/4</op>
+    <op id="59">-z,-x+1,y+1</op>
+    <op id="60">x+3/4,-z+3/4,y+5/4</op>
+    <op id="61">z,-x+1/2,-y+1/2</op>
+    <op id="62">x+1/4,z+3/4,-y+3/4</op>
+    <op id="63">-z,x+1,-y+1</op>
+    <op id="64">-x+3/4,-z+3/4,-y+5/4</op>
+    <op id="65">y,z+1/2,x+1/2</op>
+    <op id="66">y+1/2,-z+1/2,-x+1</op>
+    <op id="67">z+1/4,y+5/4,-x+5/4</op>
+    <op id="68">-y+1/2,z+1,-x+1/2</op>
+    <op id="69">-z+1/4,-y+3/4,-x+3/4</op>
+    <op id="70">-y,-z+1/2,x+1/2</op>
+    <op id="71">z+1/4,-y+5/4,x+5/4</op>
+    <op id="72">-z+3/4,y+5/4,x+3/4</op>
+    <op id="73">-x+1/4,-y+3/4,-z+3/4</op>
+    <op id="74">y,-x+1/2,-z+1/2</op>
+    <op id="75">x+1/4,y+1/4,-z+1/4</op>
+    <op id="76">-y-1/2,x+1/2,-z</op>
+    <op id="77">-x+1/4,y+3/4,z+3/4</op>
+    <op id="78">-y,-x+1/2,z+1/2</op>
+    <op id="79">x+1/4,-y+1/4,z+1/4</op>
+    <op id="80">y-1/2,x+1/2,z</op>
+    <op id="81">-z+1/4,-x+3/4,-y+3/4</op>
+    <op id="82">x,-z+1/2,-y+1/2</op>
+    <op id="83">z+1/4,x+1/4,-y+1/4</op>
+    <op id="84">-x-1/2,z+1/2,-y</op>
+    <op id="85">-z+1/4,x+3/4,y+3/4</op>
+    <op id="86">-x,-z+1/2,y+1/2</op>
+    <op id="87">z+1/4,-x+1/4,y+1/4</op>
+    <op id="88">x-1/2,z+1/2,y</op>
+    <op id="89">-y+1/4,-z+3/4,-x+3/4</op>
+    <op id="90">-y-1/4,z+3/4,x+1/4</op>
+    <op id="91">-z,-y,x</op>
+    <op id="92">y-1/4,-z+1/4,x+3/4</op>
+    <op id="93">z,y+1/2,x+1/2</op>
+    <op id="94">y+1/4,z+3/4,-x+3/4</op>
+    <op id="95">-z,y,-x</op>
+    <op id="96">z-1/2,-y,-x+1/2</op>
+    <op id="97">x+1/2,y,z+1/2</op>
+    <op id="98">-y+3/4,x+1/4,z+3/4</op>
+    <op id="99">-x+1/2,-y+1/2,z+1</op>
+    <op id="100">y+5/4,-x+1/4,z+5/4</op>
+    <op id="101">x+1/2,-y,-z+1/2</op>
+    <op id="102">y+3/4,x+1/4,-z+3/4</op>
+    <op id="103">-x+1/2,y+1/2,-z+1</op>
+    <op id="104">-y+5/4,-x+1/4,-z+5/4</op>
+    <op id="105">z+1/2,x,y+1/2</op>
+    <op id="106">-x+3/4,z+1/4,y+3/4</op>
+    <op id="107">-z+1/2,-x+1/2,y+1</op>
+    <op id="108">x+5/4,-z+1/4,y+5/4</op>
+    <op id="109">z+1/2,-x,-y+1/2</op>
+    <op id="110">x+3/4,z+1/4,-y+3/4</op>
+    <op id="111">-z+1/2,x+1/2,-y+1</op>
+    <op id="112">-x+5/4,-z+1/4,-y+5/4</op>
+    <op id="113">y+1/2,z,x+1/2</op>
+    <op id="114">y+1,-z,-x+1</op>
+    <op id="115">z+3/4,y+3/4,-x+5/4</op>
+    <op id="116">-y+1,z+1/2,-x+1/2</op>
+    <op id="117">-z+3/4,-y+1/4,-x+3/4</op>
+    <op id="118">-y+1/2,-z,x+1/2</op>
+    <op id="119">z+3/4,-y+3/4,x+5/4</op>
+    <op id="120">-z+5/4,y+3/4,x+3/4</op>
+    <op id="121">-x+3/4,-y+1/4,-z+3/4</op>
+    <op id="122">y+1/2,-x,-z+1/2</op>
+    <op id="123">x+3/4,y-1/4,-z+1/4</op>
+    <op id="124">-y,x,-z</op>
+    <op id="125">-x+3/4,y+1/4,z+3/4</op>
+    <op id="126">-y+1/2,-x,z+1/2</op>
+    <op id="127">x+3/4,-y-1/4,z+1/4</op>
+    <op id="128">y,x,z</op>
+    <op id="129">-z+3/4,-x+1/4,-y+3/4</op>
+    <op id="130">x+1/2,-z,-y+1/2</op>
+    <op id="131">z+3/4,x-1/4,-y+1/4</op>
+    <op id="132">-x,z,-y</op>
+    <op id="133">-z+3/4,x+1/4,y+3/4</op>
+    <op id="134">-x+1/2,-z,y+1/2</op>
+    <op id="135">z+3/4,-x-1/4,y+1/4</op>
+    <op id="136">x,z,y</op>
+    <op id="137">-y+3/4,-z+1/4,-x+3/4</op>
+    <op id="138">-y+1/4,z+1/4,x+1/4</op>
+    <op id="139">-z+1/2,-y-1/2,x</op>
+    <op id="140">y+1/4,-z-1/4,x+3/4</op>
+    <op id="141">z+1/2,y,x+1/2</op>
+    <op id="142">y+3/4,z+1/4,-x+3/4</op>
+    <op id="143">-z+1/2,y-1/2,-x</op>
+    <op id="144">z,-y-1/2,-x+1/2</op>
+    <op id="145">x+1/2,y+1/2,z</op>
+    <op id="146">-y+3/4,x+3/4,z+1/4</op>
+    <op id="147">-x+1/2,-y+1,z+1/2</op>
+    <op id="148">y+5/4,-x+3/4,z+3/4</op>
+    <op id="149">x+1/2,-y+1/2,-z</op>
+    <op id="150">y+3/4,x+3/4,-z+1/4</op>
+    <op id="151">-x+1/2,y+1,-z+1/2</op>
+    <op id="152">-y+5/4,-x+3/4,-z+3/4</op>
+    <op id="153">z+1/2,x+1/2,y</op>
+    <op id="154">-x+3/4,z+3/4,y+1/4</op>
+    <op id="155">-z+1/2,-x+1,y+1/2</op>
+    <op id="156">x+5/4,-z+3/4,y+3/4</op>
+    <op id="157">z+1/2,-x+1/2,-y</op>
+    <op id="158">x+3/4,z+3/4,-y+1/4</op>
+    <op id="159">-z+1/2,x+1,-y+1/2</op>
+    <op id="160">-x+5/4,-z+3/4,-y+3/4</op>
+    <op id="161">y+1/2,z+1/2,x</op>
+    <op id="162">y+1,-z+1/2,-x+1/2</op>
+    <op id="163">z+3/4,y+5/4,-x+3/4</op>
+    <op id="164">-y+1,z+1,-x</op>
+    <op id="165">-z+3/4,-y+3/4,-x+1/4</op>
+    <op id="166">-y+1/2,-z+1/2,x</op>
+    <op id="167">z+3/4,-y+5/4,x+3/4</op>
+    <op id="168">-z+5/4,y+5/4,x+1/4</op>
+    <op id="169">-x+3/4,-y+3/4,-z+1/4</op>
+    <op id="170">y+1/2,-x+1/2,-z</op>
+    <op id="171">x+3/4,y+1/4,-z-1/4</op>
+    <op id="172">-y,x+1/2,-z-1/2</op>
+    <op id="173">-x+3/4,y+3/4,z+1/4</op>
+    <op id="174">-y+1/2,-x+1/2,z</op>
+    <op id="175">x+3/4,-y+1/4,z-1/4</op>
+    <op id="176">y,x+1/2,z-1/2</op>
+    <op id="177">-z+3/4,-x+3/4,-y+1/4</op>
+    <op id="178">x+1/2,-z+1/2,-y</op>
+    <op id="179">z+3/4,x+1/4,-y-1/4</op>
+    <op id="180">-x,z+1/2,-y-1/2</op>
+    <op id="181">-z+3/4,x+3/4,y+1/4</op>
+    <op id="182">-x+1/2,-z+1/2,y</op>
+    <op id="183">z+3/4,-x+1/4,y-1/4</op>
+    <op id="184">x,z+1/2,y-1/2</op>
+    <op id="185">-y+3/4,-z+3/4,-x+1/4</op>
+    <op id="186">-y+1/4,z+3/4,x-1/4</op>
+    <op id="187">-z+1/2,-y,x-1/2</op>
+    <op id="188">y+1/4,-z+1/4,x+1/4</op>
+    <op id="189">z+1/2,y+1/2,x</op>
+    <op id="190">y+3/4,z+3/4,-x+1/4</op>
+    <op id="191">-z+1/2,y,-x-1/2</op>
+    <op id="192">z,-y,-x</op>
+  </spg>
+
+  <spg id="228" nops="192" sym="F d -3 c :1" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y+1/4,x+1/4,z+1/4</op>
+    <op id="3">-x,-y+1/2,z+1/2</op>
+    <op id="4">y+3/4,-x+1/4,z+3/4</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y+1/4,x+1/4,-z+1/4</op>
+    <op id="7">-x,y+1/2,-z+1/2</op>
+    <op id="8">-y+3/4,-x+1/4,-z+3/4</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x+1/4,z+1/4,y+1/4</op>
+    <op id="11">-z,-x+1/2,y+1/2</op>
+    <op id="12">x+3/4,-z+1/4,y+3/4</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x+1/4,z+1/4,-y+1/4</op>
+    <op id="15">-z,x+1/2,-y+1/2</op>
+    <op id="16">-x+3/4,-z+1/4,-y+3/4</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y+1/2,-z,-x+1/2</op>
+    <op id="19">z+1/4,y+3/4,-x+3/4</op>
+    <op id="20">-y+1/2,z+1/2,-x</op>
+    <op id="21">-z+1/4,-y+1/4,-x+1/4</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z+1/4,-y+3/4,x+3/4</op>
+    <op id="24">-z+3/4,y+3/4,x+1/4</op>
+    <op id="25">-x+3/4,-y+1/4,-z+1/4</op>
+    <op id="26">y+1/2,-x,-z</op>
+    <op id="27">x+3/4,y-1/4,-z-1/4</op>
+    <op id="28">-y,x,-z-1/2</op>
+    <op id="29">-x+3/4,y+1/4,z+1/4</op>
+    <op id="30">-y+1/2,-x,z</op>
+    <op id="31">x+3/4,-y-1/4,z-1/4</op>
+    <op id="32">y,x,z-1/2</op>
+    <op id="33">-z+3/4,-x+1/4,-y+1/4</op>
+    <op id="34">x+1/2,-z,-y</op>
+    <op id="35">z+3/4,x-1/4,-y-1/4</op>
+    <op id="36">-x,z,-y-1/2</op>
+    <op id="37">-z+3/4,x+1/4,y+1/4</op>
+    <op id="38">-x+1/2,-z,y</op>
+    <op id="39">z+3/4,-x-1/4,y-1/4</op>
+    <op id="40">x,z,y-1/2</op>
+    <op id="41">-y+3/4,-z+1/4,-x+1/4</op>
+    <op id="42">-y+1/4,z+1/4,x-1/4</op>
+    <op id="43">-z+1/2,-y-1/2,x-1/2</op>
+    <op id="44">y+1/4,-z-1/4,x+1/4</op>
+    <op id="45">z+1/2,y,x</op>
+    <op id="46">y+3/4,z+1/4,-x+1/4</op>
+    <op id="47">-z+1/2,y-1/2,-x-1/2</op>
+    <op id="48">z,-y-1/2,-x</op>
+    <op id="49">x,y+1/2,z+1/2</op>
+    <op id="50">-y+1/4,x+3/4,z+3/4</op>
+    <op id="51">-x,-y+1,z+1</op>
+    <op id="52">y+3/4,-x+3/4,z+5/4</op>
+    <op id="53">x,-y+1/2,-z+1/2</op>
+    <op id="54">y+1/4,x+3/4,-z+3/4</op>
+    <op id="55">-x,y+1,-z+1</op>
+    <op id="56">-y+3/4,-x+3/4,-z+5/4</op>
+    <op id="57">z,x+1/2,y+1/2</op>
+    <op id="58">-x+1/4,z+3/4,y+3/4</op>
+    <op id="59">-z,-x+1,y+1</op>
+    <op id="60">x+3/4,-z+3/4,y+5/4</op>
+    <op id="61">z,-x+1/2,-y+1/2</op>
+    <op id="62">x+1/4,z+3/4,-y+3/4</op>
+    <op id="63">-z,x+1,-y+1</op>
+    <op id="64">-x+3/4,-z+3/4,-y+5/4</op>
+    <op id="65">y,z+1/2,x+1/2</op>
+    <op id="66">y+1/2,-z+1/2,-x+1</op>
+    <op id="67">z+1/4,y+5/4,-x+5/4</op>
+    <op id="68">-y+1/2,z+1,-x+1/2</op>
+    <op id="69">-z+1/4,-y+3/4,-x+3/4</op>
+    <op id="70">-y,-z+1/2,x+1/2</op>
+    <op id="71">z+1/4,-y+5/4,x+5/4</op>
+    <op id="72">-z+3/4,y+5/4,x+3/4</op>
+    <op id="73">-x+3/4,-y+3/4,-z+3/4</op>
+    <op id="74">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="75">x+3/4,y+1/4,-z+1/4</op>
+    <op id="76">-y,x+1/2,-z</op>
+    <op id="77">-x+3/4,y+3/4,z+3/4</op>
+    <op id="78">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="79">x+3/4,-y+1/4,z+1/4</op>
+    <op id="80">y,x+1/2,z</op>
+    <op id="81">-z+3/4,-x+3/4,-y+3/4</op>
+    <op id="82">x+1/2,-z+1/2,-y+1/2</op>
+    <op id="83">z+3/4,x+1/4,-y+1/4</op>
+    <op id="84">-x,z+1/2,-y</op>
+    <op id="85">-z+3/4,x+3/4,y+3/4</op>
+    <op id="86">-x+1/2,-z+1/2,y+1/2</op>
+    <op id="87">z+3/4,-x+1/4,y+1/4</op>
+    <op id="88">x,z+1/2,y</op>
+    <op id="89">-y+3/4,-z+3/4,-x+3/4</op>
+    <op id="90">-y+1/4,z+3/4,x+1/4</op>
+    <op id="91">-z+1/2,-y,x</op>
+    <op id="92">y+1/4,-z+1/4,x+3/4</op>
+    <op id="93">z+1/2,y+1/2,x+1/2</op>
+    <op id="94">y+3/4,z+3/4,-x+3/4</op>
+    <op id="95">-z+1/2,y,-x</op>
+    <op id="96">z,-y,-x+1/2</op>
+    <op id="97">x+1/2,y,z+1/2</op>
+    <op id="98">-y+3/4,x+1/4,z+3/4</op>
+    <op id="99">-x+1/2,-y+1/2,z+1</op>
+    <op id="100">y+5/4,-x+1/4,z+5/4</op>
+    <op id="101">x+1/2,-y,-z+1/2</op>
+    <op id="102">y+3/4,x+1/4,-z+3/4</op>
+    <op id="103">-x+1/2,y+1/2,-z+1</op>
+    <op id="104">-y+5/4,-x+1/4,-z+5/4</op>
+    <op id="105">z+1/2,x,y+1/2</op>
+    <op id="106">-x+3/4,z+1/4,y+3/4</op>
+    <op id="107">-z+1/2,-x+1/2,y+1</op>
+    <op id="108">x+5/4,-z+1/4,y+5/4</op>
+    <op id="109">z+1/2,-x,-y+1/2</op>
+    <op id="110">x+3/4,z+1/4,-y+3/4</op>
+    <op id="111">-z+1/2,x+1/2,-y+1</op>
+    <op id="112">-x+5/4,-z+1/4,-y+5/4</op>
+    <op id="113">y+1/2,z,x+1/2</op>
+    <op id="114">y+1,-z,-x+1</op>
+    <op id="115">z+3/4,y+3/4,-x+5/4</op>
+    <op id="116">-y+1,z+1/2,-x+1/2</op>
+    <op id="117">-z+3/4,-y+1/4,-x+3/4</op>
+    <op id="118">-y+1/2,-z,x+1/2</op>
+    <op id="119">z+3/4,-y+3/4,x+5/4</op>
+    <op id="120">-z+5/4,y+3/4,x+3/4</op>
+    <op id="121">-x+5/4,-y+1/4,-z+3/4</op>
+    <op id="122">y+1,-x,-z+1/2</op>
+    <op id="123">x+5/4,y-1/4,-z+1/4</op>
+    <op id="124">-y+1/2,x,-z</op>
+    <op id="125">-x+5/4,y+1/4,z+3/4</op>
+    <op id="126">-y+1,-x,z+1/2</op>
+    <op id="127">x+5/4,-y-1/4,z+1/4</op>
+    <op id="128">y+1/2,x,z</op>
+    <op id="129">-z+5/4,-x+1/4,-y+3/4</op>
+    <op id="130">x+1,-z,-y+1/2</op>
+    <op id="131">z+5/4,x-1/4,-y+1/4</op>
+    <op id="132">-x+1/2,z,-y</op>
+    <op id="133">-z+5/4,x+1/4,y+3/4</op>
+    <op id="134">-x+1,-z,y+1/2</op>
+    <op id="135">z+5/4,-x-1/4,y+1/4</op>
+    <op id="136">x+1/2,z,y</op>
+    <op id="137">-y+5/4,-z+1/4,-x+3/4</op>
+    <op id="138">-y+3/4,z+1/4,x+1/4</op>
+    <op id="139">-z+1,-y-1/2,x</op>
+    <op id="140">y+3/4,-z-1/4,x+3/4</op>
+    <op id="141">z+1,y,x+1/2</op>
+    <op id="142">y+5/4,z+1/4,-x+3/4</op>
+    <op id="143">-z+1,y-1/2,-x</op>
+    <op id="144">z+1/2,-y-1/2,-x+1/2</op>
+    <op id="145">x+1/2,y+1/2,z</op>
+    <op id="146">-y+3/4,x+3/4,z+1/4</op>
+    <op id="147">-x+1/2,-y+1,z+1/2</op>
+    <op id="148">y+5/4,-x+3/4,z+3/4</op>
+    <op id="149">x+1/2,-y+1/2,-z</op>
+    <op id="150">y+3/4,x+3/4,-z+1/4</op>
+    <op id="151">-x+1/2,y+1,-z+1/2</op>
+    <op id="152">-y+5/4,-x+3/4,-z+3/4</op>
+    <op id="153">z+1/2,x+1/2,y</op>
+    <op id="154">-x+3/4,z+3/4,y+1/4</op>
+    <op id="155">-z+1/2,-x+1,y+1/2</op>
+    <op id="156">x+5/4,-z+3/4,y+3/4</op>
+    <op id="157">z+1/2,-x+1/2,-y</op>
+    <op id="158">x+3/4,z+3/4,-y+1/4</op>
+    <op id="159">-z+1/2,x+1,-y+1/2</op>
+    <op id="160">-x+5/4,-z+3/4,-y+3/4</op>
+    <op id="161">y+1/2,z+1/2,x</op>
+    <op id="162">y+1,-z+1/2,-x+1/2</op>
+    <op id="163">z+3/4,y+5/4,-x+3/4</op>
+    <op id="164">-y+1,z+1,-x</op>
+    <op id="165">-z+3/4,-y+3/4,-x+1/4</op>
+    <op id="166">-y+1/2,-z+1/2,x</op>
+    <op id="167">z+3/4,-y+5/4,x+3/4</op>
+    <op id="168">-z+5/4,y+5/4,x+1/4</op>
+    <op id="169">-x+5/4,-y+3/4,-z+1/4</op>
+    <op id="170">y+1,-x+1/2,-z</op>
+    <op id="171">x+5/4,y+1/4,-z-1/4</op>
+    <op id="172">-y+1/2,x+1/2,-z-1/2</op>
+    <op id="173">-x+5/4,y+3/4,z+1/4</op>
+    <op id="174">-y+1,-x+1/2,z</op>
+    <op id="175">x+5/4,-y+1/4,z-1/4</op>
+    <op id="176">y+1/2,x+1/2,z-1/2</op>
+    <op id="177">-z+5/4,-x+3/4,-y+1/4</op>
+    <op id="178">x+1,-z+1/2,-y</op>
+    <op id="179">z+5/4,x+1/4,-y-1/4</op>
+    <op id="180">-x+1/2,z+1/2,-y-1/2</op>
+    <op id="181">-z+5/4,x+3/4,y+1/4</op>
+    <op id="182">-x+1,-z+1/2,y</op>
+    <op id="183">z+5/4,-x+1/4,y-1/4</op>
+    <op id="184">x+1/2,z+1/2,y-1/2</op>
+    <op id="185">-y+5/4,-z+3/4,-x+1/4</op>
+    <op id="186">-y+3/4,z+3/4,x-1/4</op>
+    <op id="187">-z+1,-y,x-1/2</op>
+    <op id="188">y+3/4,-z+1/4,x+1/4</op>
+    <op id="189">z+1,y+1/2,x</op>
+    <op id="190">y+5/4,z+3/4,-x+1/4</op>
+    <op id="191">-z+1,y,-x-1/2</op>
+    <op id="192">z+1/2,-y,-x</op>
+  </spg>
+
+  <spg id="229" nops="96" sym="I m -3 m" sys="cubic">
+    <op id="1">x,y,z</op>
+    <op id="2">-y,x,z</op>
+    <op id="3">-x,-y,z</op>
+    <op id="4">y,-x,z</op>
+    <op id="5">x,-y,-z</op>
+    <op id="6">y,x,-z</op>
+    <op id="7">-x,y,-z</op>
+    <op id="8">-y,-x,-z</op>
+    <op id="9">z,x,y</op>
+    <op id="10">-x,z,y</op>
+    <op id="11">-z,-x,y</op>
+    <op id="12">x,-z,y</op>
+    <op id="13">z,-x,-y</op>
+    <op id="14">x,z,-y</op>
+    <op id="15">-z,x,-y</op>
+    <op id="16">-x,-z,-y</op>
+    <op id="17">y,z,x</op>
+    <op id="18">y,-z,-x</op>
+    <op id="19">z,y,-x</op>
+    <op id="20">-y,z,-x</op>
+    <op id="21">-z,-y,-x</op>
+    <op id="22">-y,-z,x</op>
+    <op id="23">z,-y,x</op>
+    <op id="24">-z,y,x</op>
+    <op id="25">-x,-y,-z</op>
+    <op id="26">y,-x,-z</op>
+    <op id="27">x,y,-z</op>
+    <op id="28">-y,x,-z</op>
+    <op id="29">-x,y,z</op>
+    <op id="30">-y,-x,z</op>
+    <op id="31">x,-y,z</op>
+    <op id="32">y,x,z</op>
+    <op id="33">-z,-x,-y</op>
+    <op id="34">x,-z,-y</op>
+    <op id="35">z,x,-y</op>
+    <op id="36">-x,z,-y</op>
+    <op id="37">-z,x,y</op>
+    <op id="38">-x,-z,y</op>
+    <op id="39">z,-x,y</op>
+    <op id="40">x,z,y</op>
+    <op id="41">-y,-z,-x</op>
+    <op id="42">-y,z,x</op>
+    <op id="43">-z,-y,x</op>
+    <op id="44">y,-z,x</op>
+    <op id="45">z,y,x</op>
+    <op id="46">y,z,-x</op>
+    <op id="47">-z,y,-x</op>
+    <op id="48">z,-y,-x</op>
+    <op id="49">x+1/2,y+1/2,z+1/2</op>
+    <op id="50">-y+1/2,x+1/2,z+1/2</op>
+    <op id="51">-x+1/2,-y+1/2,z+1/2</op>
+    <op id="52">y+1/2,-x+1/2,z+1/2</op>
+    <op id="53">x+1/2,-y+1/2,-z+1/2</op>
+    <op id="54">y+1/2,x+1/2,-z+1/2</op>
+    <op id="55">-x+1/2,y+1/2,-z+1/2</op>
+    <op id="56">-y+1/2,-x+1/2,-z+1/2</op>
+    <op id="57">z+1/2,x+1/2,y+1/2</op>
+    <op id="58">-x+1/2,z+1/2,y+1/2</op>
+    <op id="59">-z+1/2,-x+1/2,y+1/2</op>
+    <op id="60">x+1/2,-z+1/2,y+1/2</op>
+    <op id="61">z+1/2,-x+1/2,-y+1/2</op>
+    <op id="62">x+1/2,z+1/2,-y+1/2</op>
+    <op id="63">-z+1/2,x+1/2,-y+1/2</op>
+    <op id="64">-x+1/2,-z+1/2,-y+1/2</op>
+    <op id="65">y+1/2,z+1/2,x+1/2</op>
+    <op id="66">y+1/2,-z+1/2,-x+1/2</op>
+    <op id="67">z+1/2,y+1/2,-x+1/2</op>
+    <op id="68">-y+1/2,z+1/2,-x+1/2</op>
+    <op id="69">-z+1/2,-y+1/2,-x+1/2</op>
+    <op id="70">-y+1/2,-z+1/2,x+1/2</op>
+    <op id="71">z+1/2,-y+1/2,x+1/2</op>
+    <op id="72">-z+1/2,y+1/2,x+1/2</op>
+    <op id="73">-x+1/2,-y+1/2,-z+1/2</op>
+    <op id="74">y+1/2,-x+1/2,-z+1/2</op>
+    <op id="75">x+1/2,y+1/2,-z+1/2</op>
+    <op id="76">-y+1/2,x+1/2,-z+1/2</op>
+    <op id="77">-x+1/2,y+1/2,z+1/2</op>
+    <op id="78">-y+1/2,-x+1/2,z+1/2</op>
+    <op id="79">x+1/2,-y+1/2,z+1/2</op>
+    <op id="80">y+1/2,x+1/2,z+1/2</op>
+    <op id="81">-z+1/2,-x+1/2,-y+1/2</op>
+    <op id="82">x+1/2,-z+1/2,-y+1/2</op>
+    <op id="83">z+1/2,x+1/2,-y+1/2</op>
+    <op id="84">-x+1/2,z+1/2,-y+1/2</op>
+    <op id="85">-z+1/2,x+1/2,y+1/2</op>
+    <op id="86">-x+1/2,-z+1/2,y+1/2</op>
+    <op id="87">z+1/2,-x+1/2,y+1/2</op>
+    <op id="88">x+1/2,z+1/2,y+1/2</op>
+    <op id="89">-y+1/2,-z+1/2,-x+1/2</op>
+    <op id="90">-y+1/2,z+1/2,x+1/2</op>
+    <op id="91">-z+1/2,-y+1/2,x+1/2</op>
+    <op id="92">y+1/2,-z+1/2,x+1/2</op>
+    <op id="93">z+1/2,y+1/2,x+1/2</op>
+    <op id="94">y+1/2,z+1/2,-x+1/2</op>
+    <op id="95">-z+1/2,y+1/2,-x+1/2</op>
+    <op id="96">z+1/2,-y+1/2,-x+1/2</op>
+  </spg>
+
+</spglist>
