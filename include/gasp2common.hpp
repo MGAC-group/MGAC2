@@ -12,9 +12,20 @@
 #include "mpi.h"
 #include <uuid/uuid.h>
 
+extern "C" {
+	extern char _binary_spacegroups_xml_start;
+	extern char _binary_spacegroups_xml_end;
+}
+
+
+
+
 #define PI 3.1415926535897932384626433
 
 using namespace std;
+
+extern tinyxml2::XMLDocument spacegroups;
+extern vector<string> spacegroupNames;
 
 typedef unsigned int Index;
 typedef unsigned int NIndex;
@@ -36,6 +47,8 @@ Elem getElemType(string in);
 string getElemName(Elem in);
 
 vector<string> split(string in, char delim=' ');
+
+bool loadSpaceGroups();
 
 //wrapper for libuuid
 class UUID {

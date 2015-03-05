@@ -3,7 +3,7 @@
 
 using namespace std;
 
-const string version = "0.1";
+const string version = "2.0-alpha";
 
 //front material for option parsing
 struct Arg: public option::Arg
@@ -26,13 +26,14 @@ struct Arg: public option::Arg
 	  }
 };
 
-enum optIndex {INPUT,HELP,RESTART };
+enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS };
 
 const option::Descriptor usage[] =
 {
 		{INPUT,0,"i","input",Arg::Required,"-i,--input  The XML input file for running"},
 		{HELP,0,"h","help",option::Arg::Optional,"-h,--help  Displays this help message"},
 		{RESTART,0,"r","restart",Arg::NonEmpty,"-r,--restart  Optional argument for a restart file"},
+		{SPACEGROUPS,0,"ls","spacegroups",Arg::Optional,"-ls,--spaccegroups List valid spacegroups"},
 		{ 0, 0, 0, 0, 0, 0 }
 };
 
@@ -61,6 +62,20 @@ int main( int argc, char* argv[] ) {
     	return 0;
     }
 
+    //spacegroup stuff
+	if(!loadSpaceGroups()) {
+		cout << "There was a problem loading the spacegroup file!\n";
+		exit(1);
+	}
+    if(options[SPACEGROUPS]) {
+    	cout << "Valid groups are the following (can use index or string names):" << endl << endl;
+    	cout << " Index  Name" << endl;
+    	for(int i = 0; i < spacegroupNames.size(); i++)
+    		cout << " " << setw(4) << i+1 << ":  " << spacegroupNames[i] << endl;
+
+    	return 0;
+    }
+
     if(!options[INPUT]) {
     	cout << "An input file is required! Use -i to specify." << endl;
     	option::printUsage(cout, usage);
@@ -68,6 +83,7 @@ int main( int argc, char* argv[] ) {
     }
     string infile;
     infile.assign(options[INPUT].arg);
+
 
 
     time_t prog_start;

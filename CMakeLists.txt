@@ -17,6 +17,10 @@ svl
 	${SVL_SRC}/Basics.cpp
 )
 
+#compile spacegroups.xml
+add_custom_target(spacegroups.o
+COMMAND cp ${PROJECT_SOURCE_DIR}/src/spacegroups.xml ${CMAKE_BINARY_DIR}
+COMMAND objcopy --input binary --output elf64-x86-64 --binary-architecture i386 spacegroups.xml spacegroups.o )
 
 #compile gasp2 library
 add_library( 
@@ -31,6 +35,8 @@ gasp2
 )
 target_link_libraries( gasp2 ${MPI_LIBRARIES} )
 target_link_libraries( gasp2 svl )
+target_link_libraries( gasp2 ${CMAKE_BINARY_DIR}/spacegroups.o )
+add_dependencies( gasp2 spacegroups.o )
 add_dependencies( gasp2 svl )
 
 #compile mgac.x program

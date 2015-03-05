@@ -110,8 +110,17 @@ struct GASP2cell {
 	double alpha,beta,gamma; //DEGREES
 	double ratA,ratB,ratC; //UNIT-LESS
 	Index spacegroup; //spacegroup number (same as in IUCR tables)
-	Vec3 maxFrac; //fractional limit of molecules; INTERNAL
-	Vec3 minFrac; //INTERNAL
+
+	//AML: I don't think fractional values are important
+	//when considering that the new software does alignments
+	//between all unique, energy tested structures.
+	//If two structures are similar enough, and the energy of
+	//one structure is known, then an idea of the energy potential
+	//well is known
+
+	//Vec3 maxFrac; //fractional limit of molecules; INTERNAL
+	//Vec3 minFrac; //INTERNAL
+
 	vector<GASPcomp> stoich;
 	void clear() {
 		stoich.clear();

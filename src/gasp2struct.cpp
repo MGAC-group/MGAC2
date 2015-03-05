@@ -837,8 +837,8 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 	//spacegroup
 	cell.spacegroup = 1;
 	if(!elem->QueryIntAttribute("spacegroup", &itemp)) {
-		if(itemp > 0 && itemp <= 230)
-			cell.spacegroup = itemp;
+		if(itemp > 0 && itemp <= spacegroupNames.size())
+			cell.spacegroup = itemp - 1;
 		else {
 			errorstring = "A non-valid spacegroup identifier was given (out of bounds).\n";
 			return false;
@@ -847,12 +847,12 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 	else {
 		stemp = elem->Attribute("spacegroup");
 		strtemp = stemp;
-		cell.spacegroup = 1;
-		for(int i = 0; i < 230; i++) {
-//			if(strtemp == ) {
-//				cell.spacegroup = i;
-//				break;
-//			}
+		cell.spacegroup = 0;
+		for(int i = 0; i < spacegroupNames.size(); i++) {
+			if(strtemp == spacegroupNames[i]) {
+				cell.spacegroup = i+1;
+				break;
+			}
 		}
 		if(cell.spacegroup == 0) {
 			errorstring = "A non-valid string identifier was given for a spacegroup value.\n";
@@ -1012,9 +1012,11 @@ bool GASP2struct::readInfo(tinyxml2::XMLElement *elem, string& errorstring) {
 void GASP2struct::logStruct() {
 	cout << endl << endl;
 	cout << setprecision(8) << fixed;
-	cout << "Structure id: " << ID.toStr() << endl;
-	cout << "Parent A id : " << parentA.toStr() << endl;
-	cout << "Parent B id : " << parentB.toStr() << endl << endl;
+	cout << "Structure name: " << names[crylabel] << endl;
+	cout << "Root structure id: " << ID.toStr() << endl;
+	cout << "Spacegroup: " << spacegroupNames[unit.spacegroup-1] << "  (ID:" << unit.spacegroup-1 << ")" << endl;
+//	cout << "Parent A id : " << parentA.toStr() << endl;
+//	cout << "Parent B id : " << parentB.toStr() << endl << endl;
 
 //	cout << "Name index:" << endl;
 //	for(int i = 0; i< names.size(); i++) {
@@ -1025,22 +1027,22 @@ void GASP2struct::logStruct() {
 	cout << "Number of molecules: " << molecules.size() << endl << endl;;
 
 	for(int i = 0; i < molecules.size(); i++) {
-		cout << "  Molecule " << names[molecules[i].label] << endl;
+		cout << "  Molecule:" << names[molecules[i].label] << " volume: " << molecules[i].expectvol <<endl;
 		for(int j = 0; j < molecules[i].atoms.size(); j++) {
 			GASP2atom at = molecules[i].atoms[j];
-			cout << "  At:" <<j<<" "<< names[at.label]<<" "<<getElemName(at.type)<<" "<<at.pos<<endl;
+			cout << "    Atm "<< names[at.label]<<" "<<getElemName(at.type)<<" "<<at.pos<<endl;
 		}
 		for(int j = 0; j < molecules[i].dihedrals.size(); j++) {
 			GASP2dihedral dh = molecules[i].dihedrals[j];
-			cout << "  Dih " << names[dh.label]<<" "<<dh.a<<" "<<dh.b<<" "<<dh.c<<" "<<dh.d<<" "<<endl;
+			cout << "    Dih " << names[dh.label]<<" ("<<dh.minAng<<","<<dh.maxAng<<")"<<endl;
 		}
 		for(int j = 0; j < molecules[i].angles.size(); j++) {
 			GASP2angle an = molecules[i].angles[j];
-			cout << "  Ang " << names[an.label]<<" "<<an.a<<" "<<an.b<<" "<<an.c<<endl;
+			cout << "    Ang " << names[an.label]<<" ("<<an.minAng<<","<<an.maxAng<<")"<<endl;
 		}
 		for(int j = 0; j < molecules[i].bonds.size(); j++) {
 			GASP2bond bn = molecules[i].bonds[j];
-			cout << "  Bon " << names[bn.label]<<" "<<bn.a<<" "<<bn.b<<endl;
+			cout << "    Bon " << names[bn.label]<<" ("<<bn.minLen<<","<<bn.maxLen<<")"<<endl;
 		}
 		cout << endl;
 	}

@@ -2,6 +2,10 @@
 
 using namespace std;
 
+//static datas
+tinyxml2::XMLDocument spacegroups;
+vector<string> spacegroupNames;
+
 
 //double dist ( const Vec3 & A, const Vec3 & B ) {
 //    return sqrt( (A-B).dot(A-B) );
@@ -233,6 +237,38 @@ UUID& UUID::operator=(UUID u) {
 
 bool operator==(const UUID &u, const UUID &v) {
 	return (uuid_compare(u.uuid,v.uuid) == 0);
+}
+
+
+bool loadSpaceGroups() {
+	string strtemp;
+	const char* stemp;
+
+    const char * s = &_binary_spacegroups_xml_start;
+    const char * e = &_binary_spacegroups_xml_end;
+    size_t size = e-s;
+    if(spacegroups.Parse(s, size)) {
+    	cout << "A problem was encountered when loading the spacegroup file!\n";
+    	return false;
+    }
+    tinyxml2::XMLElement *elem = spacegroups.FirstChildElement("spglist")->FirstChildElement("spg");
+    if(!elem) {
+    	cout << "A problem was encountered when loading the spacegroup file!\n";
+    	return false;
+    }
+    while(elem) {
+    	stemp = elem->Attribute("sym");
+		if(stemp) {
+			strtemp = stemp;
+			//cout << "Sym is " << strtemp << " ";
+			spacegroupNames.push_back(strtemp);
+		}
+		elem = elem->NextSiblingElement("spg");
+    }
+
+    cout << endl;
+    return true;
+
 }
 
 
