@@ -50,19 +50,42 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart)
 		exit(1);
 	}
 
+
 	//parse the restart if it exists
 
 
 
 }
 
-void GASP2control::server_prog() {
+void GASP2control::getHostInfo() {
 
+	FILE * p =  popen("cat /proc/cpuinfo | grep \"physical id\" | sort | uniq | wc -l","r");
+	FILE * c =  popen("cat /proc/cpuinfo | grep \"core id\" | sort | uniq | wc -l","r");
+	char p_str[10], c_str[10];
+
+	fgets(p_str, 10, p);
+	fgets(c_str, 10, c);
+
+	stringstream ss;
+	int phys, core;
+
+	ss << p_str; ss >> phys; ss.clear();
+	ss << c_str; ss >> core; ss.clear();
+
+	nodethreads = phys*core;
+	char _host[1024];
+	gethostname(_host,1024);
+	hostname = _host;
+
+}
+
+void GASP2control::server_prog() {
+	getHostInfo();
 }
 
 
 void GASP2control::client_prog() {
-
+	getHostInfo();
 }
 
 bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {

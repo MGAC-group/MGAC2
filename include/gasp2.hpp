@@ -1,8 +1,9 @@
+#pragma once
 #include "gasp2common.hpp"
 #include "gasp2param.hpp"
-#include "gasp2pop.hpp"
 #include "gasp2struct.hpp"
-#include "gasp2qe.hpp"
+#include "gasp2pop.hpp"
+//#include "gasp2qe.hpp"
 
 
 using namespace std;
@@ -14,7 +15,7 @@ public:
 	void server_prog();
 	void client_prog();
 
-
+	void getHostInfo();
 
 private:
 	//procedural variables
@@ -24,8 +25,12 @@ private:
 	int worldSize;
 	int ID;
 
+	string hostname;
+	int nodethreads;
+
 	GASP2param params;
 	GASP2struct root; //base structure which all other structures are derived from
+	vector<GASP2pop> populations;
 
 
 	bool parseInput(tinyxml2::XMLDocument *doc, string & errors);

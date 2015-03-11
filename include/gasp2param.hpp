@@ -1,4 +1,4 @@
-
+#pragma once
 
 /*
  * The intention of gasp2param is to provide a place for

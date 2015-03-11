@@ -1,5 +1,6 @@
 #include "gasp2struct.hpp"
 
+using namespace std;
 
 vector<string> GASP2struct::names;
 
@@ -41,6 +42,11 @@ double GASP2struct::getVolume() {
 
 bool GASP2struct::fitcell() {
 
+
+	return true;
+}
+
+bool GASP2struct::unfitcell() {
 
 	return true;
 }
@@ -91,6 +97,7 @@ bool GASP2struct::check() {
 }
 
 bool GASP2struct::evaluate() {
+
 	if(!isFitcell) {
 		finalstate = NoFitcell;
 		return false;
@@ -98,12 +105,20 @@ bool GASP2struct::evaluate() {
 
 	//never evaluate something that has already been evaluated
 	if(!didOpt) {
-		complete = eval(molecules, unit, energy);
+		complete = eval(molecules, unit, energy, force, pressure, time);
+		steps++;
+		check();
 		didOpt = true;
 	}
 
 	return complete;
 };
+
+//this functions randomizes structures
+bool GASP2struct::init() {
+
+	return true;
+}
 
 //searches for a name in the namelist
 //if the name is not found, the name is added.
@@ -130,6 +145,169 @@ Index GASP2struct::atomLookup(NIndex nameInd, GASP2molecule mol) {
 			return i;
 	}
 	return -1;
+}
+
+string GASP2struct::serializeXML() {
+	tinyxml2::XMLPrinter pr(NULL);
+
+	pr.OpenElement("crystal");
+	pr.PushAttribute("interdist",interdist);
+	pr.PushAttribute("intradist",intradist);
+	pr.PushAttribute("maxvol",maxvol);
+	pr.PushAttribute("minvol",minvol);
+	pr.PushAttribute("name",names[crylabel].c_str());
+	pr.OpenElement("info");
+		pr.PushAttribute("id", ID.toStr().c_str());
+		pr.PushAttribute("parentA",parentA.toStr().c_str());
+		pr.PushAttribute("parentB",parentB.toStr().c_str());
+		pr.PushAttribute("opt", tfconv(didOpt).c_str());
+		pr.PushAttribute("fitcell",tfconv(isFitcell).c_str());
+		pr.PushAttribute("complete",tfconv(complete).c_str());
+		pr.PushAttribute("energy", energy);
+
+		string strtemp;
+		if(finalstate == OKStruct)
+			strtemp = "OKStruct";
+		else if(finalstate == OptBadBond)
+			strtemp = "OptBadBond";
+		else if(finalstate == OptBadAng)
+			strtemp = "OptBadAng";
+		else if(finalstate == OptBadDih)
+			strtemp = "OptBadDih";
+		else if(finalstate == FitcellBadDih)
+			strtemp = "FitcellBadDih";
+		else if(finalstate == NoFitcell)
+			strtemp = "NoFitcell";
+
+		pr.PushAttribute("error", strtemp.c_str());
+		pr.PushAttribute("time",(int) time);
+		pr.PushAttribute("steps",steps);
+		pr.PushAttribute("force",force);
+		pr.PushAttribute("pressure",pressure);
+	pr.CloseElement(); //info
+	pr.OpenElement("cell");
+		pr.PushAttribute("a",unit.a);
+		pr.PushAttribute("b",unit.b);
+		pr.PushAttribute("c",unit.c);
+		pr.PushAttribute("alpha",unit.alpha);
+		pr.PushAttribute("beta",unit.beta);
+		pr.PushAttribute("gamma",unit.gamma);
+		pr.PushAttribute("rA",unit.ratA);
+		pr.PushAttribute("rB",unit.ratB);
+		pr.PushAttribute("rC",unit.ratC);
+		pr.PushAttribute("spacegroup",spacegroupNames[unit.spacegroup-1].c_str());
+		for(int i = 0; i < unit.stoich.size(); i++) {
+			pr.OpenElement("stoichiometry");
+				pr.PushAttribute("mol",names[unit.stoich[i].mol].c_str());
+				pr.PushAttribute("min",unit.stoich[i].min);
+				pr.PushAttribute("max",unit.stoich[i].max);
+				pr.PushAttribute("count",unit.stoich[i].count);
+			pr.CloseElement();//stoich
+		}
+	pr.CloseElement(); //cell
+
+	for(int i = 0; i < molecules.size(); i++) {
+		GASP2molecule mol = molecules[i];
+		pr.OpenElement("molecule");
+			string pln = "";
+
+			pr.OpenElement("rot");
+			for(int j = 0; j < 9; j++)
+				pln += (to_string(mol.rot[j/3][j%3]) + " ");
+			pr.PushText(pln.c_str());
+			pr.CloseElement(); //rot
+
+			pln.clear();
+			pr.OpenElement("pos");
+			for(int j = 0; j < 3; j++)
+				pln += (to_string(mol.pos[j]) + " ");
+			pr.PushText(pln.c_str());
+			pr.CloseElement(); //pos
+
+			pr.PushAttribute("name",names[mol.label].c_str());
+
+			pln += (names[mol.atoms[mol.p1].label] +" ");
+			pln += (names[mol.atoms[mol.p2].label] +" ");
+			pln += (names[mol.atoms[mol.p3].label] +" ");
+			pln.clear();
+			pr.PushAttribute("plane",pln.c_str());
+			pr.PushAttribute("plind",(int)mol.plindex);
+			pr.PushAttribute("symm",(int)mol.symm);
+			pr.PushAttribute("expectvol",mol.expectvol);
+
+			for(int j = 0; j < mol.atoms.size(); j++) {
+			pr.OpenElement("atom");
+				pr.PushAttribute("elem",getElemName(mol.atoms[j].type).c_str());
+				pr.PushAttribute("title",names[mol.atoms[j].label].c_str());
+				pr.PushAttribute("x",mol.atoms[j].pos[0]);
+				pr.PushAttribute("y",mol.atoms[j].pos[1]);
+				pr.PushAttribute("z",mol.atoms[j].pos[2]);
+			pr.CloseElement(); //atom
+			}
+
+			for(int j = 0; j < mol.dihedrals.size(); j++) {
+			pr.OpenElement("dihedrals");
+				pr.PushAttribute("title",names[mol.dihedrals[j].label].c_str());
+				pln.clear();
+				pln += (names[mol.atoms[mol.dihedrals[j].a].label] +" ");
+				pln += (names[mol.atoms[mol.dihedrals[j].b].label] +" ");
+				pln += (names[mol.atoms[mol.dihedrals[j].c].label] +" ");
+				pln += (names[mol.atoms[mol.dihedrals[j].d].label] +" ");
+
+				pr.PushAttribute("angle",pln.c_str());
+
+				pln.clear();
+				for(int k = 0; k < mol.dihedrals[j].update.size(); k++)
+					pln += (names[mol.atoms[mol.dihedrals[j].update[k]].label] +" ");
+
+				pr.PushAttribute("update",pln.c_str());
+				pr.PushAttribute("min",mol.dihedrals[j].minAng);
+				pr.PushAttribute("max",mol.dihedrals[j].maxAng);
+				pr.PushAttribute("val",mol.dihedrals[j].ang);
+
+			pr.CloseElement(); //dih
+			}
+
+			for(int j = 0; j < mol.bonds.size(); j++) {
+			pr.OpenElement("bonds");
+				pr.PushAttribute("title",names[mol.bonds[j].label].c_str());
+				pln.clear();
+				pln += (names[mol.atoms[mol.bonds[j].a].label] +" ");
+				pln += (names[mol.atoms[mol.bonds[j].b].label] +" ");
+				pr.PushAttribute("atoms",pln.c_str());
+				pr.PushAttribute("min",mol.bonds[j].minLen);
+				pr.PushAttribute("max",mol.bonds[j].maxLen);
+				pr.PushAttribute("val",mol.bonds[j].len);
+			pr.CloseElement(); //bonds
+			}
+
+			for(int j = 0; j < mol.angles.size(); j++) {
+			pr.OpenElement("angles");
+				pr.PushAttribute("title",names[mol.angles[j].label].c_str());
+				pln.clear();
+				pln += (names[mol.atoms[mol.angles[j].a].label] +" ");
+				pln += (names[mol.atoms[mol.angles[j].b].label] +" ");
+				pln += (names[mol.atoms[mol.angles[j].c].label] +" ");
+				pr.PushAttribute("angle",pln.c_str());
+				pr.PushAttribute("min",mol.angles[j].minAng);
+				pr.PushAttribute("max",mol.angles[j].maxAng);
+				pr.PushAttribute("val",mol.angles[j].ang);
+			pr.CloseElement(); //angles
+			}
+
+
+
+		pr.CloseElement(); //molecule
+	}
+
+
+	pr.CloseElement(); //crystal
+
+	//pr.PushAttribute("",);
+
+	string out;
+	out = pr.CStr();
+	return out;
 }
 
 
@@ -236,7 +414,9 @@ bool GASP2struct::parseXMLStruct(tinyxml2::XMLElement * crystal, string & errors
 			tempmol.clear();
 			molecule = molecule->NextSiblingElement("molecule");
 		}
+
 		//parse the unitcell info (if present)
+		//MUST HAPPEN AFTER MOLECULES ARE READ.
 		GASP2cell tempcell;
 
 		item = crystal->FirstChildElement("cell");
@@ -378,7 +558,7 @@ bool GASP2struct::readDih(tinyxml2::XMLElement *elem, string& errorstring, GASP2
 
 	//update
 	dih.update.clear();
-	stemp = elem->Attribute("angle");
+	stemp = elem->Attribute("update");
 	if(stemp) {
 		strtemp = stemp;
 		vstemp = split(strtemp);
@@ -603,12 +783,14 @@ bool GASP2struct::readMol(tinyxml2::XMLElement *elem, string& errorstring, GASP2
 	}
 
 	//plindex
+	mol.plindex = 0;
 	if(! elem->QueryIntAttribute("plind",&itemp) ) {
 		if(itemp > 0)
 			mol.plindex = itemp;
 	}
 
 	//symm
+	mol.symm = 0;
 	if(! elem->QueryIntAttribute("symm",&itemp) ) {
 		if(itemp > 0)
 			mol.symm = itemp;
@@ -690,6 +872,7 @@ bool GASP2struct::readMol(tinyxml2::XMLElement *elem, string& errorstring, GASP2
 	}
 
 	//rotation matrix
+	mol.rot = vl_1;
 	item = elem->FirstChildElement("rot");
 	if(item) {
 		stemp = item->GetText();
@@ -709,6 +892,7 @@ bool GASP2struct::readMol(tinyxml2::XMLElement *elem, string& errorstring, GASP2
 	}
 
 	//position vector
+	mol.pos = vl_0;
 	item = elem->FirstChildElement("pos");
 	if(item) {
 		stemp = item->GetText();
@@ -735,6 +919,9 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 	int itemp;
 	const char * stemp;
 	string strtemp;
+	tinyxml2::XMLElement * item;
+
+	cell.clear();
 
 	//a
 	cell.a = 0.01;
@@ -863,7 +1050,16 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 
 
 	//stoichiometry
+	//parse the angles
+	GASP2stoich tempstoich;
 
+	item = elem->FirstChildElement("stoichiometry");
+	while(item) {
+		if(! readStoich(item, errorstring, tempstoich) )
+			return false;
+		cell.stoich.push_back(tempstoich);
+		item = item->NextSiblingElement("stoichiometry");
+	}
 
 	return true;
 }
@@ -1009,6 +1205,65 @@ bool GASP2struct::readInfo(tinyxml2::XMLElement *elem, string& errorstring) {
 
 }
 
+bool GASP2struct::readStoich(tinyxml2::XMLElement *elem, string& errorstring, GASP2stoich &stoich) {
+
+	int itemp;
+	const char * stemp;
+	string strtemp;
+
+	//title
+	//first search for an index, then parse as string
+	stemp = elem->Attribute("mol");
+	if(stemp) {
+		strtemp = stemp;
+		bool flag = false;
+		for(int i = 0; i < molecules.size(); i++) {
+			if(names[molecules[i].label] == strtemp) {
+				stoich.mol = molecules[i].label;
+				flag = true;
+				break;
+			}
+		}
+		if(flag == false) {
+			errorstring = "The molecules for one of the stoichiometries does not match the name of an existing molecule!\n";
+			return false;
+		}
+	}
+	else {
+		errorstring = "A stoichiometry molecule name was not found!\n";
+		return false;
+	}
+
+	//count
+	stoich.count = 1;
+	if(!elem->QueryIntAttribute("count", &itemp)) {
+		stoich.count = itemp;
+	}
+
+	stoich.min = 1;
+	if(!elem->QueryIntAttribute("min", &itemp)) {
+		stoich.min = itemp;
+	}
+
+	stoich.max = 1;
+	if(!elem->QueryIntAttribute("max", &itemp)) {
+		stoich.max = itemp;
+		if(stoich.max < stoich.min) {
+			errorstring = "The max count for stoichiometry " + strtemp + " is less than the min count!\n";
+			return false;
+		}
+	}
+
+	if(stoich.max < stoich.count)
+		stoich.max = stoich.count;
+	if(stoich.min > stoich.count)
+		stoich.min = stoich.count;
+
+	return true;
+
+}
+
+
 void GASP2struct::logStruct() {
 	cout << endl << endl;
 	cout << setprecision(8) << fixed;
@@ -1023,6 +1278,12 @@ void GASP2struct::logStruct() {
 //		cout << "  " << i << ": " << names[i] << endl;
 //	}
 //	cout << endl;
+	cout << "Stoichiometry:\n";
+	for(int i = 0; i< unit.stoich.size(); i++) {
+		cout << "  " << names[unit.stoich[i].mol] << ": " << unit.stoich[i].count << endl;
+
+	}
+
 
 	cout << "Number of molecules: " << molecules.size() << endl << endl;;
 
@@ -1035,6 +1296,10 @@ void GASP2struct::logStruct() {
 		for(int j = 0; j < molecules[i].dihedrals.size(); j++) {
 			GASP2dihedral dh = molecules[i].dihedrals[j];
 			cout << "    Dih " << names[dh.label]<<" ("<<dh.minAng<<","<<dh.maxAng<<")"<<endl;
+			cout << "        Update: ";
+			for(int k = 0; k < dh.update.size(); k++)
+				cout << names[molecules[i].atoms[ dh.update[k] ].label] <<" ";
+			cout << endl;
 		}
 		for(int j = 0; j < molecules[i].angles.size(); j++) {
 			GASP2angle an = molecules[i].angles[j];

@@ -33,7 +33,7 @@ const option::Descriptor usage[] =
 		{INPUT,0,"i","input",Arg::Required,"-i,--input  The XML input file for running"},
 		{HELP,0,"h","help",option::Arg::Optional,"-h,--help  Displays this help message"},
 		{RESTART,0,"r","restart",Arg::NonEmpty,"-r,--restart  Optional argument for a restart file"},
-		{SPACEGROUPS,0,"ls","spacegroups",Arg::Optional,"-ls,--spaccegroups List valid spacegroups"},
+		{SPACEGROUPS,0,"ls","spacegroups",Arg::Optional,"-ls,--spacegroups List valid spacegroups"},
 		{ 0, 0, 0, 0, 0, 0 }
 };
 

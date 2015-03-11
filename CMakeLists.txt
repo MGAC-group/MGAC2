@@ -1,8 +1,10 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 2.8.12)
 
 project (mgac2)
 
 find_package(MPI REQUIRED)
+
+add_compile_options(-std=c++11)
 
 include_directories(${MPI_INCLUDE_PATH})
 include_directories("${PROJECT_SOURCE_DIR}/include")

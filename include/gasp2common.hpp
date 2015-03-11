@@ -5,7 +5,10 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 #include <ctime>
+#include <chrono>
+#include <stdio.h>
 #include <stdlib.h>
 #include "tinyxml2.h"
 #include "svl/SVL.h"
@@ -49,6 +52,8 @@ string getElemName(Elem in);
 vector<string> split(string in, char delim=' ');
 
 bool loadSpaceGroups();
+
+string tfconv(bool var);
 
 //wrapper for libuuid
 class UUID {

@@ -1,8 +1,7 @@
+#pragma once
 #include "gasp2common.hpp"
 
 using namespace std;
-
-
 
 typedef enum StructError {
 	OKStruct=0,
@@ -99,7 +98,7 @@ struct GASP2molecule {
 //stoichiometric composition
 //handles a single molecule
 //
-struct GASPcomp {
+struct GASP2stoich {
 	NIndex mol; //refers to the index of the molecule
 	int min, max;
 	int count;
@@ -121,7 +120,7 @@ struct GASP2cell {
 	//Vec3 maxFrac; //fractional limit of molecules; INTERNAL
 	//Vec3 minFrac; //INTERNAL
 
-	vector<GASPcomp> stoich;
+	vector<GASP2stoich> stoich;
 	void clear() {
 		stoich.clear();
 	}
@@ -146,7 +145,7 @@ private:
 	//what ever the function does, the only thing it is allowed to change
 	//is the unit cell parameters and the position of atoms
 	//changing other values (like the dihedral values) is performed internally by check()
-	bool (*eval)(vector<GASP2molecule>&, GASP2cell&, double&);
+	bool (*eval)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&);
 
 public:
 
@@ -154,25 +153,24 @@ public:
 	bool fitcell(); //puts the molecules in the built unit cell
 	bool unfitcell(); //reduces the structure to only fundamental units
 	bool check(); //checks for violation of constraints (usually after opt)
-	bool evaluate();
-	void setEval(bool (*e)(vector<GASP2molecule>&, GASP2cell&, double&) ) {eval = e;};
+
+
+	void setEval(bool (*e)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&) ) {eval = e;};
 
 	//I/O handlers
-	tinyxml2::XMLElement* serializeXML(); //commits structure to XML element
+	string serializeXML(); //commits structure to XML element
 	bool parseXMLDoc(tinyxml2::XMLDocument *doc, string& errorstring ); //reads structure info from an XML file to molecules
 	bool parseXMLStruct(tinyxml2::XMLElement *elem, string& errorstring); //reads a structure that was transmitted
 	//bool readH5() {return true;};
 	//bool writeH5() {return true;};
 	void logStruct();
 
-	//MPI handlers
-	bool MPICopy(int target) {return true;}; //sends a struct via MPI to a client
-	bool MPIRecv() {return true;}; //corresponding receive via MPI
 
 	//genetic operators
-	//void initialize();
+	bool init();
 	//void mutate(double rate);
 	//void cross(GASP2struct partner, GASP2struct &childA, GASP2struct &childB);
+	bool evaluate();
 
 	//getters
 	bool completed() {return complete;};
@@ -181,6 +179,8 @@ public:
 	bool rejected() {return (finalstate != OKStruct);};
 	double getEnergy() {return energy;};
 	double getVolume(); //returns the unit cell volume
+	double getVolScore(); //returns a score based on closeness to expectvol
+	void minmaxVol(double &min, double &max) {min = minvol; max = maxvol;}
 
 private:
 	//values
@@ -235,6 +235,7 @@ private:
 	bool readMol(tinyxml2::XMLElement *elem, string& errorstring, GASP2molecule &mol);
 	bool readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP2cell &cell);
 	bool readInfo(tinyxml2::XMLElement *elem, string& errorstring);
+	bool readStoich(tinyxml2::XMLElement *elem, string& errorstring, GASP2stoich &stoich);
 
 
 

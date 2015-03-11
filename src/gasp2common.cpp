@@ -1,11 +1,10 @@
 #include "gasp2common.hpp"
 
-using namespace std;
+//using namespace std;
 
 //static datas
 tinyxml2::XMLDocument spacegroups;
 vector<string> spacegroupNames;
-
 
 //double dist ( const Vec3 & A, const Vec3 & B ) {
 //    return sqrt( (A-B).dot(A-B) );
@@ -271,6 +270,11 @@ bool loadSpaceGroups() {
 
 }
 
-
+string tfconv(bool var) {
+	if(var)
+		return "true";
+	else
+		return "false";
+}
 
 
