@@ -27,7 +27,6 @@ GASP2struct::GASP2struct() {
 	parentB.clear();
 
 
-
 }
 
 double GASP2struct::getVolume() {
@@ -37,7 +36,6 @@ double GASP2struct::getVolume() {
             		- cos(unit.beta)*cos(unit.beta)
             		- cos(unit.gamma)*cos(unit.gamma)
             		+ phi) );
-
 }
 
 bool GASP2struct::fitcell() {
@@ -87,6 +85,8 @@ bool GASP2struct::check() {
 				finalstate = OptBadDih;
 			molecules[i].dihedrals[j].ang = val;
 		}
+
+
 		//plane rotations
 
 
@@ -114,8 +114,43 @@ bool GASP2struct::evaluate() {
 	return complete;
 };
 
+bool GASP2struct::setSpacegroup() {
+
+
+	return true;
+}
+
 //this functions randomizes structures
-bool GASP2struct::init() {
+bool GASP2struct::init(Spacemode mode) {
+	//set UUIDs appropriately
+	ID.generate();
+	parentA.clear();
+	parentB.clear();
+
+	//randomize spacegroup
+
+	//one, two x4, three, four, six,
+	discrete_distribution<> daxis({1,4,1,1,1});
+	//Cn, Cnv, Cnh x2, Sn x2, Dn, Dnd, Dnh
+	discrete_distribution<> dschoen({1,1,2,2,1,1,1});
+	discrete_distribution<> dcent({1,4,1,1,1});
+	discrete_distribution<> dsub({1,4,1,1,1});
+
+
+
+	//randomize ratios, reset cell params
+
+
+	//set stoichiometry
+
+	//for each molecule
+
+	//randomize rotation matrix
+
+	//randomize position
+
+	//randomize dihedrals
+
 
 	return true;
 }
@@ -196,6 +231,10 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("rB",unit.ratB);
 		pr.PushAttribute("rC",unit.ratC);
 		pr.PushAttribute("spacegroup",spacegroupNames[unit.spacegroup-1].c_str());
+		pr.PushAttribute("cen",unit.cen);
+		pr.PushAttribute("sub",unit.sub);
+		pr.PushAttribute("typ", getSchoenflies(unit.typ).c_str());
+		pr.PushAttribute("axn", getAxis(unit.axn).c_str());
 		for(int i = 0; i < unit.stoich.size(); i++) {
 			pr.OpenElement("stoichiometry");
 				pr.PushAttribute("mol",names[unit.stoich[i].mol].c_str());
@@ -458,7 +497,7 @@ bool GASP2struct::readAtom(tinyxml2::XMLElement *elem, string& errorstring, GASP
 			errorstring = "An atom element was not specified!\n";
 			return false;
 		}
-		if(at.type == UNK) {
+		if(at.type == Elem::UNK) {
 			errorstring = "An unknown or unsupported element name was used!\n";
 			return false;
 		}
@@ -943,7 +982,6 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		return false;
 	}
 
-
 	//c
 	cell.c = 0.01;
 	if(!elem->QueryDoubleAttribute("c", &dtemp)) {
@@ -953,7 +991,6 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		errorstring = "Cell length C must be greater than 0!\n";
 		return false;
 	}
-
 
 	//alpha
 	cell.alpha = 90.0;
@@ -965,7 +1002,6 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		return false;
 	}
 
-
 	//beta
 	cell.beta = 90.0;
 	if(!elem->QueryDoubleAttribute("bt", &dtemp)) {
@@ -975,7 +1011,6 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		errorstring = "Cell beta is out of bound (-180.0 < x < 180.0)!\n";
 		return false;
 	}
-
 
 	//gamma
 	cell.gamma = 90.0;
@@ -987,7 +1022,6 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		return false;
 	}
 
-
 	//rA
 	cell.ratA = 0.01;
 	if(!elem->QueryDoubleAttribute("rA", &dtemp)) {
@@ -997,7 +1031,6 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		errorstring = "Cell ratio A must be greater than 0!\n";
 		return false;
 	}
-
 
 	//rB
 	cell.ratB = 0.01;
@@ -1009,7 +1042,6 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		return false;
 	}
 
-
 	//rC
 	cell.ratC = 0.01;
 	if(!elem->QueryDoubleAttribute("rC", &dtemp)) {
@@ -1020,9 +1052,9 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		return false;
 	}
 
-
 	//spacegroup
 	cell.spacegroup = 1;
+	stemp = elem->Attribute("spacegroup");
 	if(!elem->QueryIntAttribute("spacegroup", &itemp)) {
 		if(itemp > 0 && itemp <= spacegroupNames.size())
 			cell.spacegroup = itemp - 1;
@@ -1031,8 +1063,8 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 			return false;
 		}
 	}
-	else {
-		stemp = elem->Attribute("spacegroup");
+	else if (stemp){
+		//stemp = elem->Attribute("spacegroup");
 		strtemp = stemp;
 		cell.spacegroup = 0;
 		for(int i = 0; i < spacegroupNames.size(); i++) {
@@ -1045,9 +1077,48 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 			errorstring = "A non-valid string identifier was given for a spacegroup value.\n";
 			return false;
 		}
-
 	}
 
+	//schoenflies typ
+	cell.typ = Schoenflies::Cn;
+	stemp = elem->Attribute("typ");
+	if(stemp) {
+		strtemp = stemp;
+		cell.typ = getSchoenflies(strtemp);
+		if(cell.typ == Schoenflies::UNK) {
+			errorstring = "A non-valid string identifier was given for the Schoenflies type.\n";			return false;
+		}
+	}
+
+	//Axisnum axn
+	cell.axn = Axisnum::One;
+	stemp = elem->Attribute("axn");
+	if(stemp) {
+		strtemp = stemp;
+		cell.axn = getAxis(strtemp);
+		if(cell.axn == Axisnum::UNK) {
+			errorstring = "A non-valid string identifier was given for the axis type.\n";			return false;
+		}
+	}
+
+	//Centering cen
+	cell.cen = 0.0;
+	if(!elem->QueryDoubleAttribute("cen", &dtemp)) {
+		cell.cen = dtemp;
+	}
+	if(cell.cen < 0.0 || cell.cen > 1.0) {
+		errorstring = "Centering must be on interval [0.0,1.0]!\n";
+		return false;
+	}
+	//Subtype sub
+	cell.sub = 0.0;
+	if(!elem->QueryDoubleAttribute("sub", &dtemp)) {
+		cell.sub = dtemp;
+	}
+	if(cell.sub < 0.0 || cell.sub > 1.0) {
+		errorstring = "Subtype must be on interval [0.0,1.0]!\n";
+		return false;
+	}
 
 	//stoichiometry
 	//parse the angles

@@ -14,6 +14,7 @@
 #include "svl/SVL.h"
 #include "mpi.h"
 #include <uuid/uuid.h>
+#include <random>
 
 extern "C" {
 	extern char _binary_spacegroups_xml_start;
@@ -29,13 +30,37 @@ using namespace std;
 
 extern tinyxml2::XMLDocument spacegroups;
 extern vector<string> spacegroupNames;
+extern mt19937_64 rgen;
 
 typedef unsigned int Index;
 typedef unsigned int NIndex;
 
-typedef enum Elem {
+
+typedef enum struct Elem {
 	UNK=0,C,H,N,O,P,Cl,F,S,Br,
 }Elem;
+
+typedef enum struct Schoenflies {
+	Cn, Cnv, Cnh, Sn, Dn, Dnd, Dnh,
+	T, Th, O, Td, Oh, UNK=0
+}Schoenflies;
+
+typedef enum struct Axisnum {
+	One, Two, Three, Four, Six, UNK=0
+}Axisnum;
+
+typedef enum Spacemode {
+	Limited=0, //Excludes Tetrahedral/Octahedral schoenflies and F centerings
+	Single, //Single spacegroup only
+	Full, //All spacegroups (including T,O and F)
+}Spacemode;
+
+typedef double Centering; //encodes P C/A/B/N/D/E I, F, R, H depending on schoenflies/axis
+typedef double Subtype; //encodes glide and screw axes based on group number
+
+
+
+
 
 double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C );
 
@@ -48,6 +73,12 @@ double vdw( Elem type );
 Elem getElemType(string in);
 
 string getElemName(Elem in);
+
+Axisnum getAxis(string in);
+string getAxis(Axisnum in);
+
+Schoenflies getSchoenflies(string in);
+string getSchoenflies(Schoenflies in);
 
 vector<string> split(string in, char delim=' ');
 

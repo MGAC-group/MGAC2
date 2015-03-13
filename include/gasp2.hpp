@@ -17,6 +17,8 @@ public:
 
 	void getHostInfo();
 
+
+
 private:
 	//procedural variables
 	time_t starttime;
@@ -31,6 +33,7 @@ private:
 	GASP2param params;
 	GASP2struct root; //base structure which all other structures are derived from
 	vector<GASP2pop> populations;
+
 
 
 	bool parseInput(tinyxml2::XMLDocument *doc, string & errors);

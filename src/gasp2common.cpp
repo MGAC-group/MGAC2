@@ -6,6 +6,9 @@
 tinyxml2::XMLDocument spacegroups;
 vector<string> spacegroupNames;
 
+mt19937_64 rgen;
+
+
 //double dist ( const Vec3 & A, const Vec3 & B ) {
 //    return sqrt( (A-B).dot(A-B) );
 //}
@@ -90,23 +93,23 @@ Mat3 molecularPlane(const Vec3 at1, const Vec3 at2, const Vec3 at3)
 
 /// Reference: Cambridge Crystallographic Data Centre
 double rcov( const Elem type ) {
-    if ( type == H )
+    if ( type == Elem::H )
         return 0.23;
-    else if ( type == C )
+    else if ( type == Elem::C )
         return 0.68;
-    else if ( type == N  )
+    else if ( type == Elem::N  )
         return 0.68;
-    else if ( type == O  )
+    else if ( type == Elem::O  )
         return 0.68;
-    else if ( type == F  )
+    else if ( type == Elem::F  )
         return 0.64;
-    else if ( type == S  )
+    else if ( type == Elem::S  )
         return 1.02;
-    else if ( type == Cl  )
+    else if ( type == Elem::Cl  )
         return 0.99;
-    else if ( type == P  )
+    else if ( type == Elem::P  )
         return 1.05;
-    else if ( type == Br  )
+    else if ( type == Elem::Br  )
         return 1.21;
 }
 
@@ -116,25 +119,25 @@ double rcov( const Elem type ) {
 //excepting P, which is:
 //Bondi, J. Phys. Chem. (1964) 68, pp 441
 double vdw( Elem type ) {
-    if ( type == H )
+    if ( type == Elem::H )
         return 1.09;
-    else if ( type == C )
+    else if ( type == Elem::C )
         return 1.75;
-    else if ( type == N  )
+    else if ( type == Elem::N  )
         return 1.61;
-    else if ( type == O  )
+    else if ( type == Elem::O  )
         return 1.56;
-    else if ( type == F  )
+    else if ( type == Elem::F  )
         return 1.44;
-    else if ( type == S  )
+    else if ( type == Elem::S  )
         return 1.79;
-    else if ( type == Cl  )
+    else if ( type == Elem::Cl  )
         return 1.74;
-    else if ( type == Br  )
+    else if ( type == Elem::Br  )
         return 1.85;
     //else if ( type == I  )
     //    return 2.00;
-    else if ( type == P  )
+    else if ( type == Elem::P  )
         return 1.80;
 
 }
@@ -143,25 +146,25 @@ Elem getElemType(string in) {
 	Elem type;
 	//UNK=0,C,H,N,O,P,Cl,F,S,Br,
 	if(in == "C")
-		type = C;
+		type = Elem::C;
 	else if(in == "H")
-		type = H;
+		type = Elem::H;
 	else if(in == "N")
-		type = N;
+		type = Elem::N;
 	else if(in == "O")
-		type = O;
+		type = Elem::O;
 	else if(in == "P")
-		type = P;
+		type = Elem::P;
 	else if(in == "Cl")
-		type = Cl;
+		type = Elem::Cl;
 	else if(in == "F")
-		type = F;
+		type = Elem::F;
 	else if(in == "S")
-		type = S;
+		type = Elem::S;
 	else if(in == "Br")
-		type = Br;
+		type = Elem::Br;
 	else
-		type = UNK;
+		type = Elem::UNK;
 
 	return type;
 }
@@ -169,23 +172,23 @@ Elem getElemType(string in) {
 string getElemName(Elem in) {
 	string type;
 	//UNK=0,C,H,N,O,P,Cl,F,S,Br,
-	if(in == C)
+	if(in == Elem::C)
 		type = "C";
-	else if(in == H)
+	else if(in == Elem::H)
 		type = "H";
-	else if(in == N)
+	else if(in == Elem::N)
 		type = "N";
-	else if(in == O)
+	else if(in == Elem::O)
 		type = "O";
-	else if(in == P)
+	else if(in == Elem::P)
 		type = "P";
-	else if(in == Cl)
+	else if(in == Elem::Cl)
 		type = "Cl";
-	else if(in == F)
+	else if(in == Elem::F)
 		type = "F";
-	else if(in == S)
+	else if(in == Elem::S)
 		type = "S";
-	else if(in == Br)
+	else if(in == Elem::Br)
 		type = "Br";
 	else
 		type = "UNK";
@@ -195,6 +198,104 @@ string getElemName(Elem in) {
 
 }
 
+Axisnum getAxis(string in) {
+	Axisnum type;
+	if(in == "One")
+		type = Axisnum::One;
+	else if(in == "Two")
+		type = Axisnum::Two;
+	else if(in == "Three")
+		type = Axisnum::Three;
+	else if(in == "Four")
+		type = Axisnum::Four;
+	else if(in == "Six")
+		type = Axisnum::Six;
+	else
+		type = Axisnum::UNK;
+
+	return type;
+}
+
+string getAxis(Axisnum in) {
+	string type;
+	if(in == Axisnum::One)
+		type = "One";
+	else if(in == Axisnum::Two)
+		type = "Two";
+	else if(in == Axisnum::Three)
+		type = "Three";
+	else if(in == Axisnum::Four)
+		type = "Four";
+	else if(in == Axisnum::Six)
+		type = "Six";
+	else
+		type = "UNK";
+
+	return type;
+}
+
+Schoenflies getSchoenflies(string in) {
+	Schoenflies type;
+	if(in == "Cn")
+		type = Schoenflies::Cn;
+	else if(in == "Cnv")
+		type = Schoenflies::Cnv;
+	else if(in == "Cnh")
+		type = Schoenflies::Cnh;
+	else if(in == "Sn")
+		type = Schoenflies::Sn;
+	else if(in == "Dn")
+		type = Schoenflies::Dn;
+	else if(in == "Dnd")
+		type = Schoenflies::Dnd;
+	else if(in == "Dnh")
+		type = Schoenflies::Dnh;
+	else if(in == "T")
+		type = Schoenflies::T;
+	else if(in == "Th")
+		type = Schoenflies::Th;
+	else if(in == "O")
+		type = Schoenflies::O;
+	else if(in == "Td")
+		type = Schoenflies::Td;
+	else if(in == "Oh")
+		type = Schoenflies::Oh;
+	else
+		type = Schoenflies::UNK;
+
+	return type;
+}
+
+string getSchoenflies(Schoenflies in) {
+	string type;
+	if(in == Schoenflies::Cn)
+		type = "Cn";
+	else if(in == Schoenflies::Cnv)
+		type = "Cnv";
+	else if(in == Schoenflies::Cnh)
+		type = "Cnh";
+	else if(in == Schoenflies::Sn)
+		type = "Sn";
+	else if(in == Schoenflies::Dn)
+		type = "Dn";
+	else if(in == Schoenflies::Dnd)
+		type = "Dnd";
+	else if(in == Schoenflies::Dnh)
+		type = "Dnh";
+	else if(in == Schoenflies::T)
+		type = "T";
+	else if(in == Schoenflies::Th)
+		type = "Th";
+	else if(in == Schoenflies::O)
+		type = "O";
+	else if(in == Schoenflies::Td)
+		type = "Td";
+	else if(in == Schoenflies::Oh)
+		type = "Oh";
+	else
+		type = "UNK";
+	return type;
+}
 
 vector<string> split(string in, char delim) {
 	vector<string> out;

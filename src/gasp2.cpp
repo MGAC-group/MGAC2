@@ -18,6 +18,10 @@ GASP2control::GASP2control(int ID, string infile) {
 	else
 		exit(1);
 
+	//rgen is in gasp2common
+	//kinda wonky, but is okay
+	rgen.seed(params.seed+ID);
+
 }
 
 //this constructor is invoked for a server
@@ -53,7 +57,7 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart)
 
 	//parse the restart if it exists
 
-
+	rgen.seed(params.seed);
 
 }
 
@@ -95,6 +99,9 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 		return false;
 	if(root.parseXMLDoc(doc, errors)==false)
 		return false;
+
+
+
 
 
 

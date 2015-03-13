@@ -14,6 +14,9 @@ typedef enum StructError {
 
 }StructError;
 
+
+
+
 struct GASP2atom {
 	Vec3 pos; //always saved as absolute angstrom coord
 	Elem type;
@@ -108,14 +111,20 @@ struct GASP2cell {
 	double a,b,c; //ANGSTROMS
 	double alpha,beta,gamma; //DEGREES
 	double ratA,ratB,ratC; //UNIT-LESS
+
+	//gene for spacegroup
+	Schoenflies typ;
+	Axisnum axn;
+	Centering cen;
+	Subtype sub;
 	Index spacegroup; //spacegroup number (same as in IUCR tables)
 
 	//AML: I don't think fractional values are important
 	//when considering that the new software does alignments
 	//between all unique, energy tested structures.
 	//If two structures are similar enough, and the energy of
-	//one structure is known, then an idea of the energy potential
-	//well is known
+	//one structure is known, then an idea of the shape of the
+	//energy potential well is known
 
 	//Vec3 maxFrac; //fractional limit of molecules; INTERNAL
 	//Vec3 minFrac; //INTERNAL
@@ -167,7 +176,7 @@ public:
 
 
 	//genetic operators
-	bool init();
+	bool init(Spacemode mode);
 	//void mutate(double rate);
 	//void cross(GASP2struct partner, GASP2struct &childA, GASP2struct &childB);
 	bool evaluate();
@@ -224,6 +233,7 @@ private:
 
 
 	//spacegroup things
+	bool setSpacegroup();
 	void setSymmOp(GASP2molecule &mol);
 	void enforceCrystalType();
 
