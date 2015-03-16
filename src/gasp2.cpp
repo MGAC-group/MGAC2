@@ -101,9 +101,10 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 		return false;
 
 
+	for(int i = 0; i < 3; i++) {
+		root.init();
 
-
-
+	}
 
 	if(ID == 0) {
 		params.logParams();

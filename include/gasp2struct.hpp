@@ -42,7 +42,7 @@ struct GASP2dihedral {
 	Index a,b,c,d; //indices to atoms;
 	vector<Index> update; //list of atoms to update
 	double maxAng, minAng; //DEGREES
-	double ang; //DEGREES - XMLOUT
+	double ang; //DEGREES
 	void clear() {
 		update.clear();
 	}
@@ -115,7 +115,7 @@ struct GASP2cell {
 	//gene for spacegroup
 	Schoenflies typ;
 	Axisnum axn;
-	Centering cen;
+	Centerfl cen;
 	Subtype sub;
 	Index spacegroup; //spacegroup number (same as in IUCR tables)
 
@@ -176,7 +176,7 @@ public:
 
 
 	//genetic operators
-	bool init(Spacemode mode);
+	bool init(Spacemode mode=Limited, Index spcg=0);
 	//void mutate(double rate);
 	//void cross(GASP2struct partner, GASP2struct &childA, GASP2struct &childB);
 	bool evaluate();
@@ -230,6 +230,7 @@ private:
 	NIndex newName(string name);
 	//Looks up an atom index
 	Index atomLookup(NIndex nameInd, GASP2molecule mol);
+	Index molLookup(NIndex nameInd);
 
 
 	//spacegroup things

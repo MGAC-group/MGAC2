@@ -46,6 +46,17 @@ bool GASP2struct::fitcell() {
 
 bool GASP2struct::unfitcell() {
 
+	vector<GASP2molecule> tempmol;
+	for(int i = 0; i < molecules.size(); i++) {
+		if(molecules[i].symm == 0)
+			tempmol.push_back(molecules[i]);
+	}
+	if(tempmol.size() == 0) {
+		cout << "Something went wrong during the unfitcell; no identity-symm molecules were found...\n";
+		return false;
+	}
+	molecules.clear();
+	molecules = tempmol;
 	return true;
 }
 
@@ -115,13 +126,46 @@ bool GASP2struct::evaluate() {
 };
 
 bool GASP2struct::setSpacegroup() {
+	Index index;
+	vector<cryGroup> temp;
 
+	//check for invalid schoenflies
+	if( (unit.typ == Schoenflies::Dnd) && (unit.axn == Axisnum::Four || unit.axn == Axisnum::Six) ) {
+		cout << "D4d or D6d was generated; structure " << ID.toStr() << " rejected.\n";
+		return false;
+	}
+
+	//check for extended groups
+	Axisnum a;
+	switch(unit.typ) {
+	case Schoenflies::T:
+	case Schoenflies::Th:
+	case Schoenflies::O:
+	case Schoenflies::Td:
+	case Schoenflies::Oh:
+		a = Axisnum::UNK;
+	default:
+		a = unit.axn;
+	}
+
+	//get a sublist of groups
+	for(int i = 0; i < groupgenes.size(); i++) {
+		if( (a == groupgenes[i].a) && (unit.typ == groupgenes[i].s) )
+			temp.push_back(groupgenes[i]);
+	}
+
+	//select centering group
+	int c = indexSelect(unit.cen, temp.size());
+	//set spacegroup from list
+	unit.spacegroup = temp[c].indices[indexSelect(unit.sub,temp[c].indices.size())] - 1;
+
+	cout << "Spacegroup: " << unit.spacegroup;
 
 	return true;
 }
 
 //this functions randomizes structures
-bool GASP2struct::init(Spacemode mode) {
+bool GASP2struct::init(Spacemode mode, Index spcg) {
 	//set UUIDs appropriately
 	ID.generate();
 	parentA.clear();
@@ -131,25 +175,125 @@ bool GASP2struct::init(Spacemode mode) {
 
 	//one, two x4, three, four, six,
 	discrete_distribution<> daxis({1,4,1,1,1});
-	//Cn, Cnv, Cnh x2, Sn x2, Dn, Dnd, Dnh
-	discrete_distribution<> dschoen({1,1,2,2,1,1,1});
-	discrete_distribution<> dcent({1,4,1,1,1});
-	discrete_distribution<> dsub({1,4,1,1,1});
+
+	uniform_real_distribution<double> dcent(0.0,1.0);
+	uniform_real_distribution<double> dsub(0.0,1.0);
+
+	switch(daxis(rgen)) {
+	case 0:	unit.axn = Axisnum::One; break;
+	case 1:	unit.axn = Axisnum::Two; break;
+	case 2:	unit.axn = Axisnum::Three; break;
+	case 3:	unit.axn = Axisnum::Four; break;
+	case 4:	unit.axn = Axisnum::Six; break;
+	default:
+		cout << "An error was encountered while setting the axis number!\n";
+		return false;
+	}
+
+	if(mode == Limited) {
+		//Cn, Cnv, Cnh x2, Sn x2, Dn, Dnd, Dnh
+		discrete_distribution<> dschoen({1,1,2,2,1,1,1});
+		switch(dschoen(rgen)) {
+		case 0: unit.typ = Schoenflies::Cn; break;
+		case 1: unit.typ = Schoenflies::Cnv; break;
+		case 2: unit.typ = Schoenflies::Cnh; break;
+		case 3: unit.typ = Schoenflies::Sn; break;
+		case 4: unit.typ = Schoenflies::Dn; break;
+		case 5: unit.typ = Schoenflies::Dnd; break;
+		case 6: unit.typ = Schoenflies::Dnh; break;
+		default:
+			cout << "An error was encountered while setting the Schoenflies type!\n";
+			return false;
+		}
+	} else if (mode == Full) {
+		//Cn, Cnv, Cnh x2, Sn x2, Dn, Dnd, Dnh + T, Th, O, Td, Oh
+		discrete_distribution<> dschoenextend({2,2,4,4,2,2,2,1,1,1,1,1});
+		switch(dschoenextend(rgen)) {
+		case 0: unit.typ = Schoenflies::Cn; break;
+		case 1: unit.typ = Schoenflies::Cnv; break;
+		case 2: unit.typ = Schoenflies::Cnh; break;
+		case 3: unit.typ = Schoenflies::Sn; break;
+		case 4: unit.typ = Schoenflies::Dn; break;
+		case 5: unit.typ = Schoenflies::Dnd; break;
+		case 6: unit.typ = Schoenflies::Dnh; break;
+		case 7: unit.typ = Schoenflies::T; break;
+		case 8: unit.typ = Schoenflies::Th; break;
+		case 9: unit.typ = Schoenflies::O; break;
+		case 10: unit.typ = Schoenflies::Td; break;
+		case 11: unit.typ = Schoenflies::Oh; break;
+		default:
+			cout << "An error was encountered while setting the Schoenflies type!\n";
+			return false;
+		}
+	}
+	unit.cen = dcent(rgen);
+	unit.sub = dsub(rgen);
+
+	cout << "spacegroup: " << getSchoenflies(unit.typ)<<" "<<getAxis(unit.axn)<<" "<<unit.cen<<" "<<unit.sub<<endl;
+
+	if(mode == Single)
+		unit.spacegroup = spcg;
+	else {
+		if(!setSpacegroup()) //D4d or D6d was generated
+			return false;
+	}
 
 
+	//randomize ratios
+	uniform_real_distribution<double> drat(0.5,4.0);
+	unit.ratA = drat(rgen);
+	unit.ratB = drat(rgen);
+	unit.ratC = drat(rgen);
 
-	//randomize ratios, reset cell params
-
-
+	cout << "ratios: " <<unit.ratA<<" "<<unit.ratB<<" "<<unit.ratC<<endl;
 	//set stoichiometry
+	for(int i = 0; i < unit.stoich.size(); i++) {
+		if(unit.stoich[i].min < unit.stoich[i].max) {
+			uniform_int_distribution<> dstoich(unit.stoich[i].min, unit.stoich[i].max);
+			unit.stoich[i].count = dstoich(rgen);
+		}
+		else
+			unit.stoich[i].count = unit.stoich[i].min;
+
+		cout << "stoich["<<i<<"]: "<<unit.stoich[i].count<<endl;
+	}
+	vector<GASP2molecule> tempmols;
+	tempmols.clear();
+	for(int i = 0; i < unit.stoich.size(); i++) {
+		GASP2molecule mol = molecules[molLookup(unit.stoich[i].mol)];
+		for(int n = 0; n < unit.stoich[i].count; n++) {
+			tempmols.push_back(mol);
+		}
+	}
+
+	molecules.clear();
+	molecules = tempmols;
+
 
 	//for each molecule
-
-	//randomize rotation matrix
-
-	//randomize position
-
-	//randomize dihedrals
+	uniform_real_distribution<double> dpos(0.0,1.0);
+	uniform_real_distribution<double> drot(-1.0,1.0);
+	uniform_real_distribution<double> dtheta(0.0, 2.0*PI);
+	for(int i = 0; i < molecules.size(); i++) {
+		Vec3 tempvec; double temprot;
+		//randomize rotation matrix
+		tempvec = norm(Vec3(drot(rgen),drot(rgen),drot(rgen)));
+		temprot = dtheta(rgen);
+		cout << "Rot["<<i<<"]: "<<tempvec<<" "<<temprot<<endl;
+		molecules[i].rot = Rot3(tempvec, temprot);
+		//randomize position
+		tempvec = Vec3(dpos(rgen),dpos(rgen),dpos(rgen));
+		cout << "Pos["<<i<<"]: "<<tempvec<<endl;
+		molecules[i].pos = tempvec;
+		//randomize dihedrals
+		for(int j = 0; j < molecules[i].dihedrals.size(); j++) {
+			uniform_real_distribution<double> ddihed(
+					molecules[i].dihedrals[j].minAng,
+					molecules[i].dihedrals[j].maxAng);
+			molecules[i].dihedrals[j].ang = ddihed(rgen);
+			cout <<"dihedral["<<i<<","<<j<<"]:"<<molecules[i].dihedrals[j].ang<<endl;
+		}
+	}
 
 
 	return true;
@@ -181,6 +325,16 @@ Index GASP2struct::atomLookup(NIndex nameInd, GASP2molecule mol) {
 	}
 	return -1;
 }
+
+//returns the index of the first molecule matching the name
+Index GASP2struct::molLookup(NIndex nameInd) {
+	for(int i = 0; i < molecules.size(); i++) {
+		if(nameInd == molecules[i].label)
+			return i;
+	}
+	return -1;
+}
+
 
 string GASP2struct::serializeXML() {
 	tinyxml2::XMLPrinter pr(NULL);
@@ -1086,7 +1240,8 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		strtemp = stemp;
 		cell.typ = getSchoenflies(strtemp);
 		if(cell.typ == Schoenflies::UNK) {
-			errorstring = "A non-valid string identifier was given for the Schoenflies type.\n";			return false;
+			errorstring = "A non-valid string identifier was given for the Schoenflies type.\n";
+			return false;
 		}
 	}
 
@@ -1097,7 +1252,8 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		strtemp = stemp;
 		cell.axn = getAxis(strtemp);
 		if(cell.axn == Axisnum::UNK) {
-			errorstring = "A non-valid string identifier was given for the axis type.\n";			return false;
+			errorstring = "A non-valid string identifier was given for the axis type.\n";
+			return false;
 		}
 	}
 
@@ -1329,6 +1485,8 @@ bool GASP2struct::readStoich(tinyxml2::XMLElement *elem, string& errorstring, GA
 		stoich.max = stoich.count;
 	if(stoich.min > stoich.count)
 		stoich.min = stoich.count;
+
+	cout << "stoich stats: " << stoich.max << " " << stoich.min << endl;
 
 	return true;
 

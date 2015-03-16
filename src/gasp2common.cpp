@@ -2,11 +2,105 @@
 
 //using namespace std;
 
-//static datas
+//static data
 tinyxml2::XMLDocument spacegroups;
 vector<string> spacegroupNames;
 
 mt19937_64 rgen;
+
+//this table is where the different spacegroup genes are encoded.
+//there are only two restrictions, which are that
+//D4d and D6d are not allowed. Those are caught in setSpacegroup
+//as part of GASP2struct
+vector<cryGroup> groupgenes = {
+//Axis order 1
+	{ Schoenflies::Cn, Axisnum::One, Centering::P, {1,} },
+	{ Schoenflies::Cnv, Axisnum::One, Centering::P, {6,7} },
+	{ Schoenflies::Cnv, Axisnum::One, Centering::C, {8,9} },
+	{ Schoenflies::Cnh, Axisnum::One, Centering::P, {6,7} },
+	{ Schoenflies::Cnh, Axisnum::One, Centering::C, {8,9} },
+	{ Schoenflies::Sn, Axisnum::One, Centering::P, {6,7} },
+	{ Schoenflies::Sn, Axisnum::One, Centering::C, {8,9} },
+	{ Schoenflies::Dn, Axisnum::One, Centering::P, {3,4} },
+	{ Schoenflies::Dn, Axisnum::One, Centering::C, {5,} },
+	{ Schoenflies::Dnh, Axisnum::One, Centering::P, {25,26,27,28,29,30,31,32,33,34} },
+	{ Schoenflies::Dnh, Axisnum::One, Centering::C, {35,36,37} },
+	{ Schoenflies::Dnh, Axisnum::One, Centering::F, {42,43} },
+	{ Schoenflies::Dnh, Axisnum::One, Centering::I, {44,45,46} },
+	{ Schoenflies::Dnd, Axisnum::One, Centering::P, {10,11,13,14} },
+	{ Schoenflies::Dnd, Axisnum::One, Centering::C, {12,15} },
+//Axis order 2
+	{ Schoenflies::Cn, Axisnum::Two, Centering::P, {3,4} },
+	{ Schoenflies::Cn, Axisnum::Two, Centering::C, {5,} },
+	{ Schoenflies::Cnv, Axisnum::Two, Centering::P, {25,26,27,28,29,30,31,32,33,34} },
+	{ Schoenflies::Cnv, Axisnum::Two, Centering::C, {35,36,37} },
+	{ Schoenflies::Cnv, Axisnum::Two, Centering::F, {42,43} },
+	{ Schoenflies::Cnv, Axisnum::Two, Centering::I, {44,45,46} },
+	{ Schoenflies::Cnh, Axisnum::Two, Centering::P, {10,11,13,14} },
+	{ Schoenflies::Cnh, Axisnum::Two, Centering::C, {12,15} },
+	{ Schoenflies::Sn, Axisnum::Two, Centering::P, {2,} },
+	{ Schoenflies::Dn, Axisnum::Two, Centering::P, {16,17,18,19} },
+	{ Schoenflies::Dn, Axisnum::Two, Centering::C, {20,21} },
+	{ Schoenflies::Dn, Axisnum::Two, Centering::F, {22,} },
+	{ Schoenflies::Dn, Axisnum::Two, Centering::I, {23,24} },
+	{ Schoenflies::Dnh, Axisnum::Two, Centering::P, {47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62} },
+	{ Schoenflies::Dnh, Axisnum::Two, Centering::C, {63,64,65,66,67,68} },
+	{ Schoenflies::Dnh, Axisnum::Two, Centering::F, {69,70} },
+	{ Schoenflies::Dnh, Axisnum::Two, Centering::I, {71,72,73,74} },
+	{ Schoenflies::Dnd, Axisnum::Two, Centering::P, {111,112,113,114,115,116,117,118} },
+	{ Schoenflies::Dnd, Axisnum::Two, Centering::I, {119,120,121,122} },
+//Axis order 3
+	{ Schoenflies::Cn, Axisnum::Three, Centering::P, {143,144,145} },
+	{ Schoenflies::Cn, Axisnum::Three, Centering::R, {146,} },
+	{ Schoenflies::Cnv, Axisnum::Three, Centering::P, {156,157,158,159} },
+	{ Schoenflies::Cnv, Axisnum::Three, Centering::R, {160,161} },
+	{ Schoenflies::Cnh, Axisnum::Three, Centering::P, {174,} },
+	{ Schoenflies::Sn, Axisnum::Three, Centering::P, {174,} },
+	{ Schoenflies::Dn, Axisnum::Three, Centering::P, {149,150,151,152,153,154} },
+	{ Schoenflies::Dn, Axisnum::Three, Centering::R, {155,} },
+	{ Schoenflies::Dnh, Axisnum::Three, Centering::P, {187,188,189,190} },
+	{ Schoenflies::Dnd, Axisnum::Three, Centering::P, {162,163,164,165} },
+	{ Schoenflies::Dnd, Axisnum::Three, Centering::R, {166,167} },
+//Axis order 4
+	{ Schoenflies::Cn, Axisnum::Four, Centering::P, {75,76,77,78} },
+	{ Schoenflies::Cn, Axisnum::Four, Centering::I, {79,80} },
+	{ Schoenflies::Cnv, Axisnum::Four, Centering::P, {99,100,101,102,103,104,105,106} },
+	{ Schoenflies::Cnv, Axisnum::Four, Centering::I, {107,108,109,110} },
+	{ Schoenflies::Cnh, Axisnum::Four, Centering::P, {83,84,85,86} },
+	{ Schoenflies::Cnh, Axisnum::Four, Centering::I, {87,88} },
+	{ Schoenflies::Sn, Axisnum::Four, Centering::P, {81,} },
+	{ Schoenflies::Sn, Axisnum::Four, Centering::I, {82,} },
+	{ Schoenflies::Dn, Axisnum::Four, Centering::P, {89,90,91,92,93,94,95,96} },
+	{ Schoenflies::Dn, Axisnum::Four, Centering::I, {97,98} },
+	{ Schoenflies::Dnh, Axisnum::Four, Centering::P, {123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138} },
+	{ Schoenflies::Dnh, Axisnum::Four, Centering::I, {139,140,141,142} },
+	//{ Schoenflies::Dnd, Axisnum::Four, Centering::P, {} }, not valid
+//Axis order 6
+	{ Schoenflies::Cn, Axisnum::Six, Centering::P, {168,169,170,171,172,173} },
+	{ Schoenflies::Cnv, Axisnum::Six, Centering::P, {183,184,185,186} },
+	{ Schoenflies::Cnh, Axisnum::Six, Centering::P, {175,176} },
+	{ Schoenflies::Sn, Axisnum::Six, Centering::P, {147,} }, //C3i
+	{ Schoenflies::Sn, Axisnum::Six, Centering::R, {148,} }, //C3i
+	{ Schoenflies::Dn, Axisnum::Six, Centering::P, {177,178,179,180,181,182} },
+	{ Schoenflies::Dnh, Axisnum::Six, Centering::P, {191,192,193,194} },
+	//{ Schoenflies::Dnd, Axisnum::Six, Centering::P, {} }, not valid
+//Extended groups (T and O groups)
+	{ Schoenflies::T, Axisnum::UNK, Centering::P, {195,198} },
+	{ Schoenflies::T, Axisnum::UNK, Centering::F, {196,} },
+	{ Schoenflies::T, Axisnum::UNK, Centering::I, {197,199} },
+	{ Schoenflies::Td, Axisnum::UNK, Centering::P, {215,218} },
+	{ Schoenflies::Td, Axisnum::UNK, Centering::F, {216,219} },
+	{ Schoenflies::Td, Axisnum::UNK, Centering::I, {217,220} },
+	{ Schoenflies::Th, Axisnum::UNK, Centering::P, {200,201,205} },
+	{ Schoenflies::Th, Axisnum::UNK, Centering::F, {202,203} },
+	{ Schoenflies::Th, Axisnum::UNK, Centering::I, {204,206} },
+	{ Schoenflies::O, Axisnum::UNK, Centering::P, {207,208,212,213} },
+	{ Schoenflies::O, Axisnum::UNK, Centering::F, {209,210} },
+	{ Schoenflies::O, Axisnum::UNK, Centering::I, {211,214} },
+	{ Schoenflies::Oh, Axisnum::UNK, Centering::P, {221,222,223,224} },
+	{ Schoenflies::Oh, Axisnum::UNK, Centering::F, {225,226,227,228} },
+	{ Schoenflies::Oh, Axisnum::UNK, Centering::I, {229,230} },
+};
 
 
 //double dist ( const Vec3 & A, const Vec3 & B ) {
@@ -142,6 +236,17 @@ double vdw( Elem type ) {
 
 }
 
+int indexSelect(double n, int size) {
+	double interval = 1.0 / static_cast<double>(size);
+	int index = 0;
+	double step = 0.0;
+	while(n > step) {
+		index++;
+		step += interval;
+	}
+	return index;
+}
+
 Elem getElemType(string in) {
 	Elem type;
 	//UNK=0,C,H,N,O,P,Cl,F,S,Br,
@@ -200,7 +305,7 @@ string getElemName(Elem in) {
 
 Axisnum getAxis(string in) {
 	Axisnum type;
-	if(in == "One")
+	if(in == string("One"))
 		type = Axisnum::One;
 	else if(in == "Two")
 		type = Axisnum::Two;
@@ -212,7 +317,6 @@ Axisnum getAxis(string in) {
 		type = Axisnum::Six;
 	else
 		type = Axisnum::UNK;
-
 	return type;
 }
 

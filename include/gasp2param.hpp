@@ -38,7 +38,7 @@ private:
 	//double expectvol; //REQUIRED
 	//double maxvol; //100.0
 	//double minvol; //-50.0
-	//string spacegroup; //REQUIRED
+	string spacegroup; //REQUIRED
 
 	//run params
 	string calcmethod; //REQUIRED: fitcell, qe, custom
