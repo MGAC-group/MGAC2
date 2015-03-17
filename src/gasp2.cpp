@@ -100,11 +100,11 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 	if(root.parseXMLDoc(doc, errors)==false)
 		return false;
 
+	root.check();
 
-	for(int i = 0; i < 3; i++) {
-		root.init();
 
-	}
+
+	cout << root.serializeXML() << endl;
 
 	if(ID == 0) {
 		params.logParams();

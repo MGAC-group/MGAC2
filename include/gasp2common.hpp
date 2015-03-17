@@ -74,6 +74,8 @@ extern vector<string> spacegroupNames;
 extern mt19937_64 rgen;
 extern vector<cryGroup> groupgenes;
 
+double rad(double deg);
+double deg(double rad);
 
 double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C );
 

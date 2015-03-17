@@ -30,12 +30,7 @@ GASP2struct::GASP2struct() {
 }
 
 double GASP2struct::getVolume() {
-	double phi = 2 * cos(unit.alpha) * cos(unit.beta) * cos(unit.gamma);
-    return ( 2 * unit.a * unit.b * unit.c *
-             sqrt(1 - cos(unit.alpha)*cos(unit.alpha)
-            		- cos(unit.beta)*cos(unit.beta)
-            		- cos(unit.gamma)*cos(unit.gamma)
-            		+ phi) );
+	return cellVol(unit);
 }
 
 bool GASP2struct::fitcell() {
@@ -57,12 +52,17 @@ bool GASP2struct::unfitcell() {
 	}
 	molecules.clear();
 	molecules = tempmol;
+
+
+
 	return true;
 }
 
 bool GASP2struct::check() {
 	Index a,b,c,d;
 	double val;
+
+	Mat3 toFrac = cartToFrac(unit);
 
 	for(int i = 0; i < molecules.size(); i++) {
 		//bonds
@@ -99,11 +99,13 @@ bool GASP2struct::check() {
 
 
 		//plane rotations
-
+		molecules[i].rot = getPlaneRot(molecules[i]);
 
 		//position
-
+		molecules[i].pos = toFrac*getMolCentroid(molecules[i]);
 	}
+
+
 	return true;
 }
 
@@ -125,7 +127,7 @@ bool GASP2struct::evaluate() {
 	return complete;
 };
 
-bool GASP2struct::setSpacegroup() {
+bool GASP2struct::setSpacegroup(bool frExclude) {
 	Index index;
 	vector<cryGroup> temp;
 
@@ -151,16 +153,21 @@ bool GASP2struct::setSpacegroup() {
 	//get a sublist of groups
 	for(int i = 0; i < groupgenes.size(); i++) {
 		if( (a == groupgenes[i].a) && (unit.typ == groupgenes[i].s) )
-			temp.push_back(groupgenes[i]);
+			if(frExclude) {
+				if(groupgenes[i].c != Centering::F && groupgenes[i].c != Centering::R)
+					temp.push_back(groupgenes[i]);
+			}
+			else
+				temp.push_back(groupgenes[i]);
 	}
+
+
 
 	//select centering group
 	int c = indexSelect(unit.cen, temp.size());
 	//set spacegroup from list
-	unit.spacegroup = temp[c].indices[indexSelect(unit.sub,temp[c].indices.size())] - 1;
-
-	cout << "Spacegroup: " << unit.spacegroup;
-
+	unit.spacegroup = temp[c].indices[indexSelect(unit.sub, temp[c].indices.size())] - 1;
+	//cout << "Spacegroup: " << unit.spacegroup + 1 << endl;
 	return true;
 }
 
@@ -229,7 +236,7 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	unit.cen = dcent(rgen);
 	unit.sub = dsub(rgen);
 
-	cout << "spacegroup: " << getSchoenflies(unit.typ)<<" "<<getAxis(unit.axn)<<" "<<unit.cen<<" "<<unit.sub<<endl;
+	//cout << "spacegroup: " << getSchoenflies(unit.typ)<<" "<<getAxis(unit.axn)<<" "<<unit.cen<<" "<<unit.sub<<endl;
 
 	if(mode == Single)
 		unit.spacegroup = spcg;
@@ -245,7 +252,7 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	unit.ratB = drat(rgen);
 	unit.ratC = drat(rgen);
 
-	cout << "ratios: " <<unit.ratA<<" "<<unit.ratB<<" "<<unit.ratC<<endl;
+	//cout << "ratios: " <<unit.ratA<<" "<<unit.ratB<<" "<<unit.ratC<<endl;
 	//set stoichiometry
 	for(int i = 0; i < unit.stoich.size(); i++) {
 		if(unit.stoich[i].min < unit.stoich[i].max) {
@@ -255,7 +262,7 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 		else
 			unit.stoich[i].count = unit.stoich[i].min;
 
-		cout << "stoich["<<i<<"]: "<<unit.stoich[i].count<<endl;
+		//cout << "stoich["<<i<<"]: "<<unit.stoich[i].count<<endl;
 	}
 	vector<GASP2molecule> tempmols;
 	tempmols.clear();
@@ -279,11 +286,11 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 		//randomize rotation matrix
 		tempvec = norm(Vec3(drot(rgen),drot(rgen),drot(rgen)));
 		temprot = dtheta(rgen);
-		cout << "Rot["<<i<<"]: "<<tempvec<<" "<<temprot<<endl;
+		//cout << "Rot["<<i<<"]: "<<tempvec<<" "<<temprot<<endl;
 		molecules[i].rot = Rot3(tempvec, temprot);
 		//randomize position
 		tempvec = Vec3(dpos(rgen),dpos(rgen),dpos(rgen));
-		cout << "Pos["<<i<<"]: "<<tempvec<<endl;
+		//cout << "Pos["<<i<<"]: "<<tempvec<<endl;
 		molecules[i].pos = tempvec;
 		//randomize dihedrals
 		for(int j = 0; j < molecules[i].dihedrals.size(); j++) {
@@ -291,7 +298,7 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 					molecules[i].dihedrals[j].minAng,
 					molecules[i].dihedrals[j].maxAng);
 			molecules[i].dihedrals[j].ang = ddihed(rgen);
-			cout <<"dihedral["<<i<<","<<j<<"]:"<<molecules[i].dihedrals[j].ang<<endl;
+			//cout <<"dihedral["<<i<<","<<j<<"]:"<<molecules[i].dihedrals[j].ang<<endl;
 		}
 	}
 
@@ -378,9 +385,9 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("a",unit.a);
 		pr.PushAttribute("b",unit.b);
 		pr.PushAttribute("c",unit.c);
-		pr.PushAttribute("alpha",unit.alpha);
-		pr.PushAttribute("beta",unit.beta);
-		pr.PushAttribute("gamma",unit.gamma);
+		pr.PushAttribute("alpha",deg(unit.alpha));
+		pr.PushAttribute("beta",deg(unit.beta));
+		pr.PushAttribute("gamma",deg(unit.gamma));
 		pr.PushAttribute("rA",unit.ratA);
 		pr.PushAttribute("rB",unit.ratB);
 		pr.PushAttribute("rC",unit.ratC);
@@ -404,11 +411,22 @@ string GASP2struct::serializeXML() {
 		pr.OpenElement("molecule");
 			string pln = "";
 
+			pr.PushAttribute("name",names[mol.label].c_str());
+			pln += (names[mol.atoms[mol.p1].label] +" ");
+			pln += (names[mol.atoms[mol.p2].label] +" ");
+			pln += (names[mol.atoms[mol.p3].label] +" ");
+			pr.PushAttribute("plane",pln.c_str());
+			pr.PushAttribute("plind",(int)mol.plindex);
+			pr.PushAttribute("symm",(int)mol.symm);
+			pr.PushAttribute("expectvol",mol.expectvol);
+
+			pln.clear();
 			pr.OpenElement("rot");
 			for(int j = 0; j < 9; j++)
 				pln += (to_string(mol.rot[j/3][j%3]) + " ");
 			pr.PushText(pln.c_str());
 			pr.CloseElement(); //rot
+
 
 			pln.clear();
 			pr.OpenElement("pos");
@@ -416,17 +434,6 @@ string GASP2struct::serializeXML() {
 				pln += (to_string(mol.pos[j]) + " ");
 			pr.PushText(pln.c_str());
 			pr.CloseElement(); //pos
-
-			pr.PushAttribute("name",names[mol.label].c_str());
-
-			pln += (names[mol.atoms[mol.p1].label] +" ");
-			pln += (names[mol.atoms[mol.p2].label] +" ");
-			pln += (names[mol.atoms[mol.p3].label] +" ");
-			pln.clear();
-			pr.PushAttribute("plane",pln.c_str());
-			pr.PushAttribute("plind",(int)mol.plindex);
-			pr.PushAttribute("symm",(int)mol.symm);
-			pr.PushAttribute("expectvol",mol.expectvol);
 
 			for(int j = 0; j < mol.atoms.size(); j++) {
 			pr.OpenElement("atom");
@@ -454,9 +461,9 @@ string GASP2struct::serializeXML() {
 					pln += (names[mol.atoms[mol.dihedrals[j].update[k]].label] +" ");
 
 				pr.PushAttribute("update",pln.c_str());
-				pr.PushAttribute("min",mol.dihedrals[j].minAng);
-				pr.PushAttribute("max",mol.dihedrals[j].maxAng);
-				pr.PushAttribute("val",mol.dihedrals[j].ang);
+				pr.PushAttribute("min",deg(mol.dihedrals[j].minAng));
+				pr.PushAttribute("max",deg(mol.dihedrals[j].maxAng));
+				pr.PushAttribute("val",deg(mol.dihedrals[j].ang));
 
 			pr.CloseElement(); //dih
 			}
@@ -482,18 +489,13 @@ string GASP2struct::serializeXML() {
 				pln += (names[mol.atoms[mol.angles[j].b].label] +" ");
 				pln += (names[mol.atoms[mol.angles[j].c].label] +" ");
 				pr.PushAttribute("angle",pln.c_str());
-				pr.PushAttribute("min",mol.angles[j].minAng);
-				pr.PushAttribute("max",mol.angles[j].maxAng);
-				pr.PushAttribute("val",mol.angles[j].ang);
+				pr.PushAttribute("min",deg(mol.angles[j].minAng));
+				pr.PushAttribute("max",deg(mol.angles[j].maxAng));
+				pr.PushAttribute("val",deg(mol.angles[j].ang));
 			pr.CloseElement(); //angles
 			}
-
-
-
 		pr.CloseElement(); //molecule
 	}
-
-
 	pr.CloseElement(); //crystal
 
 	//pr.PushAttribute("",);
@@ -771,32 +773,32 @@ bool GASP2struct::readDih(tinyxml2::XMLElement *elem, string& errorstring, GASP2
 	}
 
 	//min
-	dih.minAng = -180.0;
+	dih.minAng = rad(-180.0);
 	if(!elem->QueryDoubleAttribute("min", &dtemp)) {
-		dih.minAng = dtemp;
+		dih.minAng = rad(dtemp);
 	}
-	if(dih.minAng < -180.0 || dih.minAng > 180.0) {
+	if(dih.minAng < rad(-180.0) || dih.minAng > rad(180.0)) {
 		errorstring = "The minimum angle in dihedral "+names[dih.label]+" is out of bounds (-180.0 < ang < 180.0).\n";
 		return false;
 	}
 
 	//max
-	dih.maxAng = 180.0;
+	dih.maxAng = rad(180.0);
 	if(!elem->QueryDoubleAttribute("max", &dtemp)) {
-		dih.maxAng = dtemp;
+		dih.maxAng = rad(dtemp);
 	}
-	if(dih.maxAng < -180.0 || dih.maxAng > 180.0) {
+	if(dih.maxAng < rad(-180.0) || dih.maxAng > rad(180.0)) {
 		errorstring = "The maximum angle in dihedral "+names[dih.label]+" is out of bounds (-180.0 < ang < 180.0).\n";
 		return false;
 	}
 
 
 	//val
-	dih.ang = 0.0;
+	dih.ang = rad(0.0);
 	if(!elem->QueryDoubleAttribute("val", &dtemp)) {
-		dih.ang = dtemp;
+		dih.ang = rad(dtemp);
 	}
-	if(dih.ang < -180.0 || dih.ang > 180.0) {
+	if(dih.ang < rad(-180.0) || dih.ang > rad(180.0)) {
 		errorstring = "The angle value in dihedral "+names[dih.label]+" is out of bounds (-180.0 < ang < 180.0).\n";
 		return false;
 	}
@@ -918,21 +920,21 @@ bool GASP2struct::readAngle(tinyxml2::XMLElement *elem, string& errorstring, GAS
 	}
 
 	//min
-	ang.minAng = 0.0;
+	ang.minAng = rad(0.0);
 	if(!elem->QueryDoubleAttribute("min", &dtemp)) {
-		ang.minAng = dtemp;
+		ang.minAng = rad(dtemp);
 	}
-	if(ang.minAng < 0.0 || ang.minAng > 180.0) {
+	if(ang.minAng < rad(0.0) || ang.minAng > rad(180.0)) {
 		errorstring = "The minimum angle in angle "+names[ang.label]+" is out of bounds (0.0 < ang < 180.0).\n";
 		return false;
 	}
 
 	//max
-	ang.maxAng = 180.0;
+	ang.maxAng = rad(180.0);
 	if(!elem->QueryDoubleAttribute("max", &dtemp)) {
-		ang.maxAng = dtemp;
+		ang.maxAng = rad(dtemp);
 	}
-	if(ang.maxAng < 0.0 || ang.maxAng > 180.0) {
+	if(ang.maxAng < rad(0.0) || ang.maxAng > rad(180.0)) {
 		errorstring = "The maximum angle in angle "+names[ang.label]+" is out of bounds (0.0 < ang < 180.0).\n";
 		return false;
 	}
@@ -941,7 +943,7 @@ bool GASP2struct::readAngle(tinyxml2::XMLElement *elem, string& errorstring, GAS
 	//val
 	ang.ang = 0.0;
 	if(!elem->QueryDoubleAttribute("val", &dtemp)) {
-		ang.ang = dtemp;
+		ang.ang = rad(dtemp);
 	}
 
 	return true;
@@ -1147,31 +1149,31 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 	}
 
 	//alpha
-	cell.alpha = 90.0;
+	cell.alpha = rad(90.0);
 	if(!elem->QueryDoubleAttribute("al", &dtemp)) {
-		cell.alpha = dtemp;
+		cell.alpha = rad(dtemp);
 	}
-	if(cell.alpha < -180.0 || cell.alpha > 180.0) {
+	if(cell.alpha < rad(-180.0) || cell.alpha > rad(180.0)) {
 		errorstring = "Cell alpha is out of bound (-180.0 < x < 180.0)!\n";
 		return false;
 	}
 
 	//beta
-	cell.beta = 90.0;
+	cell.beta = rad(90.0);
 	if(!elem->QueryDoubleAttribute("bt", &dtemp)) {
-		cell.beta = dtemp;
+		cell.beta = rad(dtemp);
 	}
-	if(cell.beta < -180.0 || cell.beta > 180.0) {
+	if(cell.beta < rad(-180.0) || cell.beta > rad(180.0)) {
 		errorstring = "Cell beta is out of bound (-180.0 < x < 180.0)!\n";
 		return false;
 	}
 
 	//gamma
-	cell.gamma = 90.0;
+	cell.gamma = rad(90.0);
 	if(!elem->QueryDoubleAttribute("gm", &dtemp)) {
-		cell.gamma = dtemp;
+		cell.gamma = rad(dtemp);
 	}
-	if(cell.gamma < -180.0 || cell.gamma > 180.0) {
+	if(cell.gamma < rad(-180.0) || cell.gamma > rad(180.0)) {
 		errorstring = "Cell gamma is out of bound (-180.0 < x < 180.0)!\n";
 		return false;
 	}
@@ -1486,7 +1488,7 @@ bool GASP2struct::readStoich(tinyxml2::XMLElement *elem, string& errorstring, GA
 	if(stoich.min > stoich.count)
 		stoich.min = stoich.count;
 
-	cout << "stoich stats: " << stoich.max << " " << stoich.min << endl;
+	//cout << "stoich stats: " << stoich.max << " " << stoich.min << endl;
 
 	return true;
 
@@ -1544,5 +1546,56 @@ void GASP2struct::logStruct() {
 
 }
 
+Mat3 GASP2struct::getPlaneRot(GASP2molecule mol) {
+	Mat3 out;
+	Vec3 a = mol.atoms[mol.p2].pos - mol.atoms[mol.p1].pos;
+	Vec3 b = mol.atoms[mol.p3].pos - mol.atoms[mol.p1].pos;
+	Vec3 N = cross(a,b);
+	Vec3 c = cross(N,a);
 
+	out[0] = norm(N);
+	out[1] = norm(a);
+	out[2] = norm(c);
 
+	out = trans(out);
+
+	return out;
+}
+
+Vec3 GASP2struct::getMolCentroid(GASP2molecule mol) {
+	Vec3 out = vl_0;
+	for(int i = 0; i < mol.atoms.size(); i++)
+		out += mol.atoms[i].pos;
+	return out/static_cast<double>(mol.atoms.size());
+}
+
+Mat3 fracToCart(GASP2cell cl) {
+	double phi = cellPhi(cl);
+	double kappa = (cl.c*(cos(cl.alpha)-cos(cl.beta)*cos(cl.gamma))) / sin(cl.gamma);
+
+	return Mat3	(cl.a,	cl.b*cos(cl.gamma), cl.c*cos(cl.beta),
+				 0,		cl.b*sin(cl.gamma),	kappa,
+				 0,		0,					cl.c*phi/sin(cl.gamma)
+				);
+}
+
+Mat3 cartToFrac(GASP2cell cl) {
+	return inv(fracToCart(cl));
+
+}
+double cellPhi(GASP2cell cl) {
+
+	double cosA = cos(cl.alpha);
+	double cosB = cos(cl.beta);
+	double cosC = cos(cl.gamma);
+	double phi = 2 * cosA * cosB * cosC;
+
+    return   sqrt(1 - cosA*cosA
+            		- cosB*cosB
+            		- cosC*cosC
+            		+ phi) ;
+}
+
+double cellVol(GASP2cell cl) {
+	return cl.a * cl.b * cl.c * cellPhi(cl);
+}

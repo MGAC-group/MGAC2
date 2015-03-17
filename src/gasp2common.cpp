@@ -103,12 +103,15 @@ vector<cryGroup> groupgenes = {
 };
 
 
-//double dist ( const Vec3 & A, const Vec3 & B ) {
-//    return sqrt( (A-B).dot(A-B) );
-//}
+double rad(double deg) {
+	return deg/180.0*PI;
+}
+
+double deg(double rad) {
+	return rad/PI*180.0;
+}
 
 
-///*** Plane angle ***///
 
 double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C ) {
     double cos_angle = dot(A-B,C-B) / ( len(A-B) * len(C-B) );
@@ -118,7 +121,7 @@ double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C ) {
     return ( acos(cos_angle) );
 }
 
-///*** Dihedral angle ***///
+
 
 double dihedral ( const Vec3 & A, const Vec3 & B, const Vec3 & C, const Vec3 & D ) {
 	Vec3 a,b,c;
@@ -237,14 +240,21 @@ double vdw( Elem type ) {
 }
 
 int indexSelect(double n, int size) {
-	double interval = 1.0 / static_cast<double>(size);
+	double i = 1.0 / static_cast<double>(size);
 	int index = 0;
-	double step = 0.0;
-	while(n > step) {
-		index++;
-		step += interval;
+	double s = 0.0;
+	while(true) {
+		if(s > 1.0)
+			break;
+		if( (n > s) && (n < (s+i)) ) {
+			return index;
+		}
+		else {
+			s += i;
+			index++;
+		}
 	}
-	return index;
+	return 0;
 }
 
 Elem getElemType(string in) {

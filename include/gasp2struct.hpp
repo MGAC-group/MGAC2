@@ -18,7 +18,7 @@ typedef enum StructError {
 
 
 struct GASP2atom {
-	Vec3 pos; //always saved as absolute angstrom coord
+	Vec3 pos; //always stored as cartesian angstrom coord
 	Elem type;
 	NIndex label; //index to a string in "names";
 };
@@ -33,16 +33,16 @@ struct GASP2bond {
 struct GASP2angle {
 	NIndex label;
 	Index a,b,c;
-	double maxAng,minAng; //DEGREES
-	double ang; //DEGREES
+	double maxAng,minAng; //RADIANS
+	double ang; //RADIANS
 };
 
 struct GASP2dihedral {
 	NIndex label;
 	Index a,b,c,d; //indices to atoms;
 	vector<Index> update; //list of atoms to update
-	double maxAng, minAng; //DEGREES
-	double ang; //DEGREES
+	double maxAng, minAng; //RADIANS
+	double ang; //RADIANS
 	void clear() {
 		update.clear();
 	}
@@ -53,6 +53,11 @@ struct GASP2molecule {
 	Mat3 rot; //the rotation matrix of the molecule XMLOUT
 	//Why rotation matrix? Space is cheap (realtively speaking)
 	//
+
+	//atoms are always stored in cartesian
+	//if a function needs to make a transform to fractional
+	//then it should either make a separate list of atoms
+	//or else transform back to cartesian at the end.
 	vector<GASP2atom> atoms;
 	Index p1,p2,p3; //atom plane indices
 
@@ -109,7 +114,7 @@ struct GASP2stoich {
 
 struct GASP2cell {
 	double a,b,c; //ANGSTROMS
-	double alpha,beta,gamma; //DEGREES
+	double alpha,beta,gamma; //RADIANS
 	double ratA,ratB,ratC; //UNIT-LESS
 
 	//gene for spacegroup
@@ -136,6 +141,11 @@ struct GASP2cell {
 
 };
 
+//special helpers for tranform matrices
+Mat3 fracToCart(GASP2cell cl);
+Mat3 cartToFrac(GASP2cell cl);
+double cellPhi(GASP2cell cl);
+double cellVol(GASP2cell cl);
 
 
 //AML: NO POINTERS. We are not writing copy constructors.
@@ -234,7 +244,7 @@ private:
 
 
 	//spacegroup things
-	bool setSpacegroup();
+	bool setSpacegroup(bool frExclude = false);
 	void setSymmOp(GASP2molecule &mol);
 	void enforceCrystalType();
 
@@ -248,7 +258,15 @@ private:
 	bool readInfo(tinyxml2::XMLElement *elem, string& errorstring);
 	bool readStoich(tinyxml2::XMLElement *elem, string& errorstring, GASP2stoich &stoich);
 
+	//geometry helpers
+	Vec3 getMolCentroid(GASP2molecule mol); //comes out in cart
+	Mat3 getPlaneRot(GASP2molecule mol);
+
 
 
 
 };
+
+
+
+
