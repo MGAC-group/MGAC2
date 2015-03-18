@@ -100,6 +100,7 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 	if(root.parseXMLDoc(doc, errors)==false)
 		return false;
 
+	root.init();
 	root.check();
 
 

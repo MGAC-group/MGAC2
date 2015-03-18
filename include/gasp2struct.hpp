@@ -9,6 +9,7 @@ typedef enum StructError {
 	OptBadAng,
 	OptBadDih,
 	FitcellBadDih,
+	FitcellBadCell,
 	NoFitcell,
 
 
@@ -116,6 +117,21 @@ struct GASP2cell {
 	double a,b,c; //ANGSTROMS
 	double alpha,beta,gamma; //RADIANS
 	double ratA,ratB,ratC; //UNIT-LESS
+
+	//these are genes for the triclinic,
+	//monoclinic, and rhombehedral
+	//cases. it is unsafe to try to optimize
+	//cell angles with respect to volume
+	//because it leads to bias in the
+	//selected structures, which cannot
+	//neccesarily be corrected through rotation.
+	//this is especially true for the triclinic
+	//case, where in P1 the interface between
+	//molecules in adjacent cells cannot be
+	//sampled properly simply by using rotation.
+	double triA, triB, triC;
+	double monoB;
+	double rhomC;
 
 	//gene for spacegroup
 	Schoenflies typ;

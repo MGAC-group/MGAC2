@@ -246,11 +246,19 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	}
 
 
-	//randomize ratios
+	//randomize ratios & special cell angles
 	uniform_real_distribution<double> drat(0.5,4.0);
 	unit.ratA = drat(rgen);
 	unit.ratB = drat(rgen);
 	unit.ratC = drat(rgen);
+	uniform_real_distribution<double> dtrimono(0.01,180.0);
+	uniform_real_distribution<double> drhom(0.01,120.0);
+	unit.monoB = rad(dtrimono(rgen));
+	unit.triA = rad(dtrimono(rgen));
+	unit.triB = rad(dtrimono(rgen));
+	unit.triC = rad(dtrimono(rgen));
+	unit.rhomC = rad(drhom(rgen));
+
 
 	//cout << "ratios: " <<unit.ratA<<" "<<unit.ratB<<" "<<unit.ratC<<endl;
 	//set stoichiometry
@@ -388,6 +396,11 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("alpha",deg(unit.alpha));
 		pr.PushAttribute("beta",deg(unit.beta));
 		pr.PushAttribute("gamma",deg(unit.gamma));
+		pr.PushAttribute("tA",deg(unit.triA));
+		pr.PushAttribute("tB",deg(unit.triB));
+		pr.PushAttribute("tC",deg(unit.triC));
+		pr.PushAttribute("mB",deg(unit.monoB));
+		pr.PushAttribute("rhmC",deg(unit.rhomC));
 		pr.PushAttribute("rA",unit.ratA);
 		pr.PushAttribute("rB",unit.ratB);
 		pr.PushAttribute("rC",unit.ratC);
@@ -1153,8 +1166,8 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 	if(!elem->QueryDoubleAttribute("al", &dtemp)) {
 		cell.alpha = rad(dtemp);
 	}
-	if(cell.alpha < rad(-180.0) || cell.alpha > rad(180.0)) {
-		errorstring = "Cell alpha is out of bound (-180.0 < x < 180.0)!\n";
+	if(cell.alpha <= rad(0.0) || cell.alpha >= rad(180.0)) {
+		errorstring = "Cell alpha is out of bound (0.0 < x < 180.0)!\n";
 		return false;
 	}
 
@@ -1163,8 +1176,8 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 	if(!elem->QueryDoubleAttribute("bt", &dtemp)) {
 		cell.beta = rad(dtemp);
 	}
-	if(cell.beta < rad(-180.0) || cell.beta > rad(180.0)) {
-		errorstring = "Cell beta is out of bound (-180.0 < x < 180.0)!\n";
+	if(cell.beta <= rad(0.0) || cell.beta >= rad(180.0)) {
+		errorstring = "Cell beta is out of bound (0.0 < x < 180.0)!\n";
 		return false;
 	}
 
@@ -1173,8 +1186,58 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 	if(!elem->QueryDoubleAttribute("gm", &dtemp)) {
 		cell.gamma = rad(dtemp);
 	}
-	if(cell.gamma < rad(-180.0) || cell.gamma > rad(180.0)) {
-		errorstring = "Cell gamma is out of bound (-180.0 < x < 180.0)!\n";
+	if(cell.gamma <= rad(0.0) || cell.gamma >= rad(180.0)) {
+		errorstring = "Cell gamma is out of bound (0.0 < x < 180.0)!\n";
+		return false;
+	}
+
+	//triclinic A
+	cell.triA = rad(90.0);
+	if(!elem->QueryDoubleAttribute("tA", &dtemp)) {
+		cell.triA = rad(dtemp);
+	}
+	if(cell.triA <= rad(0.0) || cell.triA >= rad(180.0)) {
+		errorstring = "Cell triA is out of bound (0.0 < x < 180.0)!\n";
+		return false;
+	}
+
+	//tricilinic B
+	cell.triB = rad(90.0);
+	if(!elem->QueryDoubleAttribute("tB", &dtemp)) {
+		cell.triB = rad(dtemp);
+	}
+	if(cell.triB <= rad(0.0) || cell.triB >= rad(180.0)) {
+		errorstring = "Cell triB is out of bound (0.0 < x < 180.0)!\n";
+		return false;
+	}
+
+	//triclinic C
+	cell.triC = rad(90.0);
+	if(!elem->QueryDoubleAttribute("tC", &dtemp)) {
+		cell.triC = rad(dtemp);
+	}
+	if(cell.triC <= rad(0.0) || cell.triC >= rad(180.0)) {
+		errorstring = "Cell triC is out of bound (0.0 < x < 180.0)!\n";
+		return false;
+	}
+
+	//monoclinic B
+	cell.monoB = rad(90.0);
+	if(!elem->QueryDoubleAttribute("mB", &dtemp)) {
+		cell.monoB = rad(dtemp);
+	}
+	if(cell.monoB <= rad(0.0) || cell.monoB >= rad(180.0)) {
+		errorstring = "Cell monoB is out of bound (0.0 < x < 180.0)!\n";
+		return false;
+	}
+
+	//rhombehedral C
+	cell.rhomC = rad(60.0);
+	if(!elem->QueryDoubleAttribute("rhmC", &dtemp)) {
+		cell.rhomC = rad(dtemp);
+	}
+	if(cell.rhomC <= rad(0.0) || cell.rhomC >= rad(120.0)) {
+		errorstring = "Cell rhomC is out of bound (0.0 < x < 120.0)!\n";
 		return false;
 	}
 
