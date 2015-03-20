@@ -199,6 +199,7 @@ public:
 	//bool readH5() {return true;};
 	//bool writeH5() {return true;};
 	void logStruct();
+	bool cifOut(string name);
 
 
 	//genetic operators
@@ -261,8 +262,8 @@ private:
 
 	//spacegroup things
 	bool setSpacegroup(bool frExclude = false);
-	void setSymmOp(GASP2molecule &mol);
-	void enforceCrystalType();
+	bool enforceCrystalType();
+
 
 	//parsing auxiliaries
 	bool readAtom(tinyxml2::XMLElement *elem, string& errorstring, GASP2atom &at);
@@ -277,6 +278,10 @@ private:
 	//geometry helpers
 	Vec3 getMolCentroid(GASP2molecule mol); //comes out in cart
 	Mat3 getPlaneRot(GASP2molecule mol);
+	bool applyDihedrals(GASP2molecule &mol);
+	void centerMol(GASP2molecule &mol);
+	void applyRot(GASP2molecule &mol);
+	void symmetrize(GASP2molecule &mol);
 
 
 

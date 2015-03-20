@@ -33,7 +33,249 @@ double GASP2struct::getVolume() {
 	return cellVol(unit);
 }
 
+bool GASP2struct::enforceCrystalType() {
+	//find the crystal type from
+	Spgroup spg = spacegroups[unit.spacegroup];
+
+	//enforce angles and lengths
+	if (spg.L == Lattice::Cubic) {
+		//a = b = c; alpha = beta = gamma = 90;
+		unit.a = unit.b = unit.c = 1.0;
+		unit.alpha = unit.beta = unit.gamma = rad(90.0);
+
+	} else if (spg.L == Lattice::Tetragonal) {
+		//a = b; alpha = beta = gamma = 90;
+		unit.a = unit.b = unit.ratA;
+		unit.c = unit.ratC;
+		unit.alpha = unit.beta = unit.gamma = rad(90.0);
+
+
+	} else if (spg.L == Lattice::Orthorhombic) {
+		//alpha = beta = gamma = 90;
+		unit.a = unit.ratA;
+		unit.b = unit.ratB;
+		unit.c = unit.ratC;
+		unit.alpha = unit.beta = unit.gamma = rad(90.0);
+
+
+	} else if (spg.L == Lattice::Hexagonal) {
+		//a = b; alpha = beta = 90; gamma = 120
+		unit.a = unit.b = unit.ratA;
+		unit.c = unit.ratC;
+		unit.alpha = unit.beta = rad(90.0);
+		unit.gamma = rad(120.0);
+
+	} else if (spg.L == Lattice::Rhombohedral) {
+		//a = b = c; alpha = beta = gamma;
+		unit.a = unit.b = unit.c = 1.0;
+		unit.alpha = unit.beta = unit.gamma = unit.rhomC;
+
+	} else if (spg.L == Lattice::Monoclinic) {
+		//alpha = gamma = 90;
+		unit.a = unit.ratA;
+		unit.b = unit.ratB;
+		unit.c = unit.ratC;
+		unit.beta = unit.monoB;
+		unit.alpha = unit.gamma = rad(90.0);
+
+
+	} else if (spg.L == Lattice::Triclinic) {
+		//unconstrained
+		unit.a = unit.ratA;
+		unit.b = unit.ratB;
+		unit.c = unit.ratC;
+		unit.alpha = unit.triA;
+		unit.beta = unit.triB;
+		unit.gamma = unit.triC;
+	}
+
+	//test for bad sets
+	if( ( unit.alpha + unit.beta + unit.gamma) >= 2*PI || ( unit.alpha + unit.beta + unit.gamma) <= 0)
+		return false;
+	if( (-unit.alpha + unit.beta + unit.gamma) >= 2*PI || (-unit.alpha + unit.beta + unit.gamma) <= 0)
+		return false;
+	if( ( unit.alpha - unit.beta + unit.gamma) >= 2*PI || ( unit.alpha - unit.beta + unit.gamma) <= 0)
+		return false;
+	if( ( unit.alpha + unit.beta - unit.gamma) >= 2*PI || ( unit.alpha + unit.beta - unit.gamma) <= 0)
+		return false;
+
+	return true;
+}
+
+void GASP2struct::centerMol(GASP2molecule & mol) {
+	Vec3 center = getMolCentroid(mol);
+	for(int i = 0; i < mol.atoms.size(); i++) {
+		mol.atoms[i].pos -= center;
+	}
+}
+
+bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
+	Mat3 rot;
+	Vec3 a,b,c,d, axis;
+	vector<Index> moved, fixed;
+	double init, diff, sign, dist;
+
+	//for each molecule
+	for(int i = 0; i < mol.dihedrals.size(); i++) {
+		a = mol.atoms[mol.dihedrals[i].a].pos;
+		b = mol.atoms[mol.dihedrals[i].b].pos;
+		c = mol.atoms[mol.dihedrals[i].c].pos;
+		d = mol.atoms[mol.dihedrals[i].d].pos;
+
+		//find the change needed to correct
+		init = dihedral(a,b,c,d);
+		diff = init - mol.dihedrals[i].ang;
+
+
+		//determine which half of the atoms is being modified
+		//so that the sign of the rotation about the dihedral
+		//axis is correct (and results are consistent with mercury)
+		sign = 1.0;
+		for(int j = 0; j < mol.dihedrals[i].update.size(); j++)
+			if(mol.dihedrals[i].update[j] == mol.dihedrals[i].a)
+				sign = -1.0;
+
+		//generate the axis
+		if(diff < 0.0)
+			axis = norm(c - b);
+		else
+			axis = norm(b - c);
+		//generate the matrix
+		rot = Rot3(axis, std::abs(diff)*sign);
+
+		//perform the rotation
+		for(int j = 0; j < mol.dihedrals[i].update.size(); j++) {
+			mol.atoms[mol.dihedrals[i].update[j]].pos =
+					(mol.atoms[mol.dihedrals[i].update[j]].pos - b) * rot + b;
+		}
+
+
+		//build the comparison lists
+		moved.clear(); fixed.clear();
+		for(int j = 0; j < mol.atoms.size(); j++) {
+			//never include b or c in the lists, otherwise the test will fail
+			if(j == mol.dihedrals[i].b || j == mol.dihedrals[i].c)
+				continue;
+			else {
+				bool flag = false;
+				for(int k = 0; k < mol.dihedrals[i].update.size(); k++) {
+					if(mol.dihedrals[i].update[k] == j) {
+						moved.push_back(j);
+						flag = true;
+						break;
+					}
+				}
+				if(flag == false)
+					fixed.push_back(j);
+			}
+		}
+
+
+		//check for constraint violation
+		for(int j = 0; j < moved.size(); j++) {
+			for(int k = 0; k < fixed.size(); k++) {
+				dist = len(mol.atoms[moved[j]].pos - mol.atoms[fixed[k]].pos);
+				if(dist < (intradist + rcov(mol.atoms[moved[j]].type) +
+						rcov(mol.atoms[fixed[k]].type) ) ) {
+					return false;
+				}
+			}
+		}
+
+	}//for each molecule
+
+
+	return true;
+}
+
+void GASP2struct::applyRot(GASP2molecule &mol) {
+
+	centerMol(mol);
+	Mat3 current = stabilize(getPlaneRot(mol));
+
+	//zero the rotation;
+	for(int i = 0; i < mol.atoms.size(); i++)
+		mol.atoms[i].pos = inv(current)*mol.atoms[i].pos;
+
+	//apply new rotation
+	for(int i = 0; i < mol.atoms.size(); i++)
+		mol.atoms[i].pos = mol.rot*mol.atoms[i].pos;
+
+}
+
+void GASP2struct::symmetrize(GASP2molecule &mol) {
+	if(mol.symm == 0)
+		return;
+
+	GASP2cell outcell;
+	outcell.a = 10.0;
+	outcell.b = 10.0;
+	outcell.c = 10.0;
+	outcell.alpha = rad(90.0);
+	outcell.beta = rad(90.0);
+	outcell.gamma = rad(90.0);
+
+	Mat3 toFrac = cartToFrac(outcell);
+	Mat3 toCart = fracToCart(outcell);;
+	Vec3 temp;
+
+	//rotate the molecule but ignore translation
+	cout << "molR\n";
+	cout << mol.symmR << endl;
+	cout << mol.symmT << endl;
+	for(int i = 0; i < mol.atoms.size(); i++) {
+		temp = toFrac*mol.atoms[i].pos;
+		temp = mol.symmR * temp;
+		mol.atoms[i].pos = toCart*temp;
+	}
+	//set the centroids
+	mol.pos = mol.symmR*mol.pos + mol.symmT;
+
+	//recenter for sanity
+	centerMol(mol);
+}
+
 bool GASP2struct::fitcell() {
+
+	if(enforceCrystalType() == false) {
+		finalstate = FitcellBadCell;
+		return false;
+	}
+
+	//apply dihedrals and rotations to molecules
+	for(int i = 0; i < molecules.size(); i++) {
+		if(applyDihedrals(molecules[i]) == false) {
+			finalstate = FitcellBadDih;
+			return false;
+		}
+		applyRot(molecules[i]);
+	}
+
+	//parse the relevent symmetry operations
+	cout << "Spacegroup: " << spacegroupNames[unit.spacegroup] << endl;
+	Spgroup spg = spacegroups[unit.spacegroup];
+	int nops = spg.R.size();
+
+	//symmetrize the molecules
+	vector<GASP2molecule> symmcell;
+	GASP2molecule temp;
+	for(Index j = 0; j < nops; j++) {
+		for(int i = 0; i < molecules.size(); i++) {
+			temp = molecules[i];
+			temp.symmR = spg.R[j];
+			temp.symmT = spg.T[j];
+			temp.symm = j;
+			symmcell.push_back(temp);
+		}
+	}
+
+	//symmetrize the molecules
+	for(int i = 0; i < symmcell.size(); i++)
+		symmetrize(symmcell[i]);
+
+	//collapseCell(symmcell);
+	molecules = symmcell;
+
 
 
 	return true;
@@ -166,7 +408,7 @@ bool GASP2struct::setSpacegroup(bool frExclude) {
 	//select centering group
 	int c = indexSelect(unit.cen, temp.size());
 	//set spacegroup from list
-	unit.spacegroup = temp[c].indices[indexSelect(unit.sub, temp[c].indices.size())] - 1;
+	unit.spacegroup = temp[c].indices[indexSelect(unit.sub, temp[c].indices.size())];
 	//cout << "Spacegroup: " << unit.spacegroup + 1 << endl;
 	return true;
 }
@@ -380,6 +622,8 @@ string GASP2struct::serializeXML() {
 			strtemp = "OptBadDih";
 		else if(finalstate == FitcellBadDih)
 			strtemp = "FitcellBadDih";
+		else if(finalstate == FitcellBadCell)
+			strtemp = "FitcellBadCell";
 		else if(finalstate == NoFitcell)
 			strtemp = "NoFitcell";
 
@@ -404,7 +648,7 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("rA",unit.ratA);
 		pr.PushAttribute("rB",unit.ratB);
 		pr.PushAttribute("rC",unit.ratC);
-		pr.PushAttribute("spacegroup",spacegroupNames[unit.spacegroup-1].c_str());
+		pr.PushAttribute("spacegroup",spacegroupNames[unit.spacegroup].c_str());
 		pr.PushAttribute("cen",unit.cen);
 		pr.PushAttribute("sub",unit.sub);
 		pr.PushAttribute("typ", getSchoenflies(unit.typ).c_str());
@@ -1473,6 +1717,8 @@ bool GASP2struct::readInfo(tinyxml2::XMLElement *elem, string& errorstring) {
 			finalstate = OptBadDih;
 		else if(strtemp == "FitcellBadDih")
 			finalstate = FitcellBadDih;
+		else if(strtemp == "FitcellBadCell")
+			finalstate = FitcellBadCell;
 		else if(strtemp == "NoFitcell")
 			finalstate = NoFitcell;
 		else {
@@ -1563,7 +1809,7 @@ void GASP2struct::logStruct() {
 	cout << setprecision(8) << fixed;
 	cout << "Structure name: " << names[crylabel] << endl;
 	cout << "Root structure id: " << ID.toStr() << endl;
-	cout << "Spacegroup: " << spacegroupNames[unit.spacegroup-1] << "  (ID:" << unit.spacegroup-1 << ")" << endl;
+	cout << "Spacegroup: " << spacegroupNames[unit.spacegroup] << "  (ID:" << unit.spacegroup << ")" << endl;
 //	cout << "Parent A id : " << parentA.toStr() << endl;
 //	cout << "Parent B id : " << parentB.toStr() << endl << endl;
 
@@ -1589,7 +1835,7 @@ void GASP2struct::logStruct() {
 		}
 		for(int j = 0; j < molecules[i].dihedrals.size(); j++) {
 			GASP2dihedral dh = molecules[i].dihedrals[j];
-			cout << "    Dih " << names[dh.label]<<" ("<<dh.minAng<<","<<dh.maxAng<<")"<<endl;
+			cout << "    Dih " << names[dh.label]<<" ("<<deg(dh.minAng)<<","<<deg(dh.maxAng)<<")"<<endl;
 			cout << "        Update: ";
 			for(int k = 0; k < dh.update.size(); k++)
 				cout << names[molecules[i].atoms[ dh.update[k] ].label] <<" ";
@@ -1597,7 +1843,7 @@ void GASP2struct::logStruct() {
 		}
 		for(int j = 0; j < molecules[i].angles.size(); j++) {
 			GASP2angle an = molecules[i].angles[j];
-			cout << "    Ang " << names[an.label]<<" ("<<an.minAng<<","<<an.maxAng<<")"<<endl;
+			cout << "    Ang " << names[an.label]<<" ("<<deg(an.minAng)<<","<<deg(an.maxAng)<<")"<<endl;
 		}
 		for(int j = 0; j < molecules[i].bonds.size(); j++) {
 			GASP2bond bn = molecules[i].bonds[j];
@@ -1631,6 +1877,60 @@ Vec3 GASP2struct::getMolCentroid(GASP2molecule mol) {
 		out += mol.atoms[i].pos;
 	return out/static_cast<double>(mol.atoms.size());
 }
+
+bool GASP2struct::cifOut(string name) {
+
+	ofstream outf;
+	outf.open(name.c_str(), ofstream::out | ofstream::app);
+	if(outf.fail())
+		return false;
+
+	GASP2cell outcell;
+	outcell.a = 10.0;
+	outcell.b = 10.0;
+	outcell.c = 10.0;
+	outcell.alpha = rad(90.0);
+	outcell.beta = rad(90.0);
+	outcell.gamma = rad(90.0);
+
+
+	Mat3 toFrac = cartToFrac(outcell);
+
+	Vec3 temp;
+	//limiter
+	//int size = molecules[0].atoms.size();
+
+	outf << "data_" << names[crylabel] << endl;
+	outf << "loop_" << endl;
+	outf << "_symmetry_equiv_pos_as_xyz" << endl;
+	outf << "x,y,z" << endl;
+	outf << "_cell_length_a " << outcell.a << endl;
+	outf << "_cell_length_b " << outcell.b << endl;
+	outf << "_cell_length_c " << outcell.c << endl;
+	outf << "_cell_angle_alpha " << deg(outcell.alpha) << endl;
+	outf << "_cell_angle_beta " << deg(outcell.beta) << endl;
+	outf << "_cell_angle_gamma " << deg(outcell.gamma) << endl;
+
+	outf << "loop_\n_atom_site_label\n_atom_site_type_symbol\n";
+	outf << "_atom_site_fract_x\n_atom_site_fract_y\n_atom_site_fract_z"
+			<< endl;
+	for (int i = 0; i < molecules.size(); i++) {
+		for (int j = 0; j < molecules[i].atoms.size(); j++) {
+			outf << names[molecules[i].atoms[j].label] << " ";
+			outf << getElemName(molecules[i].atoms[j].type) << " ";
+			temp = toFrac*molecules[i].atoms[j].pos + molecules[i].pos;
+			outf << temp[0] << " ";
+			outf << temp[1] << " ";
+			outf << temp[2] << endl;
+		}
+	}
+	outf << "#END" << endl << endl;
+
+	outf.close();
+	return true;
+
+}
+
 
 Mat3 fracToCart(GASP2cell cl) {
 	double phi = cellPhi(cl);

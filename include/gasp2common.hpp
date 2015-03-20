@@ -65,11 +65,30 @@ typedef enum Spacemode {
 	Full, //All spacegroups (including T,O and F)
 }Spacemode;
 
+
+typedef enum struct Lattice {
+	UNK=0,
+	Cubic,
+	Tetragonal,
+	Orthorhombic,
+	Hexagonal,
+	Rhombohedral,
+	Monoclinic,
+	Triclinic,
+}Lattice;
+
+typedef struct Spgroup {
+	vector<Mat3> R;
+	vector<Vec3> T;
+	Lattice L;
+
+}Symops;
+
 typedef double Centerfl; //encodes P C/A/B/N/D/E I, F, R, H depending on schoenflies/axis
 typedef double Subtype; //encodes glide and screw axes based on group number
 
 //EXTERNALS
-extern tinyxml2::XMLDocument spacegroups;
+extern vector<Spgroup> spacegroups;
 extern vector<string> spacegroupNames;
 extern mt19937_64 rgen;
 extern vector<cryGroup> groupgenes;
@@ -80,6 +99,8 @@ double deg(double rad);
 double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C );
 
 double dihedral ( const Vec3 & A, const Vec3 & B, const Vec3 & C, const Vec3 & D );
+
+Mat3 stabilize(Mat3 m);
 
 double rcov( const Elem type );
 
@@ -94,12 +115,16 @@ string getElemName(Elem in);
 Axisnum getAxis(string in);
 string getAxis(Axisnum in);
 
+Lattice getLattice(string in);
+
 Schoenflies getSchoenflies(string in);
 string getSchoenflies(Schoenflies in);
 
 vector<string> split(string in, char delim=' ');
 
+
 bool loadSpaceGroups();
+void parseSymop ( string symm, Mat3 &symmR, Vec3 &symmT );
 
 string tfconv(bool var);
 

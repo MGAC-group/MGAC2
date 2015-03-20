@@ -100,12 +100,17 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 	if(root.parseXMLDoc(doc, errors)==false)
 		return false;
 
-	root.init();
-	root.check();
+	for(int i = 0; i < 10; i++) {
+		root.unfitcell();
+		root.init();
+		root.fitcell();
+		if(!root.cifOut("fitcelldebug.cif"))
+			cout << "Bad file for fitcelldebug!\n";
+	}
 
+	root.unfitcell();
 
-
-	cout << root.serializeXML() << endl;
+	//cout << root.serializeXML() << endl;
 
 	if(ID == 0) {
 		params.logParams();

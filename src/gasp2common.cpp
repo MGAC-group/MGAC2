@@ -3,7 +3,7 @@
 //using namespace std;
 
 //static data
-tinyxml2::XMLDocument spacegroups;
+vector<Spgroup> spacegroups;
 vector<string> spacegroupNames;
 
 mt19937_64 rgen;
@@ -411,6 +411,28 @@ string getSchoenflies(Schoenflies in) {
 	return type;
 }
 
+Lattice getLattice(string in) {
+	Lattice type;
+	if(in == "cubic")
+		type = Lattice::Cubic;
+	else if(in == "tetragonal")
+		type = Lattice::Tetragonal;
+	else if(in == "orthorhombic")
+		type = Lattice::Orthorhombic;
+	else if(in == "hexagonal")
+		type = Lattice::Hexagonal;
+	else if(in == "monoclinic")
+		type = Lattice::Monoclinic;
+	else if(in == "triclinic")
+		type = Lattice::Triclinic;
+	else if(in == "rhombohedral")
+		type = Lattice::Rhombohedral;
+	else
+		type = Lattice::UNK;
+
+	return type;
+}
+
 vector<string> split(string in, char delim) {
 	vector<string> out;
 	istringstream ss(in);
@@ -457,31 +479,132 @@ bool operator==(const UUID &u, const UUID &v) {
 bool loadSpaceGroups() {
 	string strtemp;
 	const char* stemp;
+	Mat3 rot; Vec3 trans;
+
+	tinyxml2::XMLDocument spacedoc;
+	tinyxml2::XMLElement *group;
+
+	Spgroup spg;
+	//make empty groups in a couple of places;
+	spacegroups.push_back(spg);
+	spacegroupNames.push_back("NULL");
 
     const char * s = &_binary_spacegroups_xml_start;
     const char * e = &_binary_spacegroups_xml_end;
     size_t size = e-s;
-    if(spacegroups.Parse(s, size)) {
+    if(spacedoc.Parse(s, size)) {
     	cout << "A problem was encountered when loading the spacegroup file!\n";
     	return false;
     }
-    tinyxml2::XMLElement *elem = spacegroups.FirstChildElement("spglist")->FirstChildElement("spg");
+    tinyxml2::XMLElement *elem = spacedoc.FirstChildElement("spglist")->FirstChildElement("spg");
     if(!elem) {
     	cout << "A problem was encountered when loading the spacegroup file!\n";
     	return false;
     }
+
     while(elem) {
     	stemp = elem->Attribute("sym");
 		if(stemp) {
 			strtemp = stemp;
-			//cout << "Sym is " << strtemp << " ";
 			spacegroupNames.push_back(strtemp);
 		}
+		spg.R.clear();
+		spg.T.clear();
+    	stemp = elem->Attribute("sys");
+		if(stemp) {
+			strtemp = stemp;
+			spg.L = getLattice(strtemp);
+			if(spg.L == Lattice::UNK) {
+				cout << "An unknown lattice type was specified in the spacegroup file!\n";
+				return false;
+			}
+		}
+		group = elem->FirstChildElement("op");
+		while(group) {
+			strtemp = group->GetText();
+			parseSymop(strtemp, rot, trans);
+			spg.R.push_back(rot);
+			spg.T.push_back(trans);
+			group = group->NextSiblingElement("op");
+		}
+		spacegroups.push_back(spg);
 		elem = elem->NextSiblingElement("spg");
+
     }
 
     cout << endl;
     return true;
+
+}
+
+//adapted from the original MGAC code (written by
+void parseSymop ( string symm, Mat3 &symmR, Vec3 &symmT ) {
+
+    double    aux_coord;
+    Vec3    aux_vect;
+    vector<string> symms;
+
+	symms = split(symm, ',');
+
+
+	for (int j = 0 ; j < 3 ; j++ ) {
+
+		aux_vect = vl_0;
+		aux_coord = 0.0;
+
+		if ( symms[j].find("-x") != string::npos )
+			aux_vect[0] = (-1.0);
+		else if ( ( symms[j].find("+x") != string::npos ) || ( symms[j].find("x") != string::npos ) )
+			aux_vect[0] = (1.0);
+		else
+			aux_vect[0] = (0.0);
+
+		if ( symms[j].find("-y") != string::npos )
+			aux_vect[1] = (-1.0);
+		else if ( ( symms[j].find("+y") != string::npos ) || ( symms[j].find("y") != string::npos ) )
+			aux_vect[1] = (1.0);
+		else
+			aux_vect[1] = (0.0);
+
+		if ( symms[j].find("-z") != string::npos )
+			aux_vect[2] = (-1.0);
+		else if ( ( symms[j].find("z") != string::npos ) || ( symms[j].find("z") != string::npos ) )
+			aux_vect[2] = (1.0);
+		else
+			aux_vect[2] = (0.0);
+
+		if ( symms[j].find("+1/2") != string::npos )
+			aux_coord = 1.0/2.0;
+		else if ( symms[j].find("-1/2") != string::npos )
+			aux_coord = -1.0/2.0;
+		else if ( symms[j].find("+1/3") != string::npos )
+			aux_coord = 1.0/3.0;
+		else if ( symms[j].find("+2/3") != string::npos )
+			aux_coord = 2.0/3.0;
+		else if ( symms[j].find("+1/4") != string::npos )
+			aux_coord = 1.0/4.0;
+		else if ( symms[j].find("-1/4") != string::npos )
+			aux_coord = -1.0/4.0;
+		else if ( symms[j].find("+3/4") != string::npos )
+			aux_coord = 3.0/4.0;
+		else if ( symms[j].find("+5/4") != string::npos )
+			aux_coord = 5.0/4.0;
+		else if ( symms[j].find("+1/6") != string::npos )
+			aux_coord = 1.0/6.0;
+		else if ( symms[j].find("-1/6") != string::npos )
+			aux_coord = -1.0/6.0;
+		else if ( symms[j].find("+5/6") != string::npos )
+			aux_coord = 5.0/6.0;
+		else if ( symms[j].find("+7/6") != string::npos )
+			aux_coord = 7.0/6.0;
+		else
+			aux_coord = 0.0;
+
+		/* Set matrix R and vector T parameters */
+		symmR[j] = aux_vect;
+		symmT[j] = aux_coord;
+
+	}
 
 }
 
