@@ -257,6 +257,16 @@ int indexSelect(double n, int size) {
 	return 0;
 }
 
+Vec3 modVec3(Vec3 in) {
+	for(int i = 0; i < 3; i++) {
+		while(in[i] < 0.0)
+			in[i] += 1.0;
+		while(in[i] >= 1.0)
+			in[i] -= 1.0;
+	}
+	return in;
+}
+
 Elem getElemType(string in) {
 	Elem type;
 	//UNK=0,C,H,N,O,P,Cl,F,S,Br,

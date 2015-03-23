@@ -108,6 +108,8 @@ double vdw( Elem type );
 
 int indexSelect(double n, int size);
 
+Vec3 modVec3 (Vec3 in);
+
 Elem getElemType(string in);
 
 string getElemName(Elem in);

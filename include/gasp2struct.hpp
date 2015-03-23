@@ -188,7 +188,7 @@ public:
 	bool fitcell(); //puts the molecules in the built unit cell
 	bool unfitcell(); //reduces the structure to only fundamental units
 	bool check(); //checks for violation of constraints (usually after opt)
-
+	void overrideSpacegroup(Index i) { unit.spacegroup = i; };
 
 	void setEval(bool (*e)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&) ) {eval = e;};
 
@@ -280,10 +280,15 @@ private:
 	Mat3 getPlaneRot(GASP2molecule mol);
 	bool applyDihedrals(GASP2molecule &mol);
 	void centerMol(GASP2molecule &mol);
+	void centerMol(GASP2molecule & mol, Vec3 pos);
 	void applyRot(GASP2molecule &mol);
 	void symmetrize(GASP2molecule &mol);
-
-
+	double collapseCell(vector<GASP2molecule> supercell, Vec3 ratios);
+	Vec3 getOrder(Vec3 rat);
+	void modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta);
+	void makeSuperCell(vector<GASP2molecule> &supercell, int shells);
+	void resetMols(double d, vector<GASP2molecule> &supercell, Vec3 ratios);
+	bool checkConnect(vector<GASP2molecule> supercell);
 
 
 };

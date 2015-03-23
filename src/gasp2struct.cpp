@@ -109,6 +109,13 @@ void GASP2struct::centerMol(GASP2molecule & mol) {
 	}
 }
 
+void GASP2struct::centerMol(GASP2molecule & mol, Vec3 pos) {
+	Vec3 newpos =  pos - getMolCentroid(mol);
+	for(int i = 0; i < mol.atoms.size(); i++) {
+		mol.atoms[i].pos += newpos;
+	}
+}
+
 bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
 	Mat3 rot;
 	Vec3 a,b,c,d, axis;
@@ -220,20 +227,171 @@ void GASP2struct::symmetrize(GASP2molecule &mol) {
 	Vec3 temp;
 
 	//rotate the molecule but ignore translation
-	cout << "molR\n";
-	cout << mol.symmR << endl;
-	cout << mol.symmT << endl;
 	for(int i = 0; i < mol.atoms.size(); i++) {
 		temp = toFrac*mol.atoms[i].pos;
 		temp = mol.symmR * temp;
 		mol.atoms[i].pos = toCart*temp;
 	}
 	//set the centroids
-	mol.pos = mol.symmR*mol.pos + mol.symmT;
+	mol.pos = modVec3(mol.symmR*mol.pos + mol.symmT);
 
 	//recenter for sanity
 	centerMol(mol);
 }
+
+
+
+void GASP2struct::makeSuperCell(vector<GASP2molecule> &supercell, int shells) {
+	int nsize = supercell.size();
+	GASP2molecule temp;
+	for(int i = 0; i < shells; i++) {
+		for(int j = 0; j < shells; j++) {
+			for(int k = 0; k < shells; k++) {
+				if(i == 0 && j == 0 && k ==0)
+					continue;
+				for(int n = 0; n < nsize; n++) {
+					temp = supercell[n];
+					temp.pos += Vec3( (double) i, (double) j, (double) k);
+					supercell.push_back(temp);
+				}
+			}
+		}
+	}
+}
+
+void GASP2struct::resetMols(double d, vector<GASP2molecule> &supercell, Vec3 ratios) {
+
+	//reset the cell params in unit
+	unit.a = d * ratios[0];
+	unit.b = d * ratios[1];
+	unit.c = d * ratios[2];
+
+	Mat3 toCart = fracToCart(unit);
+	Vec3 center;
+
+	for(int i = 0; i < supercell.size(); i++) {
+		center = toCart*supercell[i].pos;
+		centerMol(supercell[i],center);
+	}
+
+}
+
+bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
+
+	double dist;
+
+	for(int i = 0; i < supercell.size(); i++) {
+		for(int j = i; j < supercell.size(); j++) {
+			if(i == j) continue;
+
+			for(int m = 0; m < supercell[i].atoms.size(); m++) {
+				for(int n = 0; n < supercell[j].atoms.size(); n++) {
+					dist = len(supercell[i].atoms[m].pos - supercell[j].atoms[n].pos);
+
+					if(dist < (interdist + vdw(supercell[i].atoms[m].type) + vdw(supercell[j].atoms[n].type)) ) {
+						//cout << "dist: " << dist << endl;
+						return true;
+					}
+				}
+			}
+
+		}
+	}
+
+	return false;
+}
+
+double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
+
+	bool touches;
+	double diff_d, last_d;
+	//phase 1: double d until connects are okay
+	double d = 1.0;
+	resetMols(d, supercell, ratios);
+	touches = checkConnect(supercell);
+	while (touches) {
+		last_d = d;
+		d *= 2.0;
+		resetMols(d, supercell, ratios);
+		touches = checkConnect(supercell);
+	}
+
+	//phase 2: binary search decreasing d
+	while (true) {
+		diff_d = std::abs(d - last_d) / 2.0;
+		last_d = d;
+		if (diff_d < 0.0625 && touches==false)
+			break; //this is 0.125 (not 0.25) because diff / 2
+		resetMols(d, supercell, ratios);
+		touches = checkConnect(supercell);
+		if (touches)
+			d += diff_d;
+		else
+			d -= diff_d;
+	}
+
+	return d;
+
+}
+
+Vec3 GASP2struct::getOrder(Vec3 rat) {
+	Vec3 result;
+
+	int large = 0;
+	int small = 0;
+	for (int i = 1; i < 3; i++) {
+		if (rat[i] > rat[large])
+			large = i;
+		if (rat[i] < rat[small])
+			small = i;
+	}
+	int mid;
+	for (int i = 0; i < 3; i++)
+		if (i != large && i != small)
+			mid = i;
+
+	result[0] = (double)large;
+	result[1] = (double)mid;
+	result[2] = (double)small;
+
+	return result;
+}
+
+void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
+	int axisswitch;
+	Spgroup spg = spacegroups[unit.spacegroup];
+
+	axisswitch = (int)order[n];
+	ratios[axisswitch] += delta;
+
+	//catch any bad ratios
+	for (int i = 0; i < 3; i++)
+		if (ratios[i] < 0.1)
+			ratios[i] = 0.1;
+
+	//catch for unit cell ratios where two or more axes
+	//are constrained to each other by crystal type
+	if (spg.L == Lattice::Tetragonal || spg.L == Lattice::Hexagonal) {
+		//a = b
+		if (axisswitch == 0) //a
+			ratios[1] = ratios[0];
+		else if (axisswitch == 1) //b
+			ratios[0] = ratios[1];
+	} else if (spg.L == Lattice::Cubic || spg.L == Lattice::Rhombohedral) {
+		//a = b = c
+		if (axisswitch == 0) //a
+			ratios[2] = ratios[1] = ratios[0];
+		else if (axisswitch == 1) //b
+			ratios[2] = ratios[0] = ratios[1];
+		else //c
+			ratios[0] = ratios[1] = ratios[2];
+
+	}
+
+}
+
+
+
 
 bool GASP2struct::fitcell() {
 
@@ -252,7 +410,7 @@ bool GASP2struct::fitcell() {
 	}
 
 	//parse the relevent symmetry operations
-	cout << "Spacegroup: " << spacegroupNames[unit.spacegroup] << endl;
+	//cout << "Spacegroup: " << spacegroupNames[unit.spacegroup] << endl;
 	Spgroup spg = spacegroups[unit.spacegroup];
 	int nops = spg.R.size();
 
@@ -272,9 +430,49 @@ bool GASP2struct::fitcell() {
 	//symmetrize the molecules
 	for(int i = 0; i < symmcell.size(); i++)
 		symmetrize(symmcell[i]);
-
-	//collapseCell(symmcell);
 	molecules = symmcell;
+
+	Vec3 ratios, order;
+	double vol, last_vol;
+
+	//make the super cell and the optimize the cell lengths
+	vector<GASP2molecule> supercell;
+	supercell = symmcell;
+	makeSuperCell(supercell, 3);
+
+	//cout << "Supercell size: " << supercell.size()  << endl;
+
+	ratios = Vec3(unit.ratA, unit.ratB, unit.ratC);
+	order = getOrder(ratios);
+
+	collapseCell(supercell, ratios);
+	last_vol = this->getVolume();
+	vol = last_vol;
+
+	for(int n = 0; n < 3; n++) {
+		while (true) {
+			modCellRatio(ratios, order, n, -0.1f);
+			collapseCell(supercell, ratios);
+			vol = this->getVolume();
+			if(vol >= last_vol) {
+				modCellRatio(ratios, order, n, 0.1f);
+				collapseCell(supercell, ratios);
+				break;
+			}
+			else
+				last_vol = vol;
+
+			//this->cifOut("fitcelldebug.cif");
+
+		}
+		//this->cifOut("fitcelldebug.cif");
+	}
+
+	//final collapse, and explicit data clear
+	collapseCell(supercell, ratios);
+	//molecules = supercell;
+	supercell.clear();
+	symmcell.clear();
 
 
 
@@ -420,8 +618,12 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	parentA.clear();
 	parentB.clear();
 
-	//randomize spacegroup
 
+	isFitcell = false;
+	complete = false;
+	finalstate = OKStruct;
+
+	//randomize spacegroup
 	//one, two x4, three, four, six,
 	discrete_distribution<> daxis({1,4,1,1,1});
 
@@ -1885,14 +2087,17 @@ bool GASP2struct::cifOut(string name) {
 	if(outf.fail())
 		return false;
 
-	GASP2cell outcell;
-	outcell.a = 10.0;
-	outcell.b = 10.0;
-	outcell.c = 10.0;
-	outcell.alpha = rad(90.0);
-	outcell.beta = rad(90.0);
-	outcell.gamma = rad(90.0);
+	if(finalstate != OKStruct)
+		return false;
 
+	GASP2cell outcell;
+//	outcell.a = 10.0;
+//	outcell.b = 10.0;
+//	outcell.c = 10.0;
+//	outcell.alpha = rad(90.0);
+//	outcell.beta = rad(90.0);
+//	outcell.gamma = rad(90.0);
+	outcell = unit;
 
 	Mat3 toFrac = cartToFrac(outcell);
 
