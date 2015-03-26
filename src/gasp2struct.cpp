@@ -131,8 +131,8 @@ bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
 
 		//find the change needed to correct
 		init = dihedral(a,b,c,d);
+//		diff = init - mol.dihedrals[i].ang;
 		diff = init - mol.dihedrals[i].ang;
-
 
 		//determine which half of the atoms is being modified
 		//so that the sign of the rotation about the dihedral
@@ -143,18 +143,26 @@ bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
 				sign = -1.0;
 
 		//generate the axis
-		if(diff < 0.0)
-			axis = norm(c - b);
-		else
-			axis = norm(b - c);
+		axis = norm(c-b);
 		//generate the matrix
-		rot = Rot3(axis, std::abs(diff)*sign);
+
+
+		rot = Rot3(axis, std::abs(diff));
+
+		//cout << "rot: " << rot << endl;
 
 		//perform the rotation
 		for(int j = 0; j < mol.dihedrals[i].update.size(); j++) {
 			mol.atoms[mol.dihedrals[i].update[j]].pos =
-					(mol.atoms[mol.dihedrals[i].update[j]].pos - b) * rot + b;
+					rot*(mol.atoms[mol.dihedrals[i].update[j]].pos - c) + c;
 		}
+
+		a = mol.atoms[mol.dihedrals[i].a].pos;
+		b = mol.atoms[mol.dihedrals[i].b].pos;
+		c = mol.atoms[mol.dihedrals[i].c].pos;
+		d = mol.atoms[mol.dihedrals[i].d].pos;
+		double final = dihedral(a,b,c,d);
+		//cout << "Diff: " << deg(std::abs(diff)*sign) << " sign:" << sign << " setting: " << deg(mol.dihedrals[i].ang) << " init: " << deg(init) << " final: " << deg(final) << endl;
 
 
 		//build the comparison lists
@@ -184,6 +192,7 @@ bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
 				dist = len(mol.atoms[moved[j]].pos - mol.atoms[fixed[k]].pos);
 				if(dist < (intradist + rcov(mol.atoms[moved[j]].type) +
 						rcov(mol.atoms[fixed[k]].type) ) ) {
+					cout << "bad dih\n";
 					return false;
 				}
 			}
@@ -214,16 +223,8 @@ void GASP2struct::symmetrize(GASP2molecule &mol) {
 	if(mol.symm == 0)
 		return;
 
-	GASP2cell outcell;
-	outcell.a = 10.0;
-	outcell.b = 10.0;
-	outcell.c = 10.0;
-	outcell.alpha = rad(90.0);
-	outcell.beta = rad(90.0);
-	outcell.gamma = rad(90.0);
-
-	Mat3 toFrac = cartToFrac(outcell);
-	Mat3 toCart = fracToCart(outcell);;
+	Mat3 toFrac = cartToFrac(unit);
+	Mat3 toCart = fracToCart(unit);;
 	Vec3 temp;
 
 	//rotate the molecule but ignore translation
@@ -410,9 +411,12 @@ bool GASP2struct::fitcell() {
 	}
 
 	//parse the relevent symmetry operations
-	//cout << "Spacegroup: " << spacegroupNames[unit.spacegroup] << endl;
+	cout << "Spacegroup: " << spacegroupNames[unit.spacegroup] << endl;
+
 	Spgroup spg = spacegroups[unit.spacegroup];
 	int nops = spg.R.size();
+
+
 
 	//symmetrize the molecules
 	vector<GASP2molecule> symmcell;

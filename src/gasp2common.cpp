@@ -124,12 +124,15 @@ double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C ) {
 
 
 double dihedral ( const Vec3 & A, const Vec3 & B, const Vec3 & C, const Vec3 & D ) {
-	Vec3 a,b,c;
+	Vec3 b1,b2,b3, n1, n2, m1;
 	double x,y;
-	a = B-A; b = C-B; c = D-C;
-	x = dot(norm(b)*a,cross(b,c));
-	y = dot(cross(a,b),cross(b,c));
-	return atan2(x,y);
+	b1 = B-A; b2 = C-B; b3 = D-C;
+	n1 = norm(cross(b1,b2));
+	n2 = norm(cross(b2,b3));
+	m1 = cross(n1,norm(b2));
+	y = dot(m1,n2);
+	x = dot(n1,n2);
+	return std::atan2(y,x);
 }
 
 

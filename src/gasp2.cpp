@@ -95,8 +95,9 @@ void GASP2control::server_prog() {
 //	}
 
 
+
 	root.init();
-	for(int i = 1; i < 229; i++) {
+	for(int i = 1; i < 290; i++) {
 		root.unfitcell();
 		root.overrideSpacegroup(i);
 		root.fitcell();
