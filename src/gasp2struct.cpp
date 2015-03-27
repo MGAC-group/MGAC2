@@ -911,7 +911,7 @@ bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
 	return true;
 }
 
-void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate) {
+void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate,  Spacemode mode) {
 	unfitcell();
 	partner.unfitcell();
 
@@ -922,6 +922,8 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 	childA.parentB = partner.ID;
 	childB.parentA = this->ID;
 	childB.parentB = partner.ID;
+	childA.ID.generate();
+	childB.ID.generate();
 	//set some important values and unfitcell
 	childA.unfitcell();
 	childB.unfitcell();
@@ -980,7 +982,7 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 		swap(childA.unit.ratB, childB.unit.ratC);
 
 
-	vector<GASP2molecules> temp, a, b;
+	vector<GASP2molecule> temp, a, b;
 	NIndex m;
 	//this crossing algorithm can lead to self-crossing
 	//when different number of molecules are presented
@@ -989,12 +991,14 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 		temp.clear();
 		m = childA.unit.stoich[i].mol;
 		//collect all the molecules of this type
-		for(int j = 0; j < childA.molecules.size; j++)
+		for(int j = 0; j < childA.molecules.size(); j++)
 			if(childA.molecules[j].label == m)
 				temp.push_back(childA.molecules[j]);
-		for(int j = 0; j < childB.molecules.size; j++)
+		for(int j = 0; j < childB.molecules.size(); j++)
 			if(childB.molecules[j].label == m)
 				temp.push_back(childB.molecules[j]);
+
+		//perform the crossover
 		int end = temp.size() - 1;
 		for(int j = 0; j < temp.size() / 2; j++) {
 			if(crx(rgen))
@@ -1007,18 +1011,58 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 			//if there is a candidate for changing
 			//the rgen value, this is probably it
 			if(crx(rgen)) {
-				Mat3 t = temp[j]*temp[end-j];
-				Mat3 n = temp[end-j]*temp[j];
-				temp[j] = t;
-				temp[end-j] = n;
+				Mat3 t = temp[j].rot*temp[end-j].rot;
+				Mat3 n = temp[end-j].rot*temp[j].rot;
+				temp[j].rot = t;
+				temp[end-j].rot = n;
 			}
 
+			for(int k = 0; k < temp[0].dihedrals.size(); k++) {
+				if(crx(rgen))
+					swap(temp[j].dihedrals[k].ang, temp[end-j].dihedrals[k].ang);
+			}
 		}
+
+		//assign molecules to each stucture
+
+		//1) decide if the molecule counts will be swapped
+		if(crx(rgen))
+			swap(childA.unit.stoich[i].count, childB.unit.stoich[i].count);
+
+		//decide if the molecules will be swapped
+		//if they are swapped, we reverse the order of molecules
+		//guaranteeing that when assigned they are placed correctly
+		if(crx(rgen))
+			std::reverse(temp.begin(),temp.end());
+
+		//decide if the molecules will be mixed up
+		if(crx(rgen))
+			std::shuffle(temp.begin(), temp.end(), rgen);
+
+
+		//assign molecules
+		for(int j = 0; j < childA.unit.stoich[i].count; j++)
+			a.push_back(temp[j]);
+		for(int j = childA.unit.stoich[i].count; j < childB.unit.stoich[i].count+childA.unit.stoich[i].count; j++)
+			b.push_back(temp[j]);
 
 	}
 
+	//dump the molecules into the new structures
+	childA.molecules = a;
+	childB.molecules = b;
 
-
+	//set up the spacegroup stuff
+	if(mode != Single) {
+		if(!childA.setSpacegroup()) {
+			childA.finalstate = FitcellBadCell;
+			childA.complete = true;
+		}
+		if(!childB.setSpacegroup()) {
+			childB.finalstate = FitcellBadCell;
+			childB.complete = true;
+		}
+	}
 
 }
 

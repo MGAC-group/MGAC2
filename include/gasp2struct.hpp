@@ -208,7 +208,7 @@ public:
 	//do not work right unless the structure is unfitcelled
 	bool init(Spacemode mode=Limited, Index spcg=1);
 	bool mutateStruct(double rate, Spacemode mode=Limited);
-	void crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate=0.5);
+	void crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate=0.5, Spacemode mode=Limited);
 	bool evaluate();
 
 	//getters

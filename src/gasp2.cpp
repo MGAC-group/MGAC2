@@ -95,18 +95,30 @@ void GASP2control::server_prog() {
 //	}
 
 
-	root.init();
-	root.fitcell();
-	if(!root.cifOut("fitcelldebug.cif"))
-		cout << "Bad file for fitcelldebug!\n";
+//	root.init();
+//	root.fitcell();
+//	if(!root.cifOut("fitcelldebug.cif"))
+//		cout << "Bad file for fitcelldebug!\n";
+//
+//	for(int i = 0; i < 10; i++) {
+//		root.unfitcell();
+//		root.mutateStruct(0.10);
+//		root.fitcell();
+//		if(!root.cifOut("fitcelldebug.cif"))
+//			cout << "Bad file for fitcelldebug!\n";
+//	}
 
-	for(int i = 0; i < 10; i++) {
-		root.unfitcell();
-		root.mutateStruct(0.10);
-		root.fitcell();
-		if(!root.cifOut("fitcelldebug.cif"))
-			cout << "Bad file for fitcelldebug!\n";
-	}
+	GASP2struct temp, c1, c2;
+	temp = root;
+	temp.init();
+	root.init();
+
+	root.crossStruct(temp, c1, c2);
+
+	cout << root.serializeXML() << endl;
+	cout << temp.serializeXML() << endl;
+	cout << c1.serializeXML() << endl;
+	cout << c2.serializeXML() << endl;
 
 //	root.init();
 //	for(int i = 2; i < 3; i++) {
@@ -118,6 +130,8 @@ void GASP2control::server_prog() {
 //	}
 //
 //	root.unfitcell();
+
+	//cout << root.serializeXML() << endl;
 
 	getHostInfo();
 }
@@ -134,10 +148,6 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 		return false;
 	if(root.parseXMLDoc(doc, errors)==false)
 		return false;
-
-
-
-	//cout << root.serializeXML() << endl;
 
 	if(ID == 0) {
 		params.logParams();

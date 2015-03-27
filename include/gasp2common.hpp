@@ -15,7 +15,7 @@
 #include "mpi.h"
 #include <uuid/uuid.h>
 #include <random>
-#include <utility>
+#include <algorithm>
 
 extern "C" {
 	extern char _binary_spacegroups_xml_start;
