@@ -33,6 +33,23 @@ double GASP2struct::getVolume() {
 	return cellVol(unit);
 }
 
+double GASP2struct::getVolScore() {
+	double expectvol = 0.0;
+	double vol = getVolume();
+	//must work independent of fitcell
+	for(int i = 0; i < molecules.size(); i++) {
+		expectvol += molecules[i].expectvol;
+	}
+	if(!isFitcell) {
+		Spgroup spg = spacegroups[unit.spacegroup];
+		int nops = spg.R.size();
+		expectvol *= (double) nops;
+	}
+	return std::abs(vol-expectvol);
+}
+
+
+
 bool GASP2struct::enforceCrystalType() {
 	//find the crystal type from
 	Spgroup spg = spacegroups[unit.spacegroup];
@@ -134,6 +151,10 @@ bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
 //		diff = init - mol.dihedrals[i].ang;
 		diff = init - mol.dihedrals[i].ang;
 
+		//short circuit if the chage is small
+		if(std::abs(diff) < 1.0)
+			continue;
+
 		//determine which half of the atoms is being modified
 		//so that the sign of the rotation about the dihedral
 		//axis is correct (and results are consistent with mercury)
@@ -145,24 +166,22 @@ bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
 		//generate the axis
 		axis = norm(c-b);
 		//generate the matrix
-
-
-		rot = Rot3(axis, std::abs(diff));
+		rot = Rot3(axis, diff*sign);
 
 		//cout << "rot: " << rot << endl;
 
 		//perform the rotation
 		for(int j = 0; j < mol.dihedrals[i].update.size(); j++) {
 			mol.atoms[mol.dihedrals[i].update[j]].pos =
-					rot*(mol.atoms[mol.dihedrals[i].update[j]].pos - c) + c;
+					rot*(mol.atoms[mol.dihedrals[i].update[j]].pos - b) + b;
 		}
 
-		a = mol.atoms[mol.dihedrals[i].a].pos;
-		b = mol.atoms[mol.dihedrals[i].b].pos;
-		c = mol.atoms[mol.dihedrals[i].c].pos;
-		d = mol.atoms[mol.dihedrals[i].d].pos;
-		double final = dihedral(a,b,c,d);
-		//cout << "Diff: " << deg(std::abs(diff)*sign) << " sign:" << sign << " setting: " << deg(mol.dihedrals[i].ang) << " init: " << deg(init) << " final: " << deg(final) << endl;
+//		a = mol.atoms[mol.dihedrals[i].a].pos;
+//		b = mol.atoms[mol.dihedrals[i].b].pos;
+//		c = mol.atoms[mol.dihedrals[i].c].pos;
+//		d = mol.atoms[mol.dihedrals[i].d].pos;
+//		double final = dihedral(a,b,c,d);
+//		cout << "Diff: " << deg(std::abs(diff)*sign) << " sign:" << sign << " setting: " << deg(mol.dihedrals[i].ang) << " init: " << deg(init) << " final: " << deg(final) << endl;
 
 
 		//build the comparison lists
@@ -393,7 +412,6 @@ void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
 
 
 
-
 bool GASP2struct::fitcell() {
 
 	if(enforceCrystalType() == false) {
@@ -478,7 +496,7 @@ bool GASP2struct::fitcell() {
 	supercell.clear();
 	symmcell.clear();
 
-
+	isFitcell = true;
 
 	return true;
 }
@@ -496,7 +514,7 @@ bool GASP2struct::unfitcell() {
 	}
 	molecules.clear();
 	molecules = tempmol;
-
+	isFitcell = false;
 
 
 	return true;
@@ -553,76 +571,13 @@ bool GASP2struct::check() {
 	return true;
 }
 
-bool GASP2struct::evaluate() {
-
-	if(!isFitcell) {
-		finalstate = NoFitcell;
-		return false;
-	}
-
-	//never evaluate something that has already been evaluated
-	if(!didOpt) {
-		complete = eval(molecules, unit, energy, force, pressure, time);
-		steps++;
-		check();
-		didOpt = true;
-	}
-
-	return complete;
-};
-
-bool GASP2struct::setSpacegroup(bool frExclude) {
-	Index index;
-	vector<cryGroup> temp;
-
-	//check for invalid schoenflies
-	if( (unit.typ == Schoenflies::Dnd) && (unit.axn == Axisnum::Four || unit.axn == Axisnum::Six) ) {
-		cout << "D4d or D6d was generated; structure " << ID.toStr() << " rejected.\n";
-		return false;
-	}
-
-	//check for extended groups
-	Axisnum a;
-	switch(unit.typ) {
-	case Schoenflies::T:
-	case Schoenflies::Th:
-	case Schoenflies::O:
-	case Schoenflies::Td:
-	case Schoenflies::Oh:
-		a = Axisnum::UNK;
-	default:
-		a = unit.axn;
-	}
-
-	//get a sublist of groups
-	for(int i = 0; i < groupgenes.size(); i++) {
-		if( (a == groupgenes[i].a) && (unit.typ == groupgenes[i].s) )
-			if(frExclude) {
-				if(groupgenes[i].c != Centering::F && groupgenes[i].c != Centering::R)
-					temp.push_back(groupgenes[i]);
-			}
-			else
-				temp.push_back(groupgenes[i]);
-	}
-
-
-
-	//select centering group
-	int c = indexSelect(unit.cen, temp.size());
-	//set spacegroup from list
-	unit.spacegroup = temp[c].indices[indexSelect(unit.sub, temp[c].indices.size())];
-	//cout << "Spacegroup: " << unit.spacegroup + 1 << endl;
-	return true;
-}
-
-//this functions randomizes structures
 bool GASP2struct::init(Spacemode mode, Index spcg) {
 	//set UUIDs appropriately
 	ID.generate();
 	parentA.clear();
 	parentB.clear();
 
-
+	unfitcell();
 	isFitcell = false;
 	complete = false;
 	finalstate = OKStruct;
@@ -761,6 +716,378 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 
 	return true;
 }
+
+bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
+
+	Index spcg = unit.spacegroup;
+
+	//set UUIDs appropriately
+	parentA = ID;
+	ID.generate();
+	parentB.clear();
+
+	unfitcell();
+	complete = false;
+	finalstate = OKStruct;
+
+	//rate of mutation
+	bernoulli_distribution mut(rate);
+
+	//randomize spacegroup
+	//one, two x4, three, four, six,
+	discrete_distribution<> daxis({1,4,1,1,1});
+	uniform_real_distribution<double> dcent(0.0,1.0);
+	uniform_real_distribution<double> dsub(0.0,1.0);
+
+	if(mut(rgen)) {
+		switch(daxis(rgen)) {
+		case 0:	unit.axn = Axisnum::One; break;
+		case 1:	unit.axn = Axisnum::Two; break;
+		case 2:	unit.axn = Axisnum::Three; break;
+		case 3:	unit.axn = Axisnum::Four; break;
+		case 4:	unit.axn = Axisnum::Six; break;
+		default:
+			cout << "An error was encountered while setting the axis number!\n";
+			return false;
+		}
+	}
+
+	if(mut(rgen)) {
+		if(mode == Limited) {
+			//Cn, Cnv, Cnh x2, Sn x2, Dn, Dnd, Dnh
+			discrete_distribution<> dschoen({1,1,2,2,1,1,1});
+			switch(dschoen(rgen)) {
+			case 0: unit.typ = Schoenflies::Cn; break;
+			case 1: unit.typ = Schoenflies::Cnv; break;
+			case 2: unit.typ = Schoenflies::Cnh; break;
+			case 3: unit.typ = Schoenflies::Sn; break;
+			case 4: unit.typ = Schoenflies::Dn; break;
+			case 5: unit.typ = Schoenflies::Dnd; break;
+			case 6: unit.typ = Schoenflies::Dnh; break;
+			default:
+				cout << "An error was encountered while setting the Schoenflies type!\n";
+				return false;
+			}
+		} else if (mode == Full) {
+			//Cn, Cnv, Cnh x2, Sn x2, Dn, Dnd, Dnh + T, Th, O, Td, Oh
+			discrete_distribution<> dschoenextend({2,2,4,4,2,2,2,1,1,1,1,1});
+			switch(dschoenextend(rgen)) {
+			case 0: unit.typ = Schoenflies::Cn; break;
+			case 1: unit.typ = Schoenflies::Cnv; break;
+			case 2: unit.typ = Schoenflies::Cnh; break;
+			case 3: unit.typ = Schoenflies::Sn; break;
+			case 4: unit.typ = Schoenflies::Dn; break;
+			case 5: unit.typ = Schoenflies::Dnd; break;
+			case 6: unit.typ = Schoenflies::Dnh; break;
+			case 7: unit.typ = Schoenflies::T; break;
+			case 8: unit.typ = Schoenflies::Th; break;
+			case 9: unit.typ = Schoenflies::O; break;
+			case 10: unit.typ = Schoenflies::Td; break;
+			case 11: unit.typ = Schoenflies::Oh; break;
+			default:
+				cout << "An error was encountered while setting the Schoenflies type!\n";
+				return false;
+			}
+		}
+	}
+
+	if(mut(rgen))
+		unit.cen = dcent(rgen);
+	if(mut(rgen))
+		unit.sub = dsub(rgen);
+
+
+	if(mode == Single)
+		unit.spacegroup = spcg;
+	else {
+		if(!setSpacegroup()) //D4d or D6d was generated
+			return false;
+	}
+
+
+	//randomize ratios & special cell angles
+	uniform_real_distribution<double> drat(0.5,4.0);
+	if(mut(rgen))
+		unit.ratA = drat(rgen);
+	if(mut(rgen))
+		unit.ratB = drat(rgen);
+	if(mut(rgen))
+		unit.ratC = drat(rgen);
+	uniform_real_distribution<double> dtrimono(0.01,180.0);
+	uniform_real_distribution<double> drhom(0.01,120.0);
+	if(mut(rgen))
+		unit.monoB = rad(dtrimono(rgen));
+	if(mut(rgen))
+		unit.triA = rad(dtrimono(rgen));
+	if(mut(rgen))
+		unit.triB = rad(dtrimono(rgen));
+	if(mut(rgen))
+		unit.triC = rad(dtrimono(rgen));
+	if(mut(rgen))
+		unit.rhomC = rad(drhom(rgen));
+
+
+	//set stoichiometry
+	bool stoichchange = false;
+	for(int i = 0; i < unit.stoich.size(); i++) {
+		if(unit.stoich[i].min < unit.stoich[i].max) {
+			if(mut(rgen)) {
+				uniform_int_distribution<> dstoich(unit.stoich[i].min, unit.stoich[i].max);
+				unit.stoich[i].count = dstoich(rgen);
+				stoichchange = true;
+			}
+		}
+		else
+			unit.stoich[i].count = unit.stoich[i].min;
+
+	}
+
+	//for each molecule
+	uniform_real_distribution<double> dpos(0.0,1.0);
+	uniform_real_distribution<double> drot(-1.0,1.0);
+	uniform_real_distribution<double> dtheta(0.0, 2.0*PI);
+
+
+	//if the stoichiometry changed, we completely
+	//reinitialize the set of molecules
+	if(stoichchange) {
+		vector<GASP2molecule> tempmols;
+		tempmols.clear();
+		for(int i = 0; i < unit.stoich.size(); i++) {
+			GASP2molecule mol = molecules[molLookup(unit.stoich[i].mol)];
+			for(int n = 0; n < unit.stoich[i].count; n++) {
+				tempmols.push_back(mol);
+			}
+		}
+
+		molecules.clear();
+		molecules = tempmols;
+		for(int i = 0; i < molecules.size(); i++) {
+			Vec3 tempvec; double temprot;
+			//randomize rotation matrix
+			tempvec = norm(Vec3(drot(rgen),drot(rgen),drot(rgen)));
+			temprot = dtheta(rgen);
+			molecules[i].rot = Rot3(tempvec, temprot);
+			//randomize position
+			tempvec = Vec3(dpos(rgen),dpos(rgen),dpos(rgen));
+			molecules[i].pos = tempvec;
+			//randomize dihedrals
+			for(int j = 0; j < molecules[i].dihedrals.size(); j++) {
+				uniform_real_distribution<double> ddihed(
+						molecules[i].dihedrals[j].minAng,
+						molecules[i].dihedrals[j].maxAng);
+				molecules[i].dihedrals[j].ang = ddihed(rgen);
+			}
+		}
+
+	}//if(stoichchange)
+	//if the stoichiometry stayed the same, we individually tweak the molecules
+	else {
+		for(int i = 0; i < molecules.size(); i++) {
+			Vec3 tempvec; double temprot;
+			//randomize rotation matrix
+			if(mut(rgen)) {
+				tempvec = norm(Vec3(drot(rgen),drot(rgen),drot(rgen)));
+				temprot = dtheta(rgen);
+				molecules[i].rot = Rot3(tempvec, temprot);
+			}
+			//randomize position
+			if(mut(rgen)) {
+				tempvec = Vec3(dpos(rgen),dpos(rgen),dpos(rgen));
+				molecules[i].pos = tempvec;
+			}
+			//randomize dihedrals
+			for(int j = 0; j < molecules[i].dihedrals.size(); j++) {
+				if(mut(rgen)) {
+					uniform_real_distribution<double> ddihed(
+							molecules[i].dihedrals[j].minAng,
+							molecules[i].dihedrals[j].maxAng);
+					molecules[i].dihedrals[j].ang = ddihed(rgen);
+				}
+			}
+		}
+	} //else(stoichchange)
+
+	return true;
+}
+
+void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate) {
+	unfitcell();
+	partner.unfitcell();
+
+	childA = *this;
+	childB = partner;
+	//set IDs
+	childA.parentA = this->ID;
+	childA.parentB = partner.ID;
+	childB.parentA = this->ID;
+	childB.parentB = partner.ID;
+	//set some important values and unfitcell
+	childA.unfitcell();
+	childB.unfitcell();
+	childA.complete = childB.complete = false;
+	childA.didOpt = childB.didOpt = false;
+	childA.finalstate = childB.finalstate = OKStruct;
+	childA.time = childB.time = 0;
+	childA.steps = childB.steps = 0;
+
+	//perform the crossing
+	//it is implied by De Jong et al. that
+	//the uniform crossover provides good sampling
+	//coverage, and that the balance between
+	//exploration of the search space can be reconciled
+	//with exploitation of subspaces by adjusting the
+	//probabilty that two bits are crossed.
+	//since the search space is not necessarily binary
+	//and has many paramters this seems like a good approach.
+	//a starting value of 0.5 crossover rate seems ideal.
+	//tuning so that the value decreases may be worthwhile.
+
+	//the rationale for picking 0.5 is that the GA coupled with
+	//elitism will lead to a converged population quickly. so,
+	//within the hypersurface represented by the best N structures
+	//there is no reason to not to perform a maximal search.
+	//in theory this plays nice with the spacegroup
+	//encoding because convergence on a few spacegroups
+	//should occur quickly
+
+	bernoulli_distribution crx(rate);
+
+	//unit cell stuff
+	if(crx(rgen))
+		swap(childA.unit.typ, childB.unit.typ);
+	if(crx(rgen))
+		swap(childA.unit.axn, childB.unit.axn);
+	if(crx(rgen))
+		swap(childA.unit.cen, childB.unit.cen);
+	if(crx(rgen))
+		swap(childA.unit.sub, childB.unit.sub);
+	if(crx(rgen))
+		swap(childA.unit.triA, childB.unit.triA);
+	if(crx(rgen))
+		swap(childA.unit.triB, childB.unit.triB);
+	if(crx(rgen))
+		swap(childA.unit.triC, childB.unit.triC);
+	if(crx(rgen))
+		swap(childA.unit.monoB, childB.unit.monoB);
+	if(crx(rgen))
+		swap(childA.unit.rhomC, childB.unit.rhomC);
+	if(crx(rgen))
+		swap(childA.unit.ratA, childB.unit.ratA);
+	if(crx(rgen))
+		swap(childA.unit.ratB, childB.unit.ratB);
+	if(crx(rgen))
+		swap(childA.unit.ratB, childB.unit.ratC);
+
+
+	vector<GASP2molecules> temp, a, b;
+	NIndex m;
+	//this crossing algorithm can lead to self-crossing
+	//when different number of molecules are presented
+	//this isn't a problem, just something to be aware of
+	for(int i = 0; i < childA.unit.stoich.size(); i++) {
+		temp.clear();
+		m = childA.unit.stoich[i].mol;
+		//collect all the molecules of this type
+		for(int j = 0; j < childA.molecules.size; j++)
+			if(childA.molecules[j].label == m)
+				temp.push_back(childA.molecules[j]);
+		for(int j = 0; j < childB.molecules.size; j++)
+			if(childB.molecules[j].label == m)
+				temp.push_back(childB.molecules[j]);
+		int end = temp.size() - 1;
+		for(int j = 0; j < temp.size() / 2; j++) {
+			if(crx(rgen))
+				swap(temp[j].pos,temp[end-j].pos);
+			//the rotation matrix is not simply
+			//swapped; to properly search the space
+			//multiplication is required
+			//since the parents are theoretically
+			//preserved, there is no loss of good genes
+			//if there is a candidate for changing
+			//the rgen value, this is probably it
+			if(crx(rgen)) {
+				Mat3 t = temp[j]*temp[end-j];
+				Mat3 n = temp[end-j]*temp[j];
+				temp[j] = t;
+				temp[end-j] = n;
+			}
+
+		}
+
+	}
+
+
+
+
+}
+
+
+
+bool GASP2struct::evaluate() {
+
+	if(!isFitcell) {
+		finalstate = NoFitcell;
+		return false;
+	}
+
+	//never evaluate something that has already been evaluated
+	if(!didOpt) {
+		complete = eval(molecules, unit, energy, force, pressure, time);
+		steps++;
+		check();
+		didOpt = true;
+	}
+
+	return complete;
+};
+
+bool GASP2struct::setSpacegroup(bool frExclude) {
+	Index index;
+	vector<cryGroup> temp;
+
+	//check for invalid schoenflies
+	if( (unit.typ == Schoenflies::Dnd) && (unit.axn == Axisnum::Four || unit.axn == Axisnum::Six) ) {
+		cout << "D4d or D6d was generated; structure " << ID.toStr() << " rejected.\n";
+		return false;
+	}
+
+	//check for extended groups
+	Axisnum a;
+	switch(unit.typ) {
+	case Schoenflies::T:
+	case Schoenflies::Th:
+	case Schoenflies::O:
+	case Schoenflies::Td:
+	case Schoenflies::Oh:
+		a = Axisnum::UNK;
+	default:
+		a = unit.axn;
+	}
+
+	//get a sublist of groups
+	for(int i = 0; i < groupgenes.size(); i++) {
+		if( (a == groupgenes[i].a) && (unit.typ == groupgenes[i].s) )
+			if(frExclude) {
+				if(groupgenes[i].c != Centering::F && groupgenes[i].c != Centering::R)
+					temp.push_back(groupgenes[i]);
+			}
+			else
+				temp.push_back(groupgenes[i]);
+	}
+
+
+
+	//select centering group
+	int c = indexSelect(unit.cen, temp.size());
+	//set spacegroup from list
+	unit.spacegroup = temp[c].indices[indexSelect(unit.sub, temp[c].indices.size())];
+	//cout << "Spacegroup: " << unit.spacegroup + 1 << endl;
+	return true;
+}
+
+//this functions randomizes structures
+
 
 //searches for a name in the namelist
 //if the name is not found, the name is added.

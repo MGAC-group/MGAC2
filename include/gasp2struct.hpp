@@ -203,9 +203,12 @@ public:
 
 
 	//genetic operators
-	bool init(Spacemode mode=Limited, Index spcg=0);
-	//void mutate(double rate);
-	//void cross(GASP2struct partner, GASP2struct &childA, GASP2struct &childB);
+	//all of these operators enforce unfitcell except evaluate
+	//crossing and mutation (and technically initalization)
+	//do not work right unless the structure is unfitcelled
+	bool init(Spacemode mode=Limited, Index spcg=1);
+	bool mutateStruct(double rate, Spacemode mode=Limited);
+	void crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate=0.5);
 	bool evaluate();
 
 	//getters

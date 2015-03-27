@@ -70,8 +70,8 @@ int main( int argc, char* argv[] ) {
     if(options[SPACEGROUPS]) {
     	cout << "Valid groups are the following (can use index or string names):" << endl << endl;
     	cout << " Index  Name" << endl;
-    	for(int i = 0; i < spacegroupNames.size(); i++)
-    		cout << " " << setw(4) << i+1 << ":  " << spacegroupNames[i] << endl;
+    	for(int i = 1; i < spacegroupNames.size(); i++)
+    		cout << " " << setw(4) << i << ":  " << spacegroupNames[i] << endl;
 
     	return 0;
     }
