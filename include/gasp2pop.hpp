@@ -52,11 +52,13 @@ public:
 
 	//remove N worst members from the population (for elitism)
 	//return the removed members
-	//can remove
-	GASP2pop remIndv(int sub);
+	//removes based on sort order,
+	//so, last n structures get removed regardless of whether
+	//the pop is sorted or not
+	GASP2pop remIndv(int n);
 
 	//removes structures from the pop that exceed the
-	//volume limits
+	//volume limits (based on scaled scores);
 	GASP2pop volLimit(double min, double max);
 
 	//produces a new structure list which contains only
@@ -64,14 +66,15 @@ public:
 	//structures where the energy is known (completed)
 	//take precedence over fitcelled structures
 	//the lowest energy structure of a set takes precedence
-	GASP2pop unique();
+//	GASP2pop unique();
 
 	//mutates the population
-	void mutate(float rate);
+	void mutate(double rate);
 
 	//fitcell
-	GASP2pop runFitcell();
-	GASP2pop runEval();
+	GASP2pop runFitcell(int threads); //threaded
+	GASP2pop runEval(int procs, string hosts); //serial parallel
+
 
 	//parsing handlers
 	bool saveXML(string &name);

@@ -33,6 +33,8 @@ double GASP2struct::getVolume() {
 	return cellVol(unit);
 }
 
+
+//returns a fractional score
 double GASP2struct::getVolScore() {
 	double expectvol = 0.0;
 	double vol = getVolume();
@@ -45,7 +47,7 @@ double GASP2struct::getVolScore() {
 		int nops = spg.R.size();
 		expectvol *= (double) nops;
 	}
-	return std::abs(vol-expectvol);
+	return std::abs(vol-expectvol)/expectvol;
 }
 
 
@@ -581,6 +583,12 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	isFitcell = false;
 	complete = false;
 	finalstate = OKStruct;
+	time = 0.0;
+	energy = 0.0;
+	pressure = 0.0;
+	force = 0.0;
+	time = 0;
+	steps = 0;
 
 	//randomize spacegroup
 	//one, two x4, three, four, six,
@@ -1188,21 +1196,7 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("complete",tfconv(complete).c_str());
 		pr.PushAttribute("energy", energy);
 
-		string strtemp;
-		if(finalstate == OKStruct)
-			strtemp = "OKStruct";
-		else if(finalstate == OptBadBond)
-			strtemp = "OptBadBond";
-		else if(finalstate == OptBadAng)
-			strtemp = "OptBadAng";
-		else if(finalstate == OptBadDih)
-			strtemp = "OptBadDih";
-		else if(finalstate == FitcellBadDih)
-			strtemp = "FitcellBadDih";
-		else if(finalstate == FitcellBadCell)
-			strtemp = "FitcellBadCell";
-		else if(finalstate == NoFitcell)
-			strtemp = "NoFitcell";
+		string strtemp = getStructError(finalstate);
 
 		pr.PushAttribute("error", strtemp.c_str());
 		pr.PushAttribute("time",(int) time);
@@ -2480,7 +2474,12 @@ bool GASP2struct::cifOut(string name) {
 	//limiter
 	//int size = molecules[0].atoms.size();
 
-	outf << "data_" << names[crylabel] << endl;
+
+
+
+	outf << "data_" << names[crylabel]+"_"+ID.toStr() << endl;
+	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<endl;
+	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<< endl;
 	outf << "loop_" << endl;
 	outf << "_symmetry_equiv_pos_as_xyz" << endl;
 	outf << "x,y,z" << endl;
@@ -2541,4 +2540,23 @@ double cellPhi(GASP2cell cl) {
 
 double cellVol(GASP2cell cl) {
 	return cl.a * cl.b * cl.c * cellPhi(cl);
+}
+
+string getStructError(StructError finalstate) {
+		string strtemp;
+		if(finalstate == OKStruct)
+			strtemp = "OKStruct";
+		else if(finalstate == OptBadBond)
+			strtemp = "OptBadBond";
+		else if(finalstate == OptBadAng)
+			strtemp = "OptBadAng";
+		else if(finalstate == OptBadDih)
+			strtemp = "OptBadDih";
+		else if(finalstate == FitcellBadDih)
+			strtemp = "FitcellBadDih";
+		else if(finalstate == FitcellBadCell)
+			strtemp = "FitcellBadCell";
+		else if(finalstate == NoFitcell)
+			strtemp = "NoFitcell";
+		return strtemp;
 }

@@ -162,7 +162,7 @@ Mat3 fracToCart(GASP2cell cl);
 Mat3 cartToFrac(GASP2cell cl);
 double cellPhi(GASP2cell cl);
 double cellVol(GASP2cell cl);
-
+string getStructError(StructError finalstate);
 
 //AML: NO POINTERS. We are not writing copy constructors.
 

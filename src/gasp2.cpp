@@ -108,28 +108,17 @@ void GASP2control::server_prog() {
 //			cout << "Bad file for fitcelldebug!\n";
 //	}
 
-	GASP2struct temp, c1, c2;
-	temp = root;
-	temp.init();
+
 	root.init();
+	for(int i = 2; i < 3; i++) {
+		root.unfitcell();
+		root.overrideSpacegroup(i);
+		root.fitcell();
+		if(!root.cifOut("fitcelldebug.cif"))
+			cout << "Bad file for fitcelldebug!\n";
+	}
 
-	root.crossStruct(temp, c1, c2);
-
-	cout << root.serializeXML() << endl;
-	cout << temp.serializeXML() << endl;
-	cout << c1.serializeXML() << endl;
-	cout << c2.serializeXML() << endl;
-
-//	root.init();
-//	for(int i = 2; i < 3; i++) {
-//		root.unfitcell();
-//		root.overrideSpacegroup(i);
-//		root.fitcell();
-//		if(!root.cifOut("fitcelldebug.cif"))
-//			cout << "Bad file for fitcelldebug!\n";
-//	}
-//
-//	root.unfitcell();
+	root.unfitcell();
 
 	//cout << root.serializeXML() << endl;
 
