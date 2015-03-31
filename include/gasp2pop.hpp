@@ -81,5 +81,8 @@ public:
 	bool parseXML(string &name);
 	bool loadXMLrestart(tinyxml2::XMLElement *elem, string& errorstring);
 
+private:
+	vector<double> scale();
+
 
 };

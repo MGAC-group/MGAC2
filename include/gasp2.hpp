@@ -37,17 +37,49 @@ using namespace std;
  *
  * The priority of execution is as follows:
  * a) Prepare send for pop
- * b) Send pingback with Ack/PopAvail
+ * b) Send pingback with Ack/PopAvail/Busy
  * c) DoFitcell
  * d) DoCharmm
  * e) DoQE
  * f) DoCustom
  *
  * So, a bitmask of 11101010 would first fork a thread for the Pop send,
- * send 000010111 (for PopAvail, Acknowledging ping, and Now busy
+ * send 000010111 (for PopAvail, Acknowledging ping, and Busy), then
+ * execute Fitcell, Charmm, QE, and then the Custom, in that order.
  *
+ * All instructions are sent through a separate thread so that
+ * incoming message checks are non-blocking on the main thread.
+ * outgoing messages are kept in place until the receiver picks it up.
  *
- * Ping - Immediately returns a Busy/Ready to sender (usually server).
+ * 3) Send/Receive Structure
+ *
+ * Structures are sent via xml or (eventually) HDF5 files. These are
+ * interpreted by the receiver. By packaging the message as a file
+ * development time is saved if future features are implemented.
+ *
+ * The Send/Receive is carried out on separate threads on both sender
+ * and receiver. The main thread waits until a mutex is flagged to indicate
+ * the transfer is complete.
+ *
+ * 4) Fitcell/Optimization scheduling
+ *
+ * Fitcell is spread across as many threads as there are physical processors.
+ * So, a 12 core node will have 12 threads. The threads a C11 threads,
+ * but since the calculation has deterministic time (I am not aware of any
+ * situation where the thread would not complete) then the threads do not
+ * need to be terminated
+ *
+ * Optimization for QE is accomplished by receiving a machinefile from the
+ * server along with a single member population, and then dispatching a thread.
+ * This thread calls a special version of popen which also returns the
+ * subprocess assigned to QE. Then, as QE executes, the output pipe is read
+ * periodically by the thread, enabling real time data collection and eliminating
+ * the need to save output files. Should the need arise that the QE process
+ * needs to be killed, the PID is available for a kill by the thread. This
+ * will solve the problem of QE exiting but the PID remaining active, which
+ * leads to a stuckl state. This also allows for termination based on time
+ * restrictions.
+ *
  *
  *
  */
