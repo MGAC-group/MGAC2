@@ -16,6 +16,7 @@
 #include <uuid/uuid.h>
 #include <random>
 #include <algorithm>
+#include <limits>
 
 extern "C" {
 	extern char _binary_spacegroups_xml_start;

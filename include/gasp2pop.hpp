@@ -24,6 +24,7 @@ typedef enum GAtype {
 class GASP2pop {
 private:
 	vector<GASP2struct> structures;
+	vector<double> scaling;
 
 public:
 
@@ -82,7 +83,7 @@ public:
 	bool loadXMLrestart(tinyxml2::XMLElement *elem, string& errorstring);
 
 private:
-	vector<double> scale();
+	vector<double> scale(double con, double lin, double exp);
 
 
 };

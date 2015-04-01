@@ -733,6 +733,7 @@ bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
 	parentA = ID;
 	ID.generate();
 	parentB.clear();
+	energy = 0.0;
 
 	unfitcell();
 	complete = false;
@@ -940,6 +941,8 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 	childA.finalstate = childB.finalstate = OKStruct;
 	childA.time = childB.time = 0;
 	childA.steps = childB.steps = 0;
+	childA.energy = 0.0;
+	childB.energy = 0.0;
 
 	//perform the crossing
 	//it is implied by De Jong et al. that
