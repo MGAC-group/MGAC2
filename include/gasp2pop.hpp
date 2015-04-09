@@ -36,6 +36,8 @@ public:
 	void energysort();
 	void volumesort();
 
+	void init(GASP2struct s, int size);
+
 	//generate a new population by crossing the
 	//existing population (for classic)
 	//using whatever selection scheme is available.
@@ -60,7 +62,7 @@ public:
 
 	//removes structures from the pop that exceed the
 	//volume limits (based on scaled scores);
-	GASP2pop volLimit(double min, double max);
+	GASP2pop volLimit();
 
 	//produces a new structure list which contains only
 	//the unique best structures of the list.
@@ -78,8 +80,8 @@ public:
 
 
 	//parsing handlers
-	bool saveXML(string &name);
-	bool parseXML(string &name);
+	string saveXML();
+	bool parseXML(string name, string &errorstring);
 	bool loadXMLrestart(tinyxml2::XMLElement *elem, string& errorstring);
 
 private:

@@ -50,7 +50,24 @@ double GASP2struct::getVolScore() {
 	return std::abs(vol-expectvol)/expectvol;
 }
 
+bool GASP2struct::minmaxVol() {
+	double expectvol = 0.0;
+	double vol = getVolume();
+	//must work independent of fitcell
+	for(int i = 0; i < molecules.size(); i++) {
+		expectvol += molecules[i].expectvol;
+	}
+	if(!isFitcell) {
+		Spgroup spg = spacegroups[unit.spacegroup];
+		int nops = spg.R.size();
+		expectvol *= (double) nops;
+	}
 
+	if( (vol-expectvol)/expectvol < (minvol/100.0) &&
+		(vol-expectvol)/expectvol > (maxvol/100.0) )
+			return false;
+	return true;
+}
 
 bool GASP2struct::enforceCrystalType() {
 	//find the crystal type from

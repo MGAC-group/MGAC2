@@ -2,14 +2,44 @@
 
 using namespace std;
 
+struct {
+	bool operator() (GASP2struct a, GASP2struct b) {
+		return a.getEnergy() < b.getEnergy();
+	}
+} ecomp;
 
+struct {
+	bool operator() (GASP2struct a, GASP2struct b) {
+		return a.getVolScore() < b.getVolScore();
+	}
+} vcomp;
+
+//sorts by energy first
+//if the structure does not have an energy (ie,
+// energy = 0.0) then it is sorted by volume with
+//all other no-energy structures
 void GASP2pop::energysort() {
-
-
+	std::sort(structures.begin(), structures.end(), ecomp);
+	for(int i = 0; i < structures.size(); i++) {
+		if(structures[i].getEnergy() >= 0.0) {
+			std::sort(structures.begin() + i, structures.end(), vcomp);
+			break;
+		}
+	}
 }
 
 void GASP2pop::volumesort() {
+	std::sort(structures.begin(), structures.end(), vcomp);
+}
 
+
+void GASP2pop::init(GASP2struct s, int size) {
+	for(int i = 0; i < size; i++) {
+		structures.push_back(s);
+		//try ten times to get a good init
+		for(int j = 0; j < 10; j++)
+			if(structures.back().init()) break;
+	}
 
 }
 
@@ -72,6 +102,29 @@ void GASP2pop::addIndv(GASP2pop add) {
 
 }
 
+GASP2pop GASP2pop::remIndv(int n) {
+	GASP2pop bad;
+	for(int i = 0; i < n; i++) {
+		bad.structures.push_back(structures.back());
+		structures.pop_back();
+	}
+	return bad;
+}
+
+
+GASP2pop GASP2pop::volLimit() {
+	GASP2pop bad, ok;
+	double min, max, vol;
+	for(int i = 0; i < size(); i++) {
+		if(structures[i].minmaxVol())
+			ok.structures.push_back(structures[i]);
+		else
+			bad.structures.push_back(structures[i]);
+	}
+	structures = ok.structures;
+	return bad;
+}
+
 //scaling must be manually after ranking
 
 //scaling obeys a three part weighted equation:
@@ -86,7 +139,7 @@ void GASP2pop::addIndv(GASP2pop add) {
 //since they are both normalized on the range of values
 //present for both volume and energy. structures with
 //both energy and volume will always be better than
-vector<double> scale(double con, double lin, double exp) {
+vector<double> GASP2pop::scale(double con, double lin, double exp) {
 	scaling.clear();
 	double val, diffE, diffV;
 	vector<double> vol, ener;
@@ -94,7 +147,7 @@ vector<double> scale(double con, double lin, double exp) {
 	double minV = numeric_limits<double>::max(), maxV = numeric_limits<double>::min();
 
 	for(int i = 0; i < structures.size(); i++) {
-		vol.push_back(stuctures[i].getVolScore());
+		vol.push_back(structures[i].getVolScore());
 		ener.push_back(structures[i].getEnergy());
 		if(vol.back() > maxV) maxV = vol.back();
 		if(vol.back() < minV) minV = vol.back();
@@ -110,7 +163,7 @@ vector<double> scale(double con, double lin, double exp) {
 	double volscore, enerscore;
 	diffE = maxE-minE;
 	diffV = maxV-minV;
-	for(int i = 0; i < structure.size(); i++) {
+	for(int i = 0; i < structures.size(); i++) {
 
 		volscore = (vol[i] - minV)/diffV;
 		val = con; //assign a constant minimum to all values
@@ -123,6 +176,81 @@ vector<double> scale(double con, double lin, double exp) {
 
 		scaling.push_back(val);
 	}
+}
+
+//this determines whether a structure is mutated
+//if a mutation happens, then 0.15 of all genes
+//within a structure will be mutated, on average
+//whether or not this is a slient mutation is irrrelevant
+//the point is that the structure is modified
+//enough that it still partially resembles the initial structure
+void GASP2pop::mutate(double rate) {
+	//place boundaries on rate
+	if(rate >= 1.0)
+		rate = 1.0;
+	if(rate < 0.0)
+		rate = 0.0;
+
+	std::bernoulli_distribution p(rate);
+	for(int i = 0; i < structures.size(); i++) {
+		if(p(rgen))
+			structures[i].mutateStruct(0.15);
+	}
+
+}
+
+string GASP2pop::saveXML() {
+	string open("<pop>\n");
+	string close("</pop>\n");
+	string out("");
+	for(int i = 0; i < structures.size(); i++) {
+		out += structures[i].serializeXML();
+	}
+	return open + out + close;
+}
+
+bool GASP2pop::parseXML(string name, string &errorstring) {
+
+	tinyxml2::XMLDocument doc;
+	doc.Parse(name.c_str());
+
+	//throw away anything in the structures.
+	structures.clear();
+
+	if(doc.ErrorID() == 0) {
+		tinyxml2::XMLElement *pop = doc.FirstChildElement("pop");
+		if(this->loadXMLrestart(pop,errorstring))
+			return false;
+	}
+
+	return true;
+}
+
+bool GASP2pop::loadXMLrestart(tinyxml2::XMLElement *pop, string & errorstring) {
+	GASP2struct temp;
+	if(pop) {
+		tinyxml2::XMLElement * crystal = pop -> FirstChildElement("crystal");
+		if(!crystal) {
+			errorstring = "Somethign went wrong when parsing the population! There may be no structures!\n";
+			return false;
+		}
+		while(crystal) {
+			if(!temp.parseXMLStruct(crystal, errorstring))
+				return false;
+			//push the molecule(s) onto the list
+			this->structures.push_back(temp);
+			crystal = crystal->NextSiblingElement("crystal");
+		}
+	}
+	else
+		return false;
+
+	return true;
+}
+
+GASP2pop GASP2pop::runFitcell(int threads) {
 
 
 }
+
+

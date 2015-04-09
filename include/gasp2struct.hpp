@@ -219,7 +219,7 @@ public:
 	double getEnergy() {return energy;};
 	double getVolume(); //returns the unit cell volume
 	double getVolScore(); //returns a score based on closeness to expectvol
-	void minmaxVol(double &min, double &max) {min = minvol; max = maxvol;}
+	bool minmaxVol(); //returns true if in volume is in bounds
 
 private:
 	//values

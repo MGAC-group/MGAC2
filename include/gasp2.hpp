@@ -141,6 +141,6 @@ private:
 
 	void getHostInfo();
 
-	bool parseInput(tinyxml2::XMLDocument *doc, string & errors);
+	bool parseInput(tinyxml2::XMLDocument *doc, string & errorstring);
 
 };

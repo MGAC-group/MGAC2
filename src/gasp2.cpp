@@ -109,20 +109,29 @@ void GASP2control::server_prog() {
 //	}
 
 
-	root.init();
-	for(int i = 2; i < 3; i++) {
-		root.unfitcell();
-		root.overrideSpacegroup(i);
-		root.fitcell();
-		if(!root.cifOut("fitcelldebug.cif"))
-			cout << "Bad file for fitcelldebug!\n";
-	}
-
-	root.unfitcell();
+//	root.init();
+//	for(int i = 2; i < 3; i++) {
+//		root.unfitcell();
+//		root.overrideSpacegroup(i);
+//		root.fitcell();
+//		if(!root.cifOut("fitcelldebug.cif"))
+//			cout << "Bad file for fitcelldebug!\n";
+//	}
+//
+//	root.unfitcell();
 
 	//cout << root.serializeXML() << endl;
 
 	getHostInfo();
+
+	rootpop.init(root, params.popsize);
+
+	string out = rootpop.saveXML();
+
+	cout << out << endl;
+
+
+
 }
 
 
