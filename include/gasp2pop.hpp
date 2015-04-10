@@ -29,12 +29,14 @@ private:
 public:
 
 	int size() { return structures.size(); }
+	void clear() { structures.clear(); scaling.clear(); }
 
 	//sorts the population on energy or volume
 	//for volume, structure with volume closest
 	//to the expected volume is best structure
 	void energysort();
 	void volumesort();
+
 
 	void init(GASP2struct s, int size);
 
@@ -62,7 +64,7 @@ public:
 
 	//removes structures from the pop that exceed the
 	//volume limits (based on scaled scores);
-	GASP2pop volLimit();
+	GASP2pop volLimit(GASP2pop &bad=nullptr);
 
 	//produces a new structure list which contains only
 	//the unique best structures of the list.
@@ -74,15 +76,20 @@ public:
 	//mutates the population
 	void mutate(double rate);
 
-	//fitcell
+	//fitcell/eval functions
 	GASP2pop runFitcell(int threads); //threaded
-	GASP2pop runEval(int procs, string hosts); //serial parallel
+	GASP2pop runEval(string hosts); //serial parallel
+	//hosts is a string in the form of a machinefile in the /tmp dir
+	//using a UUID; so, /tmp/UUID.hosts
+	//should prevent hiccups with existing file handles
 
 
 	//parsing handlers
 	string saveXML();
 	bool parseXML(string name, string &errorstring);
 	bool loadXMLrestart(tinyxml2::XMLElement *elem, string& errorstring);
+
+	bool writeCIF(string name);
 
 private:
 	vector<double> scale(double con, double lin, double exp);

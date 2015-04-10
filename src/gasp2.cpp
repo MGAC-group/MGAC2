@@ -126,9 +126,22 @@ void GASP2control::server_prog() {
 
 	rootpop.init(root, params.popsize);
 
-	string out = rootpop.saveXML();
+	GASP2pop out = rootpop.runFitcell(8);
 
-	cout << out << endl;
+	out.volumesort();
+
+	GASP2pop out2 = out.volLimit();
+
+	cout << "good" << endl;
+	out2.volumesort();
+
+	//out.writeCIF("fitcelldebug.cif");
+
+
+	//string out = rootpop.saveXML();
+
+
+	//cout << out << endl;
 
 
 

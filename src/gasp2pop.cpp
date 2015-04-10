@@ -30,6 +30,9 @@ void GASP2pop::energysort() {
 
 void GASP2pop::volumesort() {
 	std::sort(structures.begin(), structures.end(), vcomp);
+
+	for(int i = 0; i < size(); i++)
+		cout << structures[i].getVolScore() << endl;
 }
 
 
@@ -112,17 +115,20 @@ GASP2pop GASP2pop::remIndv(int n) {
 }
 
 
-GASP2pop GASP2pop::volLimit() {
-	GASP2pop bad, ok;
+GASP2pop GASP2pop::volLimit(GASP2pop &bad) {
+	GASP2pop ok;
+
 	double min, max, vol;
 	for(int i = 0; i < size(); i++) {
 		if(structures[i].minmaxVol())
 			ok.structures.push_back(structures[i]);
 		else
-			bad.structures.push_back(structures[i]);
+			if(bad != nullptr)
+				bad.structures.push_back(structures[i]);
 	}
-	structures = ok.structures;
-	return bad;
+	//structures = ok.structures;
+
+	return ok;
 }
 
 //scaling must be manually after ranking
@@ -248,9 +254,57 @@ bool GASP2pop::loadXMLrestart(tinyxml2::XMLElement *pop, string & errorstring) {
 	return true;
 }
 
+bool GASP2pop::writeCIF(string name) {
+
+	ofstream outf;
+	outf.open(name.c_str(), ofstream::out | ofstream::app);
+	if(outf.fail())
+		return false;
+
+	string temp;
+
+	for(int i = 0; i < size(); i++) {
+		temp = "";
+		if(structures[i].cifString(temp))
+			outf << temp << endl;
+	}
+
+	outf.close();
+	return true;
+}
+
 GASP2pop GASP2pop::runFitcell(int threads) {
+	GASP2pop out; out.structures = this->structures;
+
+	//setup the futures
+	vector<future<bool>> futures(threads);
+	chrono::milliseconds timeout(0);
+	chrono::milliseconds thread_wait(5);
 
 
+
+	//for all the structures
+	for(int i = 0; i < out.size(); ) {
+
+		//launch
+		for(int j = 0; j < threads; j++) {
+			if(!futures[j].valid()) {
+				futures[j] = async(launch::async, &GASP2struct::fitcell, &out.structures[i]);
+				i++;
+			}
+		}
+		//cleanup
+		for(int j = 0; j < threads; j++) {
+			if(futures[j].wait_for(timeout)==future_status::ready)
+				futures[j].get();
+		}
+		//wait so we don't burn cycles
+		this_thread::sleep_for(thread_wait);
+
+	}
+
+
+	return out;
 }
 
 

@@ -1,3 +1,4 @@
+#define _GLIBCXX_USE_NANOSLEEP
 #pragma once
 #include <iostream>
 #include <iomanip>
@@ -17,6 +18,8 @@
 #include <random>
 #include <algorithm>
 #include <limits>
+#include <future>
+#include <thread>
 
 extern "C" {
 	extern char _binary_spacegroups_xml_start;

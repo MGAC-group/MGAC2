@@ -30,7 +30,14 @@ GASP2struct::GASP2struct() {
 }
 
 double GASP2struct::getVolume() {
-	return cellVol(unit);
+	double vol = cellVol(unit);
+	//strongly penalize structures that spit
+	//out a nan for the volume
+	//results from bad things (tm), like bad cell values
+	//that make impossible unit cells
+	if(std::isnan(vol))
+		vol = numeric_limits<double>::max();
+	return vol;
 }
 
 
@@ -38,6 +45,7 @@ double GASP2struct::getVolume() {
 double GASP2struct::getVolScore() {
 	double expectvol = 0.0;
 	double vol = getVolume();
+
 	//must work independent of fitcell
 	for(int i = 0; i < molecules.size(); i++) {
 		expectvol += molecules[i].expectvol;
@@ -48,12 +56,14 @@ double GASP2struct::getVolScore() {
 		expectvol *= (double) nops;
 	}
 	return std::abs(vol-expectvol)/expectvol;
+
 }
 
 bool GASP2struct::minmaxVol() {
 	double expectvol = 0.0;
 	double vol = getVolume();
 	//must work independent of fitcell
+	cout << "vol: " << vol << " ";
 	for(int i = 0; i < molecules.size(); i++) {
 		expectvol += molecules[i].expectvol;
 	}
@@ -63,7 +73,11 @@ bool GASP2struct::minmaxVol() {
 		expectvol *= (double) nops;
 	}
 
-	if( (vol-expectvol)/expectvol < (minvol/100.0) &&
+	cout << "expectvol: " << expectvol << " ";
+	cout << "a: " << ((vol-expectvol)/expectvol < (minvol/100.0));
+	cout << " b: " << ((vol-expectvol)/expectvol > (maxvol/100.0)) << endl;
+
+	if( (vol-expectvol)/expectvol < (minvol/100.0) ||
 		(vol-expectvol)/expectvol > (maxvol/100.0) )
 			return false;
 	return true;
@@ -1096,7 +1110,7 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 
 
 
-bool GASP2struct::evaluate() {
+bool GASP2struct::evaluate(string hostfile) {
 
 	if(!isFitcell) {
 		finalstate = NoFitcell;
@@ -1105,7 +1119,7 @@ bool GASP2struct::evaluate() {
 
 	//never evaluate something that has already been evaluated
 	if(!didOpt) {
-		complete = eval(molecules, unit, energy, force, pressure, time);
+		complete = eval(molecules, unit, energy, force, pressure, time, hostfile);
 		steps++;
 		check();
 		didOpt = true;
@@ -2526,6 +2540,64 @@ bool GASP2struct::cifOut(string name) {
 	outf << "#END" << endl << endl;
 
 	outf.close();
+	return true;
+
+}
+
+bool GASP2struct::cifString(string &out) {
+
+	out = "";
+
+	stringstream outf;
+	outf.clear();
+
+	if(finalstate != OKStruct)
+		return false;
+
+	GASP2cell outcell;
+//	outcell.a = 10.0;
+//	outcell.b = 10.0;
+//	outcell.c = 10.0;
+//	outcell.alpha = rad(90.0);
+//	outcell.beta = rad(90.0);
+//	outcell.gamma = rad(90.0);
+	outcell = unit;
+
+	Mat3 toFrac = cartToFrac(outcell);
+
+	Vec3 temp;
+	//limiter
+	//int size = molecules[0].atoms.size();
+
+	outf << "data_" << names[crylabel]+"_"+ID.toStr() << endl;
+	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<endl;
+	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<< endl;
+	outf << "loop_" << endl;
+	outf << "_symmetry_equiv_pos_as_xyz" << endl;
+	outf << "x,y,z" << endl;
+	outf << "_cell_length_a " << outcell.a << endl;
+	outf << "_cell_length_b " << outcell.b << endl;
+	outf << "_cell_length_c " << outcell.c << endl;
+	outf << "_cell_angle_alpha " << deg(outcell.alpha) << endl;
+	outf << "_cell_angle_beta " << deg(outcell.beta) << endl;
+	outf << "_cell_angle_gamma " << deg(outcell.gamma) << endl;
+
+	outf << "loop_\n_atom_site_label\n_atom_site_type_symbol\n";
+	outf << "_atom_site_fract_x\n_atom_site_fract_y\n_atom_site_fract_z"
+			<< endl;
+	for (int i = 0; i < molecules.size(); i++) {
+		for (int j = 0; j < molecules[i].atoms.size(); j++) {
+			outf << names[molecules[i].atoms[j].label] << " ";
+			outf << getElemName(molecules[i].atoms[j].type) << " ";
+			temp = toFrac*molecules[i].atoms[j].pos + molecules[i].pos;
+			outf << temp[0] << " ";
+			outf << temp[1] << " ";
+			outf << temp[2] << endl;
+		}
+	}
+	outf << "#END" << endl << endl;
+
+	out = outf.str();
 	return true;
 
 }

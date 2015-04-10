@@ -180,7 +180,7 @@ private:
 	//what ever the function does, the only thing it is allowed to change
 	//is the unit cell parameters and the position of atoms
 	//changing other values (like the dihedral values) is performed internally by check()
-	bool (*eval)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&);
+	bool (*eval)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&, string);
 
 public:
 
@@ -190,7 +190,7 @@ public:
 	bool check(); //checks for violation of constraints (usually after opt)
 	void overrideSpacegroup(Index i) { unit.spacegroup = i; };
 
-	void setEval(bool (*e)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&) ) {eval = e;};
+	void setEval(bool (*e)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&, string) ) {eval = e;};
 
 	//I/O handlers
 	string serializeXML(); //commits structure to XML element
@@ -200,6 +200,7 @@ public:
 	//bool writeH5() {return true;};
 	void logStruct();
 	bool cifOut(string name);
+	bool cifString(string &out);
 
 
 	//genetic operators
@@ -209,7 +210,7 @@ public:
 	bool init(Spacemode mode=Limited, Index spcg=1);
 	bool mutateStruct(double rate, Spacemode mode=Limited);
 	void crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate=0.5, Spacemode mode=Limited);
-	bool evaluate();
+	bool evaluate(string hostfile);
 
 	//getters
 	bool completed() {return complete;};
