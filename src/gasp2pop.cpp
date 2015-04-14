@@ -65,6 +65,7 @@ GASP2pop GASP2pop::newPop(int size, GAselection mode) {
 			selB = d(rgen);
 			structures[selA].crossStruct(structures[selB], a,b);
 			out.structures.push_back(a);
+			cout << "selA/selB: " << selA << "/" << selB << endl;
 		}
 	}
 	else { //pattern
@@ -93,7 +94,10 @@ GASP2pop GASP2pop::fullCross() {
 void GASP2pop::addIndv(int add) {
 
 	int init = structures.size();
-	structures.resize(init + add);
+	structures.reserve(init + add);
+	//this kind of implies the pop has at least one struct
+	for(int i = 0; i < add; i++)
+		structures.push_back(structures[0]);
 	for(int i = init; i < (init+add); i++)
 		structures[i].init();
 
@@ -123,8 +127,7 @@ GASP2pop GASP2pop::volLimit(GASP2pop &bad) {
 		if(structures[i].minmaxVol())
 			ok.structures.push_back(structures[i]);
 		else
-			if(bad != nullptr)
-				bad.structures.push_back(structures[i]);
+			bad.structures.push_back(structures[i]);
 	}
 	//structures = ok.structures;
 
@@ -273,8 +276,11 @@ bool GASP2pop::writeCIF(string name) {
 	return true;
 }
 
-GASP2pop GASP2pop::runFitcell(int threads) {
-	GASP2pop out; out.structures = this->structures;
+void GASP2pop::runFitcell(int threads) {
+	//GASP2pop out; out.structures = this->structures;
+
+	if (size() < threads)
+		threads = size();
 
 	//setup the futures
 	vector<future<bool>> futures(threads);
@@ -284,12 +290,12 @@ GASP2pop GASP2pop::runFitcell(int threads) {
 
 
 	//for all the structures
-	for(int i = 0; i < out.size(); ) {
+	for(int i = 0; i < size(); ) {
 
 		//launch
 		for(int j = 0; j < threads; j++) {
 			if(!futures[j].valid()) {
-				futures[j] = async(launch::async, &GASP2struct::fitcell, &out.structures[i]);
+				futures[j] = async(launch::async, &GASP2struct::fitcell, &structures[i]);
 				i++;
 			}
 		}
@@ -304,7 +310,19 @@ GASP2pop GASP2pop::runFitcell(int threads) {
 	}
 
 
-	return out;
+	//return out;
+}
+
+GASP2pop GASP2pop::runEval(string hosts) {
+	GASP2pop temp;
+	temp.structures = structures;
+	for(int i = 0; i < temp.size(); i++) {
+		temp.structures[i].evaluate(hosts);
+
+	}
+
+
+	return temp;
 }
 
 

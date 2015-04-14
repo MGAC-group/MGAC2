@@ -2570,11 +2570,14 @@ bool GASP2struct::cifString(string &out) {
 	//int size = molecules[0].atoms.size();
 
 	outf << "data_" << names[crylabel]+"_"+ID.toStr() << endl;
+	outf << "_symmetry_space_group_name_H-M  '" << spacegroupNames[unit.spacegroup] << "'\n";
 	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<endl;
 	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<< endl;
-	outf << "loop_" << endl;
-	outf << "_symmetry_equiv_pos_as_xyz" << endl;
-	outf << "x,y,z" << endl;
+//	outf << "loop_" << endl;
+//	outf << "_symmetry_equiv_pos_site_id" << endl;
+//	outf << "_symmetry_equiv_pos_as_xyz" << endl;
+//	for(int i = 0; i <
+//	outf << "x,y,z" << endl;
 	outf << "_cell_length_a " << outcell.a << endl;
 	outf << "_cell_length_b " << outcell.b << endl;
 	outf << "_cell_length_c " << outcell.c << endl;

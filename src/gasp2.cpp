@@ -126,14 +126,47 @@ void GASP2control::server_prog() {
 
 	rootpop.init(root, params.popsize);
 
-	GASP2pop out = rootpop.runFitcell(8);
+	GASP2pop out = rootpop;
+	out.runFitcell(8);
 
-	out.volumesort();
+	GASP2pop temp = out.newPop(16);
 
-	GASP2pop out2 = out.volLimit();
+	temp.runFitcell(8);
+	temp.volumesort();
 
-	cout << "good" << endl;
-	out2.volumesort();
+	//
+//	cout << "out size: " << out.size() << endl;
+//	out.addIndv(10);
+//	cout << "out size: " << out.size() << endl;
+//	out.remIndv(5);
+//	cout << "out size: " << out.size() << endl;
+
+
+//	//out.runFitcell(8);
+//	//out.volumesort();
+//
+//	//GASP2pop out2 = out.volLimit();
+//
+//	//cout << "good" << endl;
+//	//out2.volumesort();
+//
+//
+//	//out2.remIndv(out2.size()-2);
+//	//cout << "out2 size: " << out2.size() << endl;
+//	//out2.volumesort();
+//
+//	//GASP2pop out3 = out2.fullCross();
+//
+//	out3.runFitcell(8);
+//	out3.writeCIF("fitcelldebug.cif");
+//	out3.volumesort();
+//	cout << "out2 size: " << out2.size() << endl;
+//	cout << "out3 size: " << out3.size() << endl;
+//	out3.addIndv(out2);
+//	cout << "out3 size: " << out3.size() << endl;
+
+	//string s = out4.saveXML();
+	//cout << s << endl;
 
 	//out.writeCIF("fitcelldebug.cif");
 

@@ -29,6 +29,7 @@ private:
 public:
 
 	int size() { return structures.size(); }
+	GASP2struct indv(int n) { if(n < size()) return structures[n]; else return structures[0];};
 	void clear() { structures.clear(); scaling.clear(); }
 
 	//sorts the population on energy or volume
@@ -64,7 +65,8 @@ public:
 
 	//removes structures from the pop that exceed the
 	//volume limits (based on scaled scores);
-	GASP2pop volLimit(GASP2pop &bad=nullptr);
+	GASP2pop volLimit() {GASP2pop t; return volLimit(t);};
+	GASP2pop volLimit(GASP2pop &bad);
 
 	//produces a new structure list which contains only
 	//the unique best structures of the list.
@@ -77,7 +79,7 @@ public:
 	void mutate(double rate);
 
 	//fitcell/eval functions
-	GASP2pop runFitcell(int threads); //threaded
+	void runFitcell(int threads); //threaded
 	GASP2pop runEval(string hosts); //serial parallel
 	//hosts is a string in the form of a machinefile in the /tmp dir
 	//using a UUID; so, /tmp/UUID.hosts
