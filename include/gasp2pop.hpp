@@ -1,5 +1,6 @@
 #pragma once
 #include "gasp2common.hpp"
+#include "gasp2param.hpp"
 #include "gasp2struct.hpp"
 
 using namespace std;
@@ -57,7 +58,7 @@ public:
 	void addIndv(GASP2pop add);
 
 	//remove N worst members from the population (for elitism)
-	//return the removed members
+	//returns the removed members
 	//removes based on sort order,
 	//so, last n structures get removed regardless of whether
 	//the pop is sorted or not
@@ -68,6 +69,8 @@ public:
 	GASP2pop volLimit() {GASP2pop t; return volLimit(t);};
 	GASP2pop volLimit(GASP2pop &bad);
 
+
+	void scale(double con, double lin, double exp);
 	//produces a new structure list which contains only
 	//the unique best structures of the list.
 	//structures where the energy is known (completed)
@@ -80,7 +83,7 @@ public:
 
 	//fitcell/eval functions
 	void runFitcell(int threads); //threaded
-	GASP2pop runEval(string hosts); //serial parallel
+	void runEval(string hosts, GASP2param params, bool (*eval)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&, string, GASP2param)); //serial parallel
 	//hosts is a string in the form of a machinefile in the /tmp dir
 	//using a UUID; so, /tmp/UUID.hosts
 	//should prevent hiccups with existing file handles
@@ -93,8 +96,6 @@ public:
 
 	bool writeCIF(string name);
 
-private:
-	vector<double> scale(double con, double lin, double exp);
 
 
 };

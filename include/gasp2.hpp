@@ -3,7 +3,7 @@
 #include "gasp2param.hpp"
 #include "gasp2struct.hpp"
 #include "gasp2pop.hpp"
-//#include "gasp2qe.hpp"
+#include "gasp2qe.hpp"
 
 
 using namespace std;

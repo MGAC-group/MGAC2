@@ -10,7 +10,13 @@ struct {
 
 struct {
 	bool operator() (GASP2struct a, GASP2struct b) {
-		return a.getVolScore() < b.getVolScore();
+		double ascore = a.getVolScore();
+		double bscore = b.getVolScore();
+		if(ascore < 0.0)
+			ascore = numeric_limits<double>::max();
+		if(bscore < 0.0)
+			bscore = numeric_limits<double>::max();
+		return ascore < bscore;
 	}
 } vcomp;
 
@@ -26,6 +32,9 @@ void GASP2pop::energysort() {
 			break;
 		}
 	}
+
+	for(int i = 0; i < size(); i++)
+		cout << structures[i].getEnergy() << endl;
 }
 
 void GASP2pop::volumesort() {
@@ -63,6 +72,8 @@ GASP2pop GASP2pop::newPop(int size, GAselection mode) {
 		for(int i = 0; i < size; i++) {
 			selA = d(rgen);
 			selB = d(rgen);
+			while(selA == selB)
+				selB = d(rgen);
 			structures[selA].crossStruct(structures[selB], a,b);
 			out.structures.push_back(a);
 			cout << "selA/selB: " << selA << "/" << selB << endl;
@@ -148,18 +159,29 @@ GASP2pop GASP2pop::volLimit(GASP2pop &bad) {
 //since they are both normalized on the range of values
 //present for both volume and energy. structures with
 //both energy and volume will always be better than
-vector<double> GASP2pop::scale(double con, double lin, double exp) {
+void GASP2pop::scale(double con, double lin, double exp) {
 	scaling.clear();
+
+	if(structures.size() == 1) {
+		scaling.push_back(1.0);
+		return;
+	}
+
+
 	double val, diffE, diffV;
 	vector<double> vol, ener;
-	double minE = numeric_limits<double>::max(), maxE = numeric_limits<double>::min();
-	double minV = numeric_limits<double>::max(), maxV = numeric_limits<double>::min();
+	double minE = numeric_limits<double>::max(), maxE = -1.0 * numeric_limits<double>::max();
+	double minV = numeric_limits<double>::max(), maxV = -1.0 * numeric_limits<double>::max();
 
 	for(int i = 0; i < structures.size(); i++) {
 		vol.push_back(structures[i].getVolScore());
+		cout << "vol " << vol.back() << endl;
 		ener.push_back(structures[i].getEnergy());
-		if(vol.back() > maxV) maxV = vol.back();
-		if(vol.back() < minV) minV = vol.back();
+
+		if(vol.back() >= 0.0) {
+			if(vol.back() > maxV) maxV = vol.back();
+			if(vol.back() < minV) minV = vol.back();
+		}
 		//we assume energies will usually be negative, since E = 0.0 is more or less impossible
 		//since some structures to no have energies calculated, we do not want to influence
 		//the energy
@@ -169,21 +191,29 @@ vector<double> GASP2pop::scale(double con, double lin, double exp) {
 		}
 	}
 
+	cout << "minV/maxV " << minV << "/" << maxV << endl;
+	cout << "minE/maxE " << minE << "/" << maxE << endl;
+
 	double volscore, enerscore;
 	diffE = maxE-minE;
 	diffV = maxV-minV;
 	for(int i = 0; i < structures.size(); i++) {
 
-		volscore = (vol[i] - minV)/diffV;
 		val = con; //assign a constant minimum to all values
-		val += lin*(1.0-volscore); //add the linear component
-		val += exp*(std::exp(-0.5*10.0*volscore));//add the exponential component
+		if(vol[i] >= 0.0) {
+			volscore = (vol[i] - minV)/diffV;
+			val += lin*(1.0-volscore); //add the linear component
+			val += exp*(std::exp(-0.5*10.0*volscore));//add the exponential component
+			cout << "vol " << volscore;
+		}
 		if(ener[i] < 0.0) { //add energy components if the energy is valid
 			enerscore = (ener[i] - minE)/diffE;
+			cout << " enerscore " << enerscore;
 			val += lin*(1.0-enerscore) + exp*std::exp(-0.5*10.0*enerscore);
 		}
 
 		scaling.push_back(val);
+		cout << " scale " << scaling[i] << endl;
 	}
 }
 
@@ -309,20 +339,48 @@ void GASP2pop::runFitcell(int threads) {
 
 	}
 
+	for(int j = 0; j < threads; j++)
+		if(futures[j].valid())
+			futures[j].wait();
+
 
 	//return out;
 }
 
-GASP2pop GASP2pop::runEval(string hosts) {
-	GASP2pop temp;
-	temp.structures = structures;
-	for(int i = 0; i < temp.size(); i++) {
-		temp.structures[i].evaluate(hosts);
+
+
+
+void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&, string, GASP2param)) {
+
+	future<bool> thread;
+	bool result;
+
+	chrono::milliseconds timeout(0);
+	chrono::milliseconds thread_wait(100);
+
+	for(int i = 0; i < size(); ) {
+
+		//launch
+		if(!thread.valid()) {
+			structures[i].setEval(eval);
+			thread = async(launch::async, &GASP2struct::evaluate, &structures[i], hosts, p);
+			i++;
+		}
+		//cleanup
+		if(thread.wait_for(timeout)==future_status::ready)
+			thread.get();
+
+		//wait so we don't burn cycles
+		this_thread::sleep_for(thread_wait);
 
 	}
+	if(thread.valid())
+		thread.wait();
+
+	for(int i = 0; i < size(); i++)
+		cout << structures[i].getEnergy() << endl;
 
 
-	return temp;
 }
 
 

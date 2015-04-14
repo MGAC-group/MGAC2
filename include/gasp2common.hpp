@@ -20,6 +20,11 @@
 #include <limits>
 #include <future>
 #include <thread>
+#include <fcntl.h>
+#include <signal.h>
+
+#define READ 0
+#define WRITE 1
 
 extern "C" {
 	extern char _binary_spacegroups_xml_start;
@@ -134,6 +139,10 @@ bool loadSpaceGroups();
 void parseSymop ( string symm, Mat3 &symmR, Vec3 &symmT );
 
 string tfconv(bool var);
+
+//special stuff
+FILE * popen2(const char *command, pid_t &pid);
+int pclose2(pid_t pid, FILE *outfp);
 
 //wrapper for libuuid
 class UUID {

@@ -22,11 +22,11 @@
 #include "gasp2common.hpp"
 using namespace std;
 
-class GASP2control;
+
 
 class GASP2param {
-	friend class GASP2control;
-private:
+
+public:
 	//front matter
 	GASP2param();
 	~GASP2param() {};

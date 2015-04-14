@@ -126,13 +126,26 @@ void GASP2control::server_prog() {
 
 	rootpop.init(root, params.popsize);
 
-	GASP2pop out = rootpop;
-	out.runFitcell(8);
 
-	GASP2pop temp = out.newPop(16);
+
+
+	GASP2pop temp = rootpop.newPop(1);
 
 	temp.runFitcell(8);
 	temp.volumesort();
+
+	string hosts("blahblahblahblah");
+	//temp.remIndv(temp.size() - 1);
+	temp.runEval(hosts, params, QE::empty);
+	temp.scale(0.1,1.0,5.0);
+
+	cout << "energysort\n";
+	temp.energysort();
+	cout << "volumesort\n";
+	temp.volumesort();
+
+
+
 
 	//
 //	cout << "out size: " << out.size() << endl;

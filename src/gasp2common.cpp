@@ -629,3 +629,38 @@ string tfconv(bool var) {
 }
 
 
+FILE * popen2(const char *command, pid_t &pid)
+{
+    int pdes[2];
+
+    if(pipe2(pdes, O_NONBLOCK) != 0) {
+        cout << "Bad pipe formation!" << endl;
+        pid = -1;
+        return NULL;
+    }
+
+    pid = vfork();
+    if(pid < 0) {
+      cout << "Bad fork!" << endl;
+      return NULL;
+    }
+    else if (pid == 0) {
+        dup2(pdes[WRITE], fileno(stdout));
+        close(pdes[READ]);
+        execl("/bin/sh","sh","-c",command,NULL);
+        _exit(127);
+    }
+    close(pdes[WRITE]);
+    FILE * in;
+    in = fdopen(pdes[READ],"r");
+    return in;
+}
+
+int pclose2(pid_t pid, FILE *outfp) {
+  if(outfp != NULL)
+    fclose(outfp);
+  return kill(pid, SIGTERM);
+}
+
+
+

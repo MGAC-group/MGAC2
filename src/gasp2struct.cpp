@@ -36,7 +36,7 @@ double GASP2struct::getVolume() {
 	//results from bad things (tm), like bad cell values
 	//that make impossible unit cells
 	if(std::isnan(vol))
-		vol = numeric_limits<double>::max();
+		vol = -1.0;
 	return vol;
 }
 
@@ -45,6 +45,10 @@ double GASP2struct::getVolume() {
 double GASP2struct::getVolScore() {
 	double expectvol = 0.0;
 	double vol = getVolume();
+
+	//propogate the NaN
+	if(vol < 0.0)
+		return -1.0;
 
 	//must work independent of fitcell
 	for(int i = 0; i < molecules.size(); i++) {
@@ -1110,7 +1114,7 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 
 
 
-bool GASP2struct::evaluate(string hostfile) {
+bool GASP2struct::evaluate(string hostfile, GASP2param params) {
 
 	if(!isFitcell) {
 		finalstate = NoFitcell;
@@ -1119,7 +1123,7 @@ bool GASP2struct::evaluate(string hostfile) {
 
 	//never evaluate something that has already been evaluated
 	if(!didOpt) {
-		complete = eval(molecules, unit, energy, force, pressure, time, hostfile);
+		complete = eval(molecules, unit, energy, force, pressure, time, hostfile, params);
 		steps++;
 		check();
 		didOpt = true;
