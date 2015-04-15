@@ -61,15 +61,15 @@ public:
 
 
 	//qe params
-	string QEpath;
-	string QEmpirunpath;
+	string QEpath; //REQUIRED
+	string QEmpirunpath; //REQUIRED
 	string QEpreamble; //in case something else needs to be executed before qe is invoked
 	string QEcalculation; //vc-relax
 	string QErestart_mode; //from_scratch
 	string QEprefix; //REQUIRED
 	string QEtstress; //.true.;
 	string QEtprnfor; //.true.;
-	int QEnstep; //70
+	int QEnstep; //20
 	string QEpseudo_dir; //REQUIRED
 	string QEoutdir; //REQUIRED
 	string QEwf_collect; //.true.
@@ -80,7 +80,7 @@ public:
 	string QEecutwfc; //55
 	string QEecutrho; //550
 	string QEspline_ps; //.true.
-	string QElondon; //.true.
+	string QEvdw_corr; //DFT-D
 	string QEconv_thr; //1.D-7
 	string QEcell_dynamics; //bfgs
 	string QEk_points; //automatic

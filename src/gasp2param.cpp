@@ -36,7 +36,7 @@ GASP2param::GASP2param() {
 	QErestart_mode = "from_scratch"; //from_scratch
 	QEtstress = ".true."; //.true.;
 	QEtprnfor = ".true."; //.true.;
-	QEnstep = 70; //70
+	QEnstep = 20; //70
 	QEwf_collect = ".true."; //.true.
 	QEverbosity = ".true."; //high?
 	QEetot_conv_thr = "1.0D-3"; //1.0D-3
@@ -45,13 +45,15 @@ GASP2param::GASP2param() {
 	QEecutwfc = "55"; //55
 	QEecutrho = "550"; //550
 	QEspline_ps = ".true."; //.true.
-	QElondon = ".true."; //.true.
+	QEvdw_corr = "DFT-D"; //.true.
 	QEconv_thr = "1.D-7"; //1.D-7
 	QEcell_dynamics = "bfgs"; //bfgs
 	QEk_points = "automatic"; //automatic
 	QEk_point_spec = "2 2 2  1 1 1"; //2 2 2   1 1 1
 	QErestart_limit = 3; //3
-	QEscftimeout = 6000; //time in seconds
+	QEscftimeout = 6000; //time in seconds\
+
+	QEpreamble = "";
 
 }
 
@@ -341,11 +343,204 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 // 		QE TAG
 //
 //*************************
-	if(QEcalculation == "qe") {
-		tinyxml2::XMLElement *qe = doc->FirstChildElement("mgac")->FirstChildElement("qe");
+	if(calcmethod == "qe") {
+
+		tinyxml2::XMLElement * pseudo = doc->FirstChildElement("mgac")->FirstChildElement("qe")->FirstChildElement("pseudo");
+		string ps, elem, mass, name;
+		while(pseudo) {
+
+
+			//elem
+			stemp = pseudo->Attribute("elem");
+			if(stemp)
+				elem = stemp;
+			else {
+				errorstring = "An element must be specified for the pseudopotential!"; return false;
+			}
+
+			//mass
+			stemp = pseudo->Attribute("mass");
+			if(stemp)
+				mass = stemp;
+			else {
+				errorstring = "A mass must be specified for the pseudopotential!"; return false;
+			}
+
+			//name
+			stemp = pseudo->Attribute("name");
+			if(stemp)
+				name = stemp;
+			else {
+				errorstring = "A filename must be specified for the pseudopotential!"; return false;
+			}
+
+			ps = elem + " " + mass + " " + name;
+			QEpseudos.push_back(ps);
+			pseudo = pseudo->NextSiblingElement("pseudo");
+		}
+
+
+		tinyxml2::XMLElement *qe = doc->FirstChildElement("mgac")->FirstChildElement("qe")->FirstChildElement("param");
 		if(qe) {
 
-			cout << "QE tags are NOT being validated yet!" << endl;
+			//cout << "QE tags are NOT being validated yet!" << endl;
+
+			//QEpath
+			stemp = qe->Attribute("qepath");
+			if(stemp)
+				QEpath = stemp;
+			else {
+				errorstring = "The path to QE must be specified!"; return false;
+			}
+
+
+			//QEmpirunpath
+			stemp = qe->Attribute("mpirunpath");
+			if(stemp)
+				QEmpirunpath = stemp;
+			else {
+				errorstring = "The path to mpirun must be specified!"; return false;
+			}
+
+
+			//QEprefix
+			stemp = qe->Attribute("prefix");
+			if(stemp)
+				QEprefix = stemp;
+			else {
+				errorstring = "A prefix for the QE runs must be specified!"; return false;
+			}
+
+
+			//QEpseudo_dir
+			stemp = qe->Attribute("pseudo_dir");
+			if(stemp)
+				QEpseudo_dir = stemp;
+			else {
+				errorstring = "The path to the QE pseudopotentials must be specified!"; return false;
+			}
+
+
+			//QEoutdir
+			stemp = qe->Attribute("outdir");
+			if(stemp)
+				QEoutdir = stemp;
+			else {
+				errorstring = "A path to a scratch directory is required!"; return false;
+			}
+
+
+//			//
+//			stemp = qe->Attribute("");
+//			if(stemp)
+//				 = stemp;
+//			else {
+//				errorstring = ""; return false;
+//			}
+
+			//QEpreamble
+			stemp = qe->Attribute("preamble");
+			if(stemp)
+				QEpreamble = stemp;
+
+			//QEcalculation
+			stemp = qe->Attribute("calculation");
+			if(stemp)
+				QEcalculation = stemp;
+
+			//QErestart_mode
+			stemp = qe->Attribute("restart_mode");
+			if(stemp)
+				QErestart_mode = stemp;
+
+			//QEtstress
+			stemp = qe->Attribute("tstress");
+			if(stemp)
+				QEtstress = stemp;
+
+			//QEtprnfor
+			stemp = qe->Attribute("tprnfor");
+			if(stemp)
+				QEtprnfor = stemp;
+
+			//QEnstep
+			if(!qe->QueryIntAttribute("nstep", &itemp)) {
+				QEnstep = itemp;
+				if(QEnstep < 1) {
+					errorstring = "The number of QE steps must be greater than zero!\n";
+					return false;
+				}
+			}
+
+
+			//QEwf_collect
+			stemp = qe->Attribute("wf_collect");
+			if(stemp)
+				QEwf_collect = stemp;
+
+			//QEverbosity
+			stemp = qe->Attribute("verbosity");
+			if(stemp)
+				QEverbosity = stemp;
+
+			//QEetot_conv_thr
+			stemp = qe->Attribute("etot_conv_thr");
+			if(stemp)
+				QEetot_conv_thr = stemp;
+
+			//QEforc_conv_thr
+			stemp = qe->Attribute("forc_conv_thr");
+			if(stemp)
+				QEforc_conv_thr = stemp;
+
+			//QEpress_conv_thr
+			stemp = qe->Attribute("press_conv_thr");
+			if(stemp)
+				QEpress_conv_thr = stemp;
+
+			//QEecutwfc
+			stemp = qe->Attribute("ecutwfc");
+			if(stemp)
+				QEecutwfc = stemp;
+
+			//QEecutrho
+			stemp = qe->Attribute("ecutrho");
+			if(stemp)
+				QEecutrho = stemp;
+
+			//QEspline_ps
+			stemp = qe->Attribute("spline_ps");
+			if(stemp)
+				QEspline_ps = stemp;
+
+			//QEvdw_corr
+			stemp = qe->Attribute("vdw_corr");
+			if(stemp)
+				QEvdw_corr = stemp;
+
+			//QEconv_thr
+			stemp = qe->Attribute("conv_thr");
+			if(stemp)
+				QEconv_thr = stemp;
+
+			//QEcell_dynamics
+			stemp = qe->Attribute("cell_dynamics");
+			if(stemp)
+				QEcell_dynamics = stemp;
+
+			//QEk_points
+			stemp = qe->Attribute("k_points");
+			if(stemp)
+				QEk_points = stemp;
+
+			//QEk_points_spec
+			stemp = qe->Attribute("k_points_spec");
+			if(stemp)
+				QEk_point_spec = stemp;
+
+			//QErestart_limit
+
+			//QEscftimeout
 
 		}
 		else {
@@ -424,7 +619,7 @@ void GASP2param::logParams() {
 		cout << "      wf_collect     =  " << setw(12) << QEwf_collect << endl;
 		cout << "      verbosity      =  " << setw(12) << QEverbosity << endl;
 		cout << "      spline_ps      =  " << setw(12) << QEspline_ps << endl;
-		cout << "      london         =  " << setw(12) << QElondon << endl;
+		cout << "      vdw_corr       =  " << setw(12) << QEvdw_corr << endl;
 		cout << "      cell_dynamics  =  " << setw(12) << QEcell_dynamics << endl;
 
 
@@ -436,7 +631,7 @@ void GASP2param::logParams() {
 		cout << "      mpirunpath: " << QEmpirunpath << endl;
 
 		cout << endl;
-		cout << "   QE Preamble: " << QEpreamble << endl;
+		cout << "   QE Preamble: " << endl << QEpreamble << endl;
 
 
 		cout << endl;

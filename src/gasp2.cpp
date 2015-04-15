@@ -136,7 +136,7 @@ void GASP2control::server_prog() {
 
 	string hosts("blahblahblahblah");
 	//temp.remIndv(temp.size() - 1);
-	temp.runEval(hosts, params, QE::empty);
+	temp.runEval(hosts, params, QE::runQE);
 	temp.scale(0.1,1.0,5.0);
 
 	cout << "energysort\n";
