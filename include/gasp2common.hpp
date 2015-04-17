@@ -22,6 +22,7 @@
 #include <thread>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #define READ 0
 #define WRITE 1

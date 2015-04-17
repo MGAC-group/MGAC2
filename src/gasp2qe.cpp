@@ -36,7 +36,7 @@ namespace QE {
 		input << "  tprnfor = " << params.QEtprnfor << endl;
 		input << "  nstep = " << params.QEnstep << endl;
 		input << "  pseudo_dir = '" << params.QEpseudo_dir << "'"<< endl;
-		input << "  outdir = " << params.QEoutdir << endl;
+		input << "  outdir = '" << params.QEoutdir << "'" << endl;
 		input << "  wf_collect = " << params.QEwf_collect << endl;
 		input << "  verbosity = " << params.QEverbosity << endl;
 		input << "  etot_conv_thr = " << params.QEetot_conv_thr << endl;
@@ -117,28 +117,81 @@ namespace QE {
 		//build the launcher line scripts
 		stringstream launcher;
 
+		launcher << params.QEpreamble <<";";
+		launcher << params.QEmpirunpath << " ";
+
+		launcher << params.QEpath << " -inp " << infile;
 
 		//launch via popen2
 		FILE * out;
 		pid_t t;
 		out = popen2(launcher.str().c_str(), t);
 
+		//search strings for solving issues
+        string energy_scan = "!    total energy              =";
+        string force_scan = "Total force =";
+        string press_scan = "total   stress  (Ry/bohr**3)                   (kbar)     P=";
+        string any_error = "Error in routine";
+        string fft_error = "Not enough space allocated for radial FFT: try restarting with a larger cell_factor";
+        string complete_scan = "This run was terminated on";
+        string early_term = "The maximum number of steps has been reached.";
+
+
+
 		//scrape the output and parse/check
-	    while(chrono::steady_clock::now() < end) {
+		//starting point
+		char buff[1024];
+		string output = "", junk;
+		output.reserve(2000000);
+		int length, oldlength = 0;
+		size_t pos;
+		stringstream ss;
+		int status;
+
+		auto start = chrono::steady_clock::now();
+
+	    while( chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count()
+	    		< 600 ) {//params.QEscftimeout) {
 	        while(fgets(buff, sizeof(buff), out)) {
-	          cout << buff;
+	          //cout << buff;
+	        	output.append(buff);
 	        }
+	        length = output.size();
+	        if(length > oldlength) {
+	        	pos = output.rfind(energy_scan);
+	        	if(pos!=string::npos) {
+	        		ss.clear();
+	        		 ss.str(output.substr(pos, 160));
+
+	        		 cout << ss.str() << endl;
+	        		 ss >> junk >> junk >> junk >> junk;
+	        		 cout << "junk: " << junk << endl;
+	        		 ss >> energy;
+	        		 cout << "New energy: " << energy << endl;
+	        	}
+
+
+
+
+	        	oldlength = length;
+	        }
+
+	        pid_t result = waitpid(t, &status, WNOHANG);
+	        if(result == 0) cout << "alive" << endl;
+	        else if(result == -1) cout << "problems" << endl;
+	        else { cout << "done!" << endl; break; }
+
+	        //cout << buff << endl;
 
 	        //sbuff.append(buff);
 	        //if(sbuff.find("Error")!=string::npos) {
 	        //  flag = true; pclose(in);
 	        //}
-	        cout << "Time remaining: " << chrono::duration_cast<chrono::seconds>(end - chrono::steady_clock::now()).count() << endl;
-	        chrono::seconds t(1);
+	        chrono::milliseconds t(200);
 	        this_thread::sleep_for(t);
 	    }
 
-
+	    pclose2(t,out);
 		//cleanup inputs
 
 	}
