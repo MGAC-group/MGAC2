@@ -136,8 +136,11 @@ private:
 	bool recvPop(GASP2pop &p, int sender);
 
 	//for sending MPI host info between nodes
+	//can also be used for sending strings in general
 	bool sendHost(string host, int procs, int target);
 	bool recvHost(string &host, int &procs, int target);
+
+	string makeMachinefile(vector<int> slots);
 
 	void getHostInfo();
 

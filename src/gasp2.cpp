@@ -85,117 +85,67 @@ void GASP2control::getHostInfo() {
 
 void GASP2control::server_prog() {
 
-//	for(int i = 0; i < 2; i++) {
-//		root.unfitcell();
-//		root.init();
-//		root.fitcell();
-//		if(!root.cifOut("fitcelldebug.cif"))
-//			cout << "Bad file for fitcelldebug!\n";
-//		cout << "i" << i << endl;
-//	}
-
-
-//	root.init();
-//	root.fitcell();
-//	if(!root.cifOut("fitcelldebug.cif"))
-//		cout << "Bad file for fitcelldebug!\n";
-//
-//	for(int i = 0; i < 10; i++) {
-//		root.unfitcell();
-//		root.mutateStruct(0.10);
-//		root.fitcell();
-//		if(!root.cifOut("fitcelldebug.cif"))
-//			cout << "Bad file for fitcelldebug!\n";
-//	}
-
-
-//	root.init();
-//	for(int i = 2; i < 3; i++) {
-//		root.unfitcell();
-//		root.overrideSpacegroup(i);
-//		root.fitcell();
-//		if(!root.cifOut("fitcelldebug.cif"))
-//			cout << "Bad file for fitcelldebug!\n";
-//	}
-//
-//	root.unfitcell();
-
-	//cout << root.serializeXML() << endl;
-
 	getHostInfo();
 
+	//collect the info from all hosts
+	Host h; h.hostname = hostname;
+	h.threads = nodethreads;
+	hostlist.push_back(h);
+	for(int i = 1; i < worldSize; i++) {
+		recvHost(h.hostname, h.threads, i);
+		hostlist.push_back(h);
+	}
+
+	//generate the local machinefile info
+	UUID u; u.generate();
+	string localmachinefile = "/tmp/machinefile-";
+	localmachinefile.append(u.toStr());
+
+	ofstream outf;
+	outf.open(localmachinefile.c_str(), ofstream::out);
+	if(outf.fail()) {
+		cout << "Could not write machinefile!\n";
+		exit(1);
+	}
+	string name = makeMachinefile({0,1});
+	outf << name <<endl;
+	outf.close();
+
+
+
 	rootpop.init(root, params.popsize);
-
-
-
-
 	GASP2pop temp = rootpop.newPop(1);
 
 	temp.runFitcell(8);
 	temp.volumesort();
 
 	string hosts("blahblahblahblah");
-	//temp.remIndv(temp.size() - 1);
-	temp.runEval(hosts, params, QE::runQE);
-	temp.scale(0.1,1.0,5.0);
+	temp.remIndv(temp.size() - 1);
+	temp.writeCIF("pre.cif");
+	temp.runEval(localmachinefile, params, QE::runQE);
+	temp.indv(0)->forceOK();
+	temp.writeCIF("post.cif");
 
-	cout << "energysort\n";
-	temp.energysort();
-	cout << "volumesort\n";
-	temp.volumesort();
-
-
-
-
-	//
-//	cout << "out size: " << out.size() << endl;
-//	out.addIndv(10);
-//	cout << "out size: " << out.size() << endl;
-//	out.remIndv(5);
-//	cout << "out size: " << out.size() << endl;
-
-
-//	//out.runFitcell(8);
-//	//out.volumesort();
-//
-//	//GASP2pop out2 = out.volLimit();
-//
-//	//cout << "good" << endl;
-//	//out2.volumesort();
-//
-//
-//	//out2.remIndv(out2.size()-2);
-//	//cout << "out2 size: " << out2.size() << endl;
-//	//out2.volumesort();
-//
-//	//GASP2pop out3 = out2.fullCross();
-//
-//	out3.runFitcell(8);
-//	out3.writeCIF("fitcelldebug.cif");
-//	out3.volumesort();
-//	cout << "out2 size: " << out2.size() << endl;
-//	cout << "out3 size: " << out3.size() << endl;
-//	out3.addIndv(out2);
-//	cout << "out3 size: " << out3.size() << endl;
-
-	//string s = out4.saveXML();
-	//cout << s << endl;
-
-	//out.writeCIF("fitcelldebug.cif");
-
-
-	//string out = rootpop.saveXML();
-
-
-	//cout << out << endl;
-
-
-
+	//clean up files
+	remove(localmachinefile.c_str());
 }
 
 
 void GASP2control::client_prog() {
 	getHostInfo();
+	//cout << "client prog: " << ID << endl;
+	sendHost(hostname, nodethreads, 0);
+
+//	UUID u; u.generate();
+//	string localmachinefile = "/tmp/machinefile-";
+//	localmachinefile.append(u.toStr());
+//
+//	remove(localmachinefile.c_str());
+	while(true) {
+        chrono::milliseconds t(200);
+        this_thread::sleep_for(t);
+	};
+
 }
 
 bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
@@ -212,7 +162,47 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 	}
 	return true;
 
+}
 
+bool GASP2control::sendHost(string host, int procs, int target) {
+	int t = host.length();
+	//send size info
+	MPI_Send(&t, 1, MPI_INT, target,0,MPI_COMM_WORLD);
 
+	//send info
+	MPI_Send(host.c_str(),t,MPI_CHAR,target,0,MPI_COMM_WORLD);
+	//send proc info
+	MPI_Send(&procs, 1, MPI_INT, target, 0, MPI_COMM_WORLD);
+	return true;
+}
 
+bool GASP2control::recvHost(string &host, int &procs, int target) {
+	int ierr;
+	int v = 0;
+	//recv size info
+	MPI_Recv(&v, 1, MPI_INT, target,0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	char * buff = new char[v];
+	//recv hostname
+	MPI_Recv((void *) buff, v, MPI_CHAR, target,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+	host = buff;
+	//recv proc count
+
+	MPI_Recv(&procs, 1, MPI_INT, target, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	//cout << "procs:" << procs << endl;
+	delete [] buff;
+
+	return true;
+}
+
+string GASP2control::makeMachinefile(vector<int> slots) {
+	stringstream out;
+	out.str("");
+
+	for(int i = 0; i < slots.size(); i++) {
+		if(slots[i] < hostlist.size()) {
+			for(int j = 0; j < hostlist[slots[i]].threads; j++)
+				out << hostlist[slots[i]].hostname << endl;
+		}
+	}
+	return out.str();
 }

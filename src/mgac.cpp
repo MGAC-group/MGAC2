@@ -100,11 +100,11 @@ int main( int argc, char* argv[] ) {
     	cout << "Using input file " << infile << endl << endl;
 
     	if( options[RESTART] && options[RESTART].arg != NULL) {
-    		GASP2control server(prog_start,size-1, infile, options[RESTART].arg);
+    		GASP2control server(prog_start,size, infile, options[RESTART].arg);
     		server.server_prog();
     	}
     	else {
-    		GASP2control server(prog_start,size-1, infile);
+    		GASP2control server(prog_start,size, infile);
     		server.server_prog();
     	}
     }

@@ -36,6 +36,8 @@ extern "C" {
 
 
 #define PI 3.1415926535897932384626433
+#define AUtoAng 0.529177249
+#define RydToKCalMol 313.7547345
 
 using namespace std;
 

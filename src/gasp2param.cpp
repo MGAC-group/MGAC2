@@ -539,8 +539,22 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 				QEk_point_spec = stemp;
 
 			//QErestart_limit
+			if(!qe->QueryIntAttribute("restart_limit", &itemp)) {
+				QErestart_limit = itemp;
+				if(QEnstep < 0) {
+					errorstring = "The number of QE restarts must non-negative!\n";
+					return false;
+				}
+			}
 
 			//QEscftimeout
+			if(!qe->QueryIntAttribute("scftimeout", &itemp)) {
+				QEscftimeout = itemp;
+				if(QEnstep < 20) {
+					errorstring = "The scftimeout must be at least 20 seconds!\n";
+					return false;
+				}
+			}
 
 		}
 		else {

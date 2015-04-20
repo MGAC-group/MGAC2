@@ -30,7 +30,7 @@ private:
 public:
 
 	int size() { return structures.size(); }
-	GASP2struct indv(int n) { if(n < size()) return structures[n]; else return structures[0];};
+	GASP2struct *indv(int n) { if(n < size()) return &structures[n]; else return &structures[0];};
 	void clear() { structures.clear(); scaling.clear(); }
 
 	//sorts the population on energy or volume

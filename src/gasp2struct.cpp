@@ -600,8 +600,9 @@ bool GASP2struct::check() {
 		//plane rotations
 		molecules[i].rot = getPlaneRot(molecules[i]);
 
-		//position
+		//position and recenter
 		molecules[i].pos = toFrac*getMolCentroid(molecules[i]);
+		centerMol(molecules[i]);
 	}
 
 

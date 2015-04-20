@@ -33,15 +33,15 @@ void GASP2pop::energysort() {
 		}
 	}
 
-	for(int i = 0; i < size(); i++)
-		cout << structures[i].getEnergy() << endl;
+//	for(int i = 0; i < size(); i++)
+//		cout << structures[i].getEnergy() << endl;
 }
 
 void GASP2pop::volumesort() {
 	std::sort(structures.begin(), structures.end(), vcomp);
 
-	for(int i = 0; i < size(); i++)
-		cout << structures[i].getVolScore() << endl;
+//	for(int i = 0; i < size(); i++)
+//		cout << structures[i].getVolScore() << endl;
 }
 
 
@@ -175,7 +175,7 @@ void GASP2pop::scale(double con, double lin, double exp) {
 
 	for(int i = 0; i < structures.size(); i++) {
 		vol.push_back(structures[i].getVolScore());
-		cout << "vol " << vol.back() << endl;
+		//cout << "vol " << vol.back() << endl;
 		ener.push_back(structures[i].getEnergy());
 
 		if(vol.back() >= 0.0) {
@@ -191,8 +191,8 @@ void GASP2pop::scale(double con, double lin, double exp) {
 		}
 	}
 
-	cout << "minV/maxV " << minV << "/" << maxV << endl;
-	cout << "minE/maxE " << minE << "/" << maxE << endl;
+	//cout << "minV/maxV " << minV << "/" << maxV << endl;
+	//cout << "minE/maxE " << minE << "/" << maxE << endl;
 
 	double volscore, enerscore;
 	diffE = maxE-minE;
@@ -204,16 +204,16 @@ void GASP2pop::scale(double con, double lin, double exp) {
 			volscore = (vol[i] - minV)/diffV;
 			val += lin*(1.0-volscore); //add the linear component
 			val += exp*(std::exp(-0.5*10.0*volscore));//add the exponential component
-			cout << "vol " << volscore;
+			//cout << "vol " << volscore;
 		}
 		if(ener[i] < 0.0) { //add energy components if the energy is valid
 			enerscore = (ener[i] - minE)/diffE;
-			cout << " enerscore " << enerscore;
+			//cout << " enerscore " << enerscore;
 			val += lin*(1.0-enerscore) + exp*std::exp(-0.5*10.0*enerscore);
 		}
 
 		scaling.push_back(val);
-		cout << " scale " << scaling[i] << endl;
+		//cout << " scale " << scaling[i] << endl;
 	}
 }
 
@@ -270,7 +270,7 @@ bool GASP2pop::loadXMLrestart(tinyxml2::XMLElement *pop, string & errorstring) {
 	if(pop) {
 		tinyxml2::XMLElement * crystal = pop -> FirstChildElement("crystal");
 		if(!crystal) {
-			errorstring = "Somethign went wrong when parsing the population! There may be no structures!\n";
+			errorstring = "Something went wrong when parsing the population! There may be no structures!\n";
 			return false;
 		}
 		while(crystal) {
@@ -377,8 +377,9 @@ void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2mole
 	if(thread.valid())
 		thread.wait();
 
-	for(int i = 0; i < size(); i++)
-		cout << structures[i].getEnergy() << endl;
+
+	//for(int i = 0; i < size(); i++)
+		//cout << structures[i].getEnergy() << endl;
 
 
 }

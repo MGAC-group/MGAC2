@@ -225,6 +225,7 @@ public:
 	double getVolScore(); //returns a score based on closeness to expectvol
 	bool minmaxVol(); //returns true if in volume is in bounds
 
+	void forceOK() {finalstate = OKStruct;};
 private:
 	//values
 	double interdist;

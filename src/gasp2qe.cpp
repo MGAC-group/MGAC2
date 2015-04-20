@@ -16,6 +16,8 @@ namespace QE {
 
 	bool runQE(vector<GASP2molecule>& mols, GASP2cell& unit, double& energy, double& force, double&pressure, time_t&time, string hostfile, GASP2param params) {
 
+		bool outstat = true;
+
 		//setup the temp files and scratch paths
 		UUID runID;
 		runID.generate();
@@ -119,7 +121,7 @@ namespace QE {
 
 		launcher << params.QEpreamble <<";";
 		launcher << params.QEmpirunpath << " ";
-
+		launcher << "-machinefile " << hostfile << " ";
 		launcher << params.QEpath << " -inp " << infile;
 
 		//launch via popen2
@@ -127,14 +129,16 @@ namespace QE {
 		pid_t t;
 		out = popen2(launcher.str().c_str(), t);
 
-		//search strings for solving issues
-        string energy_scan = "!    total energy              =";
-        string force_scan = "Total force =";
-        string press_scan = "total   stress  (Ry/bohr**3)                   (kbar)     P=";
-        string any_error = "Error in routine";
-        string fft_error = "Not enough space allocated for radial FFT: try restarting with a larger cell_factor";
-        string complete_scan = "This run was terminated on";
-        string early_term = "The maximum number of steps has been reached.";
+		//search strings for QE output
+        const string energy_scan = "!    total energy              =";
+        const string force_scan = "Total force =";
+        const string press_scan = "total   stress  (Ry/bohr**3)                   (kbar)     P=";
+        const string any_error = "Error in routine";
+        const string fft_error = "Not enough space allocated for radial FFT: try restarting with a larger cell_factor";
+        const string complete_scan = "This run was terminated on";
+        const string early_term = "The maximum number of steps has been reached.";
+        const string cell_param = "CELL_PARAMETERS";
+        const string atom_pos = "ATOMIC_POSITIONS";
 
 
 
@@ -144,40 +148,165 @@ namespace QE {
 		string output = "", junk;
 		output.reserve(2000000);
 		int length, oldlength = 0;
-		size_t pos;
+		size_t pos, epos = 0, fpos = 0, ppos = 0, cp_pos = 0, ap_pos = 0;
 		stringstream ss;
 		int status;
+		Mat3 toCart;
+		Vec3 va,vb,vc;
+		double alat;
 
 		auto start = chrono::steady_clock::now();
 
-	    while( chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count()
-	    		< 600 ) {//params.QEscftimeout) {
+// debug QE output
+		outf.open("qedebug.out", ofstream::out);
+		if(outf.fail()) {
+			cout << "A problem was detected when trying to write a QE debug file!" << endl;
+			return false;
+		}
+
+	    while(true) {
+	    	if(chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count()
+		    		>= params.QEscftimeout) {
+	    		cout << "Timeout limit reached for a QE run!\n";
+	    		outstat = false;
+	    		break;
+	    	}
+
 	        while(fgets(buff, sizeof(buff), out)) {
-	          //cout << buff;
+	        	outf << buff;
 	        	output.append(buff);
 	        }
 	        length = output.size();
 	        if(length > oldlength) {
-	        	pos = output.rfind(energy_scan);
-	        	if(pos!=string::npos) {
-	        		ss.clear();
-	        		 ss.str(output.substr(pos, 160));
 
-	        		 cout << ss.str() << endl;
-	        		 ss >> junk >> junk >> junk >> junk;
-	        		 cout << "junk: " << junk << endl;
-	        		 ss >> energy;
-	        		 cout << "New energy: " << energy << endl;
+	        	//energy - four junk fields
+	        	pos = output.rfind(energy_scan);
+	        	if(pos!=string::npos && pos > epos) {
+	        		ss.clear();
+	        		ss.str(output.substr(pos, 160));
+	        		ss >> junk >> junk >> junk >> junk;
+	        		ss >> energy;
+	        		//the energy used here does not take into account basic stoich
+	        		//only the number of spacegroup operations
+	        		energy /= static_cast<double>(spacegroups[unit.spacegroup].R.size());
+	        		energy *= RydToKCalMol;
+	        		//cout << "New energy: " << energy << endl;
+	        		epos = pos;
 	        	}
 
+	        	//force - three junk fields
+	        	pos = output.rfind(force_scan);
+	        	if(pos!=string::npos && pos > fpos) {
+	        		ss.clear();
+	        		ss.str(output.substr(pos, 160));
+	        		ss >> junk >> junk >> junk;
+	        		ss >> force;
+	        		//cout << "New force: " << force << endl;
+	        		fpos = pos;
+	        	}
 
+	        	//press - five junk fields
+	        	pos = output.rfind(press_scan);
+	        	if(pos!=string::npos && pos > ppos) {
+	        		ss.clear();
+	        		ss.str(output.substr(pos, 160));
+	        		ss >> junk >> junk >> junk >> junk >> junk;
+	        		ss >> pressure;
+	        		//cout << "New pressure: " << pressure << endl;
+	        		ppos = pos;
+	        	}
 
+	        	//get the cell params
+	        	pos = output.rfind(cell_param);
+	        	if(pos!=string::npos && pos > cp_pos) {
+	        		ss.clear();
+	        		ss.str(output.substr(pos,80*4));
+	        		//get alat
+	        		ss >> junk >> junk >> alat >> junk;
+
+	        		//get vectors
+	        		ss >> va[0] >> va[1] >> va[2];
+	        		ss >> vb[0] >> vb[1] >> vb[2];
+	        		ss >> vc[0] >> vc[1] >> vc[2];
+
+//	        		cout << alat << endl << va << vb << vc << endl;;
+	        		unit.a = alat * AUtoAng * len(va);
+	        		unit.b = alat * AUtoAng * len(vb);
+	        		unit.c = alat * AUtoAng * len(vc);
+	        		unit.gamma = angle(va, vl_0, vb);
+	        		unit.beta = angle(va, vl_0, vc);
+	        		unit.alpha = angle(vb, vl_0, vc);
+	        		//cout << unit.a << " " << unit.b << " " << unit.c << endl;
+	        		//cout << unit.alpha <<" "<<unit.beta <<" "<<unit.gamma << endl;
+
+	        		toCart = fracToCart(unit);
+	        		cp_pos = pos;
+	        	}
+
+	        	//get the coordinates
+	        	pos = output.rfind(atom_pos);
+	        	if(pos!=string::npos && pos > ap_pos) {
+	        		ss.clear();
+	        		ss.str(output.substr(pos,80+80*nat));
+	        		//cout << ss.str() << endl;
+	        		//cout
+	        		//clear the first line
+	        		ss >> junk >> junk;
+	        		for (int i = 0; i < mols.size(); i++) {
+	        			for (int j = 0; j < mols[i].atoms.size(); j++) {
+	        				ss >> junk;
+	        				ss >> temp[0] >> temp[1] >> temp[2];
+	        				//cout << temp << endl;
+	        				mols[i].atoms[j].pos = toCart*temp;
+	        				//temp = toFrac*mols[i].atoms[j].pos + mols[i].pos;
+	        			}
+
+	        		}
+	        		ap_pos = pos;
+	        	}
+
+	        	//fft error - not an issue, just needs
+	        	//a restart if appropriate
+	        	pos = output.rfind(fft_error);
+	        	if(pos!=string::npos) {
+	        		cout << "FFT error detected in QE run!\n";
+	        		outstat = false;
+	        		break;
+	        	}
+
+	        	//unknown error - this is bad, we want to know
+	        	//when it happens and we want to exit as fast as possible
+	        	//this could leave stray processes, but it's not clear
+	        	pos = output.rfind(any_error);
+	        	if(pos!=string::npos) {
+	        		cout << "Unknown error detected in QE run! Output:\n";
+	        		cout << output.substr(pos, 2048) << endl << endl;
+	        		pclose2(t,out);
+	        		//send emergency shutdown signal instead of exit?
+	        		exit(1);
+	        	}
+
+	        	//early term
+	        	pos = output.rfind(early_term);
+	        	if(pos!=string::npos) {
+	        		cout << "QE finished with maximum number of SCF cycles.\n";
+	        		outstat = false;
+	        	}
+
+	        	//normal finish
+	        	pos = output.rfind(complete_scan);
+	        	if(pos!=string::npos) {
+	        		cout << "QE compelted the run\n";
+	        		break;
+	        	}
 
 	        	oldlength = length;
 	        }
 
+
+
 	        pid_t result = waitpid(t, &status, WNOHANG);
-	        if(result == 0) cout << "alive" << endl;
+	        if(result == 0) ;//cout << "alive" << endl;
 	        else if(result == -1) cout << "problems" << endl;
 	        else { cout << "done!" << endl; break; }
 
@@ -191,9 +320,18 @@ namespace QE {
 	        this_thread::sleep_for(t);
 	    }
 
+		outf.close();
+
+
 	    pclose2(t,out);
 		//cleanup inputs
 
+        //add the time:
+	    int duration = chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count();
+	    cout << "QE completed in: " << duration << endl;
+        time += duration;
+
+	    return outstat;
 	}
 
 }
