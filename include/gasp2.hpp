@@ -84,13 +84,21 @@ using namespace std;
  *
  */
 
+#define POP 0
+#define HOSTS 1
+#define CONTROL 2
+
+#define IDLE -1
+#define DOWN -2
+
 typedef struct Host {
 	string hostname;
 	int threads;
 }Host;
 
 typedef enum Instruction {
-	Ack = (1u<<0), //acknowledge
+	None = (0u),
+	Ackn = (1u<<0), //acknowledge
 	Ping = (1u<<1), //message sent by server to test readiness
 	Busy = (1u<<2), //sent by client when busy with work; a 0 implies Ready
 	SendPop = (1u<<3), 	//server order to client to send pop (regardless of eval state)
@@ -99,6 +107,7 @@ typedef enum Instruction {
 	DoCharmm = (1u<<6), //reserved for future usage, not implemented
 	DoQE = (1u<<7), //order to client to perform QE
 	DoCustom = (1u<<8), //order to client to perform custom eval
+	Shutdown = (1u<<9),
 
 }Instruction;
 
@@ -129,21 +138,25 @@ private:
 
 	//control instructions
 	bool sendIns(Instruction i, int target);
-	bool recvIns(Instruction i, int target);
+	bool recvIns(Instruction &i, int target);
 
 	//population send/recv
 	bool sendPop(GASP2pop p, int target);
-	bool recvPop(GASP2pop &p, int sender);
+	bool recvPop(GASP2pop *p, int sender);
 
 	//for sending MPI host info between nodes
 	//can also be used for sending strings in general
 	bool sendHost(string host, int procs, int target);
 	bool recvHost(string &host, int &procs, int target);
 
+	bool runEvals(Instruction i, GASP2pop p, string machinefilename);
+
 	string makeMachinefile(vector<int> slots);
 
 	void getHostInfo();
 
 	bool parseInput(tinyxml2::XMLDocument *doc, string & errorstring);
+
+	string mark();
 
 };
