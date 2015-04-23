@@ -44,6 +44,16 @@ void GASP2pop::volumesort() {
 //		cout << structures[i].getVolScore() << endl;
 }
 
+GASP2pop GASP2pop::subpop(int start, int subsize) {
+	GASP2pop out;
+	int end = start + subsize;
+	if( end > size() )
+		end = size();
+	for(int i = start; i < end; i++) {
+		out.structures.push_back(structures[i]);
+	}
+	return out;
+}
 
 void GASP2pop::init(GASP2struct s, int size) {
 	for(int i = 0; i < size; i++) {

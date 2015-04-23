@@ -39,6 +39,7 @@ public:
 	void energysort();
 	void volumesort();
 
+	GASP2pop subpop(int start, int subsize);
 
 	void init(GASP2struct s, int size);
 

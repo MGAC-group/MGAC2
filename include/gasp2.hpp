@@ -107,7 +107,7 @@ typedef enum Instruction {
 	DoCharmm = (1u<<6), //reserved for future usage, not implemented
 	DoQE = (1u<<7), //order to client to perform QE
 	DoCustom = (1u<<8), //order to client to perform custom eval
-	Shutdown = (1u<<9),
+	Shutdown = (1u<<9), //Send a shutdown signal for cleanup n stuff
 
 }Instruction;
 

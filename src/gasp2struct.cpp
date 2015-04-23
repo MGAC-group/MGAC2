@@ -466,7 +466,7 @@ bool GASP2struct::fitcell() {
 	}
 
 	//parse the relevent symmetry operations
-	cout << "Spacegroup: " << spacegroupNames[unit.spacegroup] << endl;
+	//cout << "Spacegroup: " << spacegroupNames[unit.spacegroup] << endl;
 
 	Spgroup spg = spacegroups[unit.spacegroup];
 	int nops = spg.R.size();
