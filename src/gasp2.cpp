@@ -113,7 +113,7 @@ void GASP2control::server_prog() {
 	vector<int> ownerlist(worldSize);
 	//this vector contains a ping test for each node
 
-	vector<bool> pinged;
+	vector<bool> pinged(worldSize);
 	//the polling time is 200 ms
 	chrono::milliseconds t(200);
 	chrono::milliseconds timeout(0);
@@ -169,6 +169,19 @@ void GASP2control::server_prog() {
 
 	MPI_Status m;
 
+//	cout << mark() << "fitcell starting" << endl;
+//	evalpop = lastpop;
+//	evalpop.addIndv(replace);
+//	evalpop.runFitcell(nodethreads);
+//	cout << mark() << "fitcell ending" << endl;
+//
+//
+//	remove(localmachinefile.c_str());
+//	for(int i = 1; i < worldSize; i++)
+//		sendIns(Shutdown, i);
+//
+//	return;
+
 
 	if(params.mode == "stepwise") {
 		for(int step = 0; step < params.generations; step++) {
@@ -200,11 +213,12 @@ void GASP2control::server_prog() {
 				}
 				//cout << "subsize: " << subsize << endl;
 				split.push_back(evalpop.subpop(index, subsize));
+				index += subsize;
 			}
-//			cout << mark() << "Pop sizes: ";
-//			for(int i = 0; i < worldSize; i++)
-//				cout << split[i].size() << " ";
-//			cout << endl;
+			cout << mark() << "Pop sizes: ";
+			for(int i = 0; i < worldSize; i++)
+				cout << split[i].size() << " ";
+			cout << endl;
 			cout << mark() << "Sending pops!" << endl;
 			//send populations for fitcell
 
@@ -228,43 +242,47 @@ void GASP2control::server_prog() {
 			}
 			split[0].runFitcell(hostlist[0].threads);
 
+			cout << mark() << "Fitcell complete!" << endl;
+
 			bool complete = false;
 			for(int i = 1; i < worldSize; i++)
 				pinged[i] = false;
 
-			while(!complete) {
-				//ping
-				int recvd;
-				for(int i = 1; i < worldSize; i++) {
-					MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					if(recvd){
-						recvIns(recv, i);
-						if(recv & Busy)
-							ownerlist[i] = i;
-						if(recv & PopAvail) {
-							if(!popsend[i].valid())
-								popsend[i] = async(launch::async, &GASP2control::recvPop, this, &split[i], i);
-						}
-						MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					}
-				}
-				for(int i = 1; i < worldSize; i++) {
-					if(popsend[i].valid() && popsend[i].wait_for(timeout)==future_status::ready) {
-						popsend[i].get();
-						ownerlist[i] = IDLE;
-					}
-					if(pinged[i] == false)
-						sendIns(Ping, i);
-					if(ownerlist[i] != IDLE)
-						complete = complete & true;
-					else
-						complete = false;
-				}
-				this_thread::sleep_for(t);
-			}
+//			while(!complete) {
+//				//ping
+//				int recvd;
+//				//cout << mark() << "Trying a ping!" << endl;
+//				for(int i = 1; i < worldSize; i++) {
+//					MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+//					if(recvd){
+//						recvIns(recv, i);
+//						cout << mark() << "Received message " << recv << " from " << i << endl;
+//						if(recv & PopAvail) {
+//							if(!popsend[i].valid())
+//								popsend[i] = async(launch::async, &GASP2control::recvPop, this, &split[i], i);
+//							if(recv & Busy)
+//								ownerlist[i] = i;
+//						}
+//						MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+//					}
+//				}
+//				for(int i = 1; i < worldSize; i++) {
+//					if(popsend[i].valid() && popsend[i].wait_for(timeout)==future_status::ready) {
+//						popsend[i].get();
+//						ownerlist[i] = IDLE;
+//					}
+//					if(pinged[i] == false)
+//						sendIns(Ping, i);
+//					if(ownerlist[i] != IDLE)
+//						complete = complete & true;
+//					else
+//						complete = false;
+//				}
+//				this_thread::sleep_for(t);
+//			}
 
 				//collect
-
+			this_thread::sleep_for(chrono::seconds(10000));
 
 //				busy = false;
 //				for(int i = 1; i < worldSize;i++)
@@ -363,6 +381,7 @@ bool GASP2control::runEvals(Instruction i, GASP2pop p, string machinefilename) {
 	if(i & DoCustom)
 		cout << "Custom eval not implemented!" << endl;
 
+	cout << "eval finished on client " << ID << endl;
 	return true;
 
 }
@@ -397,7 +416,7 @@ void GASP2control::client_prog() {
 		while(recvd) {
 			recvIns(i, 0);
 
-			cout << "client received: " << i << endl;
+			//cout << "client received: " << i << endl;
 			if(i & Shutdown) {
 				remove(localmachinefile.c_str());
 				break;
@@ -414,21 +433,27 @@ void GASP2control::client_prog() {
 					ack = (Instruction) (ack | Busy);
 			}
 			if((i & PopAvail) && (busy==false) ) {
-				if(!popsend.valid()) {
-					popsend = async(launch::async, &GASP2control::recvPop, this, &evalpop, 0);
-				}
+				//if(!popsend.valid()) {
+				//	popsend = async(launch::async, &GASP2control::recvPop, this, &evalpop, 0);
+				//}
+				recvPop(&evalpop, 0);
 			}
 			if( (i & (DoFitcell | DoCharmm | DoQE | DoCustom)) && (busy == false)){
-				if(!eval.valid()) {
-					eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
-					busy = true;
-				}
-				else {
-					cout << mark() << "ERROR ON CLIENT " << ID << ": COULD NOT LAUNCH EVAL THREAD!" << endl;
-					MPI_Abort(MPI_COMM_WORLD,1);
-				}
+//				if(!eval.valid()) {
+//					eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
+//					busy = true;
+//				}
+//				else {
+//					cout << mark() << "ERROR ON CLIENT " << ID << ": COULD NOT LAUNCH EVAL THREAD!" << endl;
+//					MPI_Abort(MPI_COMM_WORLD,1);
+//				}
+				//evalpop.runFitcell(nodethreads);
+				GASP2pop temptemp = evalpop;
+				temptemp.runFitcell(nodethreads);
+				cout << mark() << "client " << ID << " finished fitcell" << endl;
+
 			}
-			cout << "client sending: " << ack << endl;
+			//cout << "client sending: " << ack << endl;
 			//only send a message if there's actually a message to send
 			if(ack != None)
 				sendIns(ack,0);
@@ -437,10 +462,12 @@ void GASP2control::client_prog() {
 		}
 
 		//cleanup threads
-		if(popsend.valid() && popsend.wait_for(timeout)==future_status::ready)
+		if(popsend.valid() && popsend.wait_for(timeout)==future_status::ready) {
 			popsend.get();
+		}
 
 		if(eval.valid() && eval.wait_for(timeout)==future_status::ready) {
+			cout << "client test" << endl;
 			eval.get();
 			busy = false;
 			//if the popsend thread is already working, wait until it's done
@@ -464,14 +491,7 @@ void GASP2control::client_prog() {
 
 }
 
-string GASP2control::mark() {
-	string out = "[";
-	time_t t = time(0);
-	string dt = ctime(&t);
-	out.append(dt.substr(11, 8));
-	out.append("]");
-	return out;
-}
+
 
 bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 

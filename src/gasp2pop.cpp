@@ -60,7 +60,7 @@ void GASP2pop::init(GASP2struct s, int size) {
 		structures.push_back(s);
 		//try ten times to get a good init
 		for(int j = 0; j < 10; j++)
-			if(structures.back().init()) break;
+			if(structures.back().init(Single, 1)) break;
 	}
 
 }
@@ -84,7 +84,7 @@ GASP2pop GASP2pop::newPop(int size, GAselection mode) {
 			selB = d(rgen);
 			while(selA == selB)
 				selB = d(rgen);
-			structures[selA].crossStruct(structures[selB], a,b);
+			structures[selA].crossStruct(structures[selB], a,b, Single);
 			out.structures.push_back(a);
 			cout << "selA/selB: " << selA << "/" << selB << endl;
 		}
@@ -104,7 +104,7 @@ GASP2pop GASP2pop::fullCross() {
 	for(int i = 0; i < size; i++) {
 		for(int j = i; j < size; j++) {
 			if(i==j) continue;
-			structures[i].crossStruct(structures[j],a,b);
+			structures[i].crossStruct(structures[j],a,b, Single);
 			out.structures.push_back(a);
 			out.structures.push_back(b);
 		}
@@ -120,7 +120,7 @@ void GASP2pop::addIndv(int add) {
 	for(int i = 0; i < add; i++)
 		structures.push_back(structures[0]);
 	for(int i = init; i < (init+add); i++)
-		structures[i].init();
+		structures[i].init(Single, 1);
 
 }
 
@@ -321,39 +321,59 @@ void GASP2pop::runFitcell(int threads) {
 
 	if (size() < threads)
 		threads = size();
-
+	//cout << "threads: " << threads << endl;
 	//setup the futures
 	vector<future<bool>> futures(threads);
 	chrono::milliseconds timeout(0);
-	chrono::milliseconds thread_wait(5);
+	chrono::milliseconds thread_wait(20);
+	//cout << "futures size" << futures.size() << endl;
+	cout << "structure count " << size() << endl;
 
 
 
-	//for all the structures
-	for(int i = 0; i < size(); ) {
-
-		//launch
-		for(int j = 0; j < threads; j++) {
-			if(!futures[j].valid()) {
-				futures[j] = async(launch::async, &GASP2struct::fitcell, &structures[i]);
-				i++;
-			}
-		}
-		//cleanup
-		for(int j = 0; j < threads; j++) {
-			if(futures[j].wait_for(timeout)==future_status::ready)
-				futures[j].get();
-		}
-		//wait so we don't burn cycles
-		this_thread::sleep_for(thread_wait);
+	for(int i = 0; i < size(); i++) {
+		cout << mark() << "fitcell on "<< i << endl;
+		structures[i].fitcell();
 
 	}
 
-	for(int j = 0; j < threads; j++)
-		if(futures[j].valid())
-			futures[j].wait();
-
-
+//	int thread_run = 0;
+//	//for all the structures
+//	for(int i = 0; i < size(); ) {
+//
+//		//launch
+//		for(int j = 0; j < threads; j++) {
+//			if(!futures[j].valid() && (i < size()) && thread_run < threads ) {
+//				futures[j] = async(launch::async, &GASP2struct::fitcell, structures[i]);
+//				cout << "launching instance " << i << endl;
+//				i++;
+//				thread_run++;
+//				cout << "thread_run? " << thread_run << endl;
+//			}
+//		}
+//		//cleanup
+//		for(int j = 0; j < threads; j++) {
+//			if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
+//				cout << "Result: " << futures[j].get() << endl;;
+//				thread_run--;
+//			}
+//		}
+//		//wait so we don't burn cycles
+//		this_thread::sleep_for(thread_wait);
+//
+//	}
+//
+//	for(int j = 0; j < threads; j++) {
+//		if(futures[j].valid()) {
+//		//	cout << "waiting "<< j << endl;
+//			futures[j].wait();
+//		//	cout << "waited " << j << endl;
+//			futures[j].get();
+//		//	cout << "got the future " << j << endl;
+//		}
+//	}
+//
+	cout << mark() << "where am I?" << endl;
 	//return out;
 }
 

@@ -192,55 +192,55 @@ Mat3 molecularPlane(const Vec3 at1, const Vec3 at2, const Vec3 at3)
 
 
 /// Reference: Cambridge Crystallographic Data Centre
-double rcov( const Elem type ) {
-    if ( type == Elem::H )
-        return 0.23;
-    else if ( type == Elem::C )
-        return 0.68;
-    else if ( type == Elem::N  )
-        return 0.68;
-    else if ( type == Elem::O  )
-        return 0.68;
-    else if ( type == Elem::F  )
-        return 0.64;
-    else if ( type == Elem::S  )
-        return 1.02;
-    else if ( type == Elem::Cl  )
-        return 0.99;
-    else if ( type == Elem::P  )
-        return 1.05;
-    else if ( type == Elem::Br  )
-        return 1.21;
-}
+//double rcov( const Elem type ) {
+//    if ( type == Elem::H )
+//        return 0.23;
+//    else if ( type == Elem::C )
+//        return 0.68;
+//    else if ( type == Elem::N  )
+//        return 0.68;
+//    else if ( type == Elem::O  )
+//        return 0.68;
+//    else if ( type == Elem::F  )
+//        return 0.64;
+//    else if ( type == Elem::S  )
+//        return 1.02;
+//    else if ( type == Elem::Cl  )
+//        return 0.99;
+//    else if ( type == Elem::P  )
+//        return 1.05;
+//    else if ( type == Elem::Br  )
+//        return 1.21;
+//}
 
 
 //Van der Waals radii are from
 //Rowland, R.S., J. Phys. Chem. (2006) 100, pp 7384-7391
 //excepting P, which is:
 //Bondi, J. Phys. Chem. (1964) 68, pp 441
-double vdw( Elem type ) {
-    if ( type == Elem::H )
-        return 1.09;
-    else if ( type == Elem::C )
-        return 1.75;
-    else if ( type == Elem::N  )
-        return 1.61;
-    else if ( type == Elem::O  )
-        return 1.56;
-    else if ( type == Elem::F  )
-        return 1.44;
-    else if ( type == Elem::S  )
-        return 1.79;
-    else if ( type == Elem::Cl  )
-        return 1.74;
-    else if ( type == Elem::Br  )
-        return 1.85;
-    //else if ( type == I  )
-    //    return 2.00;
-    else if ( type == Elem::P  )
-        return 1.80;
-
-}
+//double vdw( Elem type ) {
+//    if ( type == Elem::H )
+//        return 1.09;
+//    else if ( type == Elem::C )
+//        return 1.75;
+//    else if ( type == Elem::N  )
+//        return 1.61;
+//    else if ( type == Elem::O  )
+//        return 1.56;
+//    else if ( type == Elem::F  )
+//        return 1.44;
+//    else if ( type == Elem::S  )
+//        return 1.79;
+//    else if ( type == Elem::Cl  )
+//        return 1.74;
+//    else if ( type == Elem::Br  )
+//        return 1.85;
+//    //else if ( type == I  )
+//    //    return 2.00;
+//    else if ( type == Elem::P  )
+//        return 1.80;
+//
+//}
 
 int indexSelect(double n, int size) {
 	double i = 1.0 / static_cast<double>(size);
@@ -662,5 +662,12 @@ int pclose2(pid_t pid, FILE *outfp) {
   return kill(pid, SIGTERM);
 }
 
-
+string mark() {
+	string out = "[";
+	time_t t = time(0);
+	string dt = ctime(&t);
+	out.append(dt.substr(11, 8));
+	out.append("]");
+	return out;
+}
 

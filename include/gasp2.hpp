@@ -157,6 +157,6 @@ private:
 
 	bool parseInput(tinyxml2::XMLDocument *doc, string & errorstring);
 
-	string mark();
+	//string mark();
 
 };

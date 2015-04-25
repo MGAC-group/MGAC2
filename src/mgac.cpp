@@ -40,7 +40,11 @@ const option::Descriptor usage[] =
 
 int main( int argc, char* argv[] ) {
 
+	int mpithreading;
 	MPI_Init(&argc,&argv);
+	//MPI_Init_thread(&argc,&argv, MPI_THREAD_MULTIPLE, &mpithreading);
+	if(mpithreading == MPI_THREAD_MULTIPLE)
+		cout << "Threading requested was given!" << endl;
 
 	int size, ID;
     MPI_Comm_size(MPI_COMM_WORLD,&size);

@@ -115,9 +115,50 @@ double dihedral ( const Vec3 & A, const Vec3 & B, const Vec3 & C, const Vec3 & D
 
 Mat3 stabilize(Mat3 m);
 
-double rcov( const Elem type );
+inline double rcov( const Elem type ) {
+    if ( type == Elem::H )
+        return 0.23;
+    else if ( type == Elem::C )
+        return 0.68;
+    else if ( type == Elem::N  )
+        return 0.68;
+    else if ( type == Elem::O  )
+        return 0.68;
+    else if ( type == Elem::F  )
+        return 0.64;
+    else if ( type == Elem::S  )
+        return 1.02;
+    else if ( type == Elem::Cl  )
+        return 0.99;
+    else if ( type == Elem::P  )
+        return 1.05;
+    else if ( type == Elem::Br  )
+        return 1.21;
+}
 
-double vdw( Elem type );
+inline double vdw( Elem type ) {
+    if ( type == Elem::H )
+        return 1.09;
+    else if ( type == Elem::C )
+        return 1.75;
+    else if ( type == Elem::N  )
+        return 1.61;
+    else if ( type == Elem::O  )
+        return 1.56;
+    else if ( type == Elem::F  )
+        return 1.44;
+    else if ( type == Elem::S  )
+        return 1.79;
+    else if ( type == Elem::Cl  )
+        return 1.74;
+    else if ( type == Elem::Br  )
+        return 1.85;
+    //else if ( type == I  )
+    //    return 2.00;
+    else if ( type == Elem::P  )
+        return 1.80;
+
+}
 
 int indexSelect(double n, int size);
 
@@ -146,6 +187,9 @@ string tfconv(bool var);
 //special stuff
 FILE * popen2(const char *command, pid_t &pid);
 int pclose2(pid_t pid, FILE *outfp);
+
+
+string mark();
 
 //wrapper for libuuid
 class UUID {

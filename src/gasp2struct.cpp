@@ -317,7 +317,7 @@ void GASP2struct::makeSuperCell(vector<GASP2molecule> &supercell, int shells) {
 }
 
 void GASP2struct::resetMols(double d, vector<GASP2molecule> &supercell, Vec3 ratios) {
-
+	//cout << mark() << "resetmol: " <<ID.toStr()<< endl;
 	//reset the cell params in unit
 	unit.a = d * ratios[0];
 	unit.b = d * ratios[1];
@@ -330,13 +330,13 @@ void GASP2struct::resetMols(double d, vector<GASP2molecule> &supercell, Vec3 rat
 		center = toCart*supercell[i].pos;
 		centerMol(supercell[i],center);
 	}
-
+	//cout << mark() << "resetmolout: " <<ID.toStr()<< endl;
 }
 
 bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 
 	double dist;
-
+	//cout << mark() << "checkcon: " <<ID.toStr()<< endl;
 	for(int i = 0; i < supercell.size(); i++) {
 		for(int j = i; j < supercell.size(); j++) {
 			if(i == j) continue;
@@ -347,6 +347,7 @@ bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 
 					if(dist < (interdist + vdw(supercell[i].atoms[m].type) + vdw(supercell[j].atoms[n].type)) ) {
 						//cout << "dist: " << dist << endl;
+						//cout << mark() << "checkconout: " <<ID.toStr()<< endl;
 						return true;
 					}
 				}
@@ -354,12 +355,12 @@ bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 
 		}
 	}
-
+	//cout << mark() << "checkconout: " <<ID.toStr()<< endl;
 	return false;
 }
 
 double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
-
+	//cout << mark() << "collapse: " <<ID.toStr()<< endl;
 	bool touches;
 	double diff_d, last_d;
 	//phase 1: double d until connects are okay
@@ -386,7 +387,7 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 		else
 			d -= diff_d;
 	}
-
+	//cout << mark() << "collapseout: " <<ID.toStr()<< endl;
 	return d;
 
 }
@@ -417,7 +418,6 @@ Vec3 GASP2struct::getOrder(Vec3 rat) {
 void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
 	int axisswitch;
 	Spgroup spg = spacegroups[unit.spacegroup];
-
 	axisswitch = (int)order[n];
 	ratios[axisswitch] += delta;
 
@@ -450,8 +450,11 @@ void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
 
 
 bool GASP2struct::fitcell() {
+	//std::thread::id itit = std::this_thread::get_id();
+	//cout << "pid: " << itit << endl;
 
 	if(enforceCrystalType() == false) {
+		//cout << "t" << endl;
 		finalstate = FitcellBadCell;
 		return false;
 	}
@@ -459,6 +462,7 @@ bool GASP2struct::fitcell() {
 	//apply dihedrals and rotations to molecules
 	for(int i = 0; i < molecules.size(); i++) {
 		if(applyDihedrals(molecules[i]) == false) {
+			//cout << "t" << endl;
 			finalstate = FitcellBadDih;
 			return false;
 		}
@@ -468,10 +472,12 @@ bool GASP2struct::fitcell() {
 	//parse the relevent symmetry operations
 	//cout << "Spacegroup: " << spacegroupNames[unit.spacegroup] << endl;
 
+	//cout << mark() << "enter spacegroup" << endl;
 	Spgroup spg = spacegroups[unit.spacegroup];
+	//cout << mark() << "leave spacegroup" << endl;
 	int nops = spg.R.size();
 
-
+	//cout << mark() << "t1" << endl;
 
 	//symmetrize the molecules
 	vector<GASP2molecule> symmcell;
@@ -485,7 +491,7 @@ bool GASP2struct::fitcell() {
 			symmcell.push_back(temp);
 		}
 	}
-
+	//cout << mark() << "t2" << endl;
 	//symmetrize the molecules
 	for(int i = 0; i < symmcell.size(); i++)
 		symmetrize(symmcell[i]);
@@ -501,18 +507,23 @@ bool GASP2struct::fitcell() {
 
 	//cout << "Supercell size: " << supercell.size()  << endl;
 
+	//cout << mark() << "t3" <<" " <<ID.toStr()<< endl;
+
 	ratios = Vec3(unit.ratA, unit.ratB, unit.ratC);
 	order = getOrder(ratios);
 
 	collapseCell(supercell, ratios);
-	last_vol = this->getVolume();
+	last_vol = getVolume();
 	vol = last_vol;
 
 	for(int n = 0; n < 3; n++) {
 		while (true) {
+			//cout << mark() << "tn1:"<< n <<" " <<ID.toStr()<< endl;
 			modCellRatio(ratios, order, n, -0.1f);
+			//cout << mark() << "tn2:"<< n <<" " <<ID.toStr()<< endl;
 			collapseCell(supercell, ratios);
-			vol = this->getVolume();
+			//cout << mark() << "tn3:"<< n <<" " <<ID.toStr()<< endl;
+			vol = getVolume();
 			if(vol >= last_vol) {
 				modCellRatio(ratios, order, n, 0.1f);
 				collapseCell(supercell, ratios);
@@ -526,15 +537,16 @@ bool GASP2struct::fitcell() {
 		}
 		//this->cifOut("fitcelldebug.cif");
 	}
-
+	//cout << mark() << "t4" <<" " <<ID.toStr()<< endl;
 	//final collapse, and explicit data clear
 	collapseCell(supercell, ratios);
 	//molecules = supercell;
-	supercell.clear();
-	symmcell.clear();
+	//supercell.clear();
+	//symmcell.clear();
 
 	isFitcell = true;
 
+	//cout << "finished fitcell!" << endl;
 	return true;
 }
 
