@@ -1325,7 +1325,7 @@ string GASP2struct::serializeXML() {
 			}
 
 			for(int j = 0; j < mol.dihedrals.size(); j++) {
-			pr.OpenElement("dihedrals");
+			pr.OpenElement("dihedral");
 				pr.PushAttribute("title",names[mol.dihedrals[j].label].c_str());
 				pln.clear();
 				pln += (names[mol.atoms[mol.dihedrals[j].a].label] +" ");
@@ -1348,7 +1348,7 @@ string GASP2struct::serializeXML() {
 			}
 
 			for(int j = 0; j < mol.bonds.size(); j++) {
-			pr.OpenElement("bonds");
+			pr.OpenElement("bond");
 				pr.PushAttribute("title",names[mol.bonds[j].label].c_str());
 				pln.clear();
 				pln += (names[mol.atoms[mol.bonds[j].a].label] +" ");
@@ -1361,7 +1361,7 @@ string GASP2struct::serializeXML() {
 			}
 
 			for(int j = 0; j < mol.angles.size(); j++) {
-			pr.OpenElement("angles");
+			pr.OpenElement("angle");
 				pr.PushAttribute("title",names[mol.angles[j].label].c_str());
 				pln.clear();
 				pln += (names[mol.atoms[mol.angles[j].a].label] +" ");

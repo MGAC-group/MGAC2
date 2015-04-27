@@ -204,6 +204,7 @@ public:
 	void logStruct();
 	bool cifOut(string name);
 	bool cifString(string &out);
+	void clear() { molecules.clear(); unit.clear(); };
 
 
 	//genetic operators

@@ -60,7 +60,7 @@ void GASP2pop::init(GASP2struct s, int size) {
 		structures.push_back(s);
 		//try ten times to get a good init
 		for(int j = 0; j < 10; j++)
-			if(structures.back().init(Single, 1)) break;
+			if(structures.back().init()) break;
 	}
 
 }
@@ -84,7 +84,7 @@ GASP2pop GASP2pop::newPop(int size, GAselection mode) {
 			selB = d(rgen);
 			while(selA == selB)
 				selB = d(rgen);
-			structures[selA].crossStruct(structures[selB], a,b, Single);
+			structures[selA].crossStruct(structures[selB], a,b);
 			out.structures.push_back(a);
 			cout << "selA/selB: " << selA << "/" << selB << endl;
 		}
@@ -104,7 +104,7 @@ GASP2pop GASP2pop::fullCross() {
 	for(int i = 0; i < size; i++) {
 		for(int j = i; j < size; j++) {
 			if(i==j) continue;
-			structures[i].crossStruct(structures[j],a,b, Single);
+			structures[i].crossStruct(structures[j],a,b);
 			out.structures.push_back(a);
 			out.structures.push_back(b);
 		}
@@ -120,7 +120,7 @@ void GASP2pop::addIndv(int add) {
 	for(int i = 0; i < add; i++)
 		structures.push_back(structures[0]);
 	for(int i = init; i < (init+add); i++)
-		structures[i].init(Single, 1);
+		structures[i].init();
 
 }
 
@@ -263,8 +263,8 @@ bool GASP2pop::parseXML(string name, string &errorstring) {
 	tinyxml2::XMLDocument doc;
 	doc.Parse(name.c_str());
 
-	//throw away anything in the structures.
-	structures.clear();
+
+
 
 	if(doc.ErrorID() == 0) {
 		tinyxml2::XMLElement *pop = doc.FirstChildElement("pop");
@@ -283,11 +283,14 @@ bool GASP2pop::loadXMLrestart(tinyxml2::XMLElement *pop, string & errorstring) {
 			errorstring = "Something went wrong when parsing the population! There may be no structures!\n";
 			return false;
 		}
+		//throw away anything in the structures.
+		structures.clear();
 		while(crystal) {
 			if(!temp.parseXMLStruct(crystal, errorstring))
 				return false;
 			//push the molecule(s) onto the list
 			this->structures.push_back(temp);
+			temp.clear();
 			crystal = crystal->NextSiblingElement("crystal");
 		}
 	}
@@ -321,58 +324,43 @@ void GASP2pop::runFitcell(int threads) {
 
 	if (size() < threads)
 		threads = size();
-	//cout << "threads: " << threads << endl;
 	//setup the futures
 	vector<future<bool>> futures(threads);
 	chrono::milliseconds timeout(0);
 	chrono::milliseconds thread_wait(20);
-	//cout << "futures size" << futures.size() << endl;
-	cout << "structure count " << size() << endl;
 
 
 
-	for(int i = 0; i < size(); i++) {
-		cout << mark() << "fitcell on "<< i << endl;
-		structures[i].fitcell();
+	int thread_run = 0;
+	//for all the structures
+	for(int i = 0; i < size(); ) {
+
+		//launch
+		for(int j = 0; j < threads; j++) {
+			if(!futures[j].valid() && (i < size()) && thread_run < threads ) {
+				futures[j] = async(launch::async, &GASP2struct::fitcell, structures[i]);
+				i++;
+				thread_run++;
+			}
+		}
+		//cleanup
+		for(int j = 0; j < threads; j++) {
+			if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
+				thread_run--;
+			}
+		}
+		//wait so we don't burn cycles
+		this_thread::sleep_for(thread_wait);
 
 	}
 
-//	int thread_run = 0;
-//	//for all the structures
-//	for(int i = 0; i < size(); ) {
-//
-//		//launch
-//		for(int j = 0; j < threads; j++) {
-//			if(!futures[j].valid() && (i < size()) && thread_run < threads ) {
-//				futures[j] = async(launch::async, &GASP2struct::fitcell, structures[i]);
-//				cout << "launching instance " << i << endl;
-//				i++;
-//				thread_run++;
-//				cout << "thread_run? " << thread_run << endl;
-//			}
-//		}
-//		//cleanup
-//		for(int j = 0; j < threads; j++) {
-//			if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
-//				cout << "Result: " << futures[j].get() << endl;;
-//				thread_run--;
-//			}
-//		}
-//		//wait so we don't burn cycles
-//		this_thread::sleep_for(thread_wait);
-//
-//	}
-//
-//	for(int j = 0; j < threads; j++) {
-//		if(futures[j].valid()) {
-//		//	cout << "waiting "<< j << endl;
-//			futures[j].wait();
-//		//	cout << "waited " << j << endl;
-//			futures[j].get();
-//		//	cout << "got the future " << j << endl;
-//		}
-//	}
-//
+	for(int j = 0; j < threads; j++) {
+		if(futures[j].valid()) {
+			futures[j].wait();
+			futures[j].get();
+		}
+	}
+
 	cout << mark() << "where am I?" << endl;
 	//return out;
 }
