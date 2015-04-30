@@ -51,7 +51,7 @@ public:
 	double mutation_prob; //0.01
 	int generations; //50
 	int popsize; //30
-	unsigned int seed; //0
+	int seed; //0
 	bool test_seed; //if true; sets seed to 0
 	double const_scale;
 	double lin_scale;

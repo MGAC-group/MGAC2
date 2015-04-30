@@ -446,6 +446,13 @@ Lattice getLattice(string in) {
 	return type;
 }
 
+
+void checkSeed(int &seed) {
+	if(seed == -1)
+		seed = time(0);
+
+}
+
 vector<string> split(string in, char delim) {
 	vector<string> out;
 	istringstream ss(in);

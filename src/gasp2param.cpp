@@ -291,8 +291,8 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 		//seed
 		if(!run->QueryIntAttribute("seed", &itemp)) {
 			seed = itemp;
-			if(seed < 0) {
-				errorstring = "The seed must be an unsigned integer value!\n";
+			if(seed < -1) {
+				errorstring = "The seed must be an unsigned integer value, or -1!\n";
 				return false;
 			}
 		}

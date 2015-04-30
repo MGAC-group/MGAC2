@@ -223,6 +223,8 @@ public:
 	bool rejected() {return (finalstate != OKStruct);};
 	double getEnergy() {return energy;};
 	double getVolume(); //returns the unit cell volume
+	int getSymmcount() { Spgroup spg = spacegroups[unit.spacegroup]; return spg.R.size(); };
+	int getSpace() { return unit.spacegroup; };
 	double getVolScore(); //returns a score based on closeness to expectvol
 	bool minmaxVol(); //returns true if in volume is in bounds
 

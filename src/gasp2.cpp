@@ -20,6 +20,7 @@ GASP2control::GASP2control(int ID, string infile) {
 
 	//rgen is in gasp2common
 	//kinda wonky, but is okay
+	checkSeed(params.seed);
 	rgen.seed(params.seed+ID);
 
 }
@@ -56,7 +57,7 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart)
 
 
 	//parse the restart if it exists
-
+	checkSeed(params.seed);
 	rgen.seed(params.seed);
 
 }
@@ -168,48 +169,47 @@ void GASP2control::server_prog() {
 	future<bool> writer;
 
 	MPI_Status m;
-
+	stringstream outname;
+	ofstream outf;
 
 	if(params.mode == "stepwise") {
 		for(int step = 0; step < params.generations; step++) {
 			//cross
 			if(params.type == "elitism") {
-				evalpop = lastpop;
-				evalpop.addIndv(replace);
+				evalpop = lastpop.newPop(replace);
+				evalpop.addIndv(lastpop);
 			}
-			else if (params.type == "classic")
+			else if (params.type == "classic") {
 				evalpop = lastpop.fullCross();
+			}
 
 			cout << mark() << "Crossover size: " << evalpop.size() << endl;
-			cout << mark() << "Got to init!" << endl;
-			//fitcell
-			int count = evalpop.size() / totalPE;
-			int remainder = evalpop.size() % totalPE;
-			int remleft = remainder;
-			int index = 0;
+			//cout << mark() << "Got to init" << endl;
+
+
+			//f
+//			int count = evalpop.size() / totalPE;
+//			int remainder = evalpop.size() % totalPE;
+//			int remleft = remainder;
+//			int index = 0;
 			split.clear();
-			for(int i = 0; i < worldSize; i++) {
-				int subsize = hostlist[i].threads * count;
-				if(remleft < hostlist[i].threads) {
-					subsize += remleft;
-					remleft = 0;
-				}
-				else {
-					subsize += hostlist[i].threads;
-					remleft -= hostlist[i].threads;
-				}
-				//cout << "subsize: " << subsize << endl;
-				split.push_back(evalpop.subpop(index, subsize));
-				index += subsize;
+			split.resize(worldSize);
+			evalpop.symmsort();
+
+			//distribute the structures evenly so
+			//that one host doesn't get too overloaded.
+			for(int i = 0; i < evalpop.size(); i++) {
+				split[i % worldSize].addIndv(*evalpop.indv(i));
 			}
 			cout << mark() << "Pop sizes: ";
 			for(int i = 0; i < worldSize; i++)
 				cout << split[i].size() << " ";
 			cout << endl;
-			cout << mark() << "Sending pops!" << endl;
-			//send populations for fitcell
 
 
+			cout << mark() << "Sending populations" << endl;
+			//--addendum-- this may not be true because of MPI_thread_init
+			//so it's still a safe assumption, probably
 			//because of how MPI handles order of messages
 			//blocking sends from the master thread must be issued
 			//in the thread and not-asynchronously. multiple sends
@@ -221,71 +221,94 @@ void GASP2control::server_prog() {
 				sendPop(split[i], i);
 			}
 
-			//cout << split[0].saveXML() << endl << endl << endl;
-			cout << mark() << "Performing fitcell!" << endl;
-			//do the Fitcell;
+			cout << mark() << "Performing fitcell" << endl;
 			for(int i = 1; i < worldSize; i++) {
 				sendIns(DoFitcell, i);
 				ownerlist[i] = i;
 			}
 			split[0].runFitcell(hostlist[0].threads);
 
-			//cout << mark() << "Fitcell complete!" << endl;
 
 			bool complete = false;
 			for(int i = 1; i < worldSize; i++)
 				pinged[i] = false;
 
+			//wait for completion of threads
 			while(!complete) {
-				//ping
 				int recvd;
-				//cout << mark() << "Trying a ping!" << endl;
+
+				//collect messages
 				for(int i = 1; i < worldSize; i++) {
-					MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					if(recvd){
+					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+					while(recvd){
 						recvIns(recv, i);
-						cout << mark() << "Received message " << recv << " from " << i << endl;
-						if(recv & PopAvail) {
-							if(!popsend[i].valid())
-								popsend[i] = async(launch::async, &GASP2control::recvPop, this, &split[i], i);
-							if(recv & Busy)
-								ownerlist[i] = i;
-						}
-						MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+						//cout << mark() << "Received message " << recv << " from " << i << endl;
+//						if(recv & PopAvail) {
+//							if(!popsend[i].valid())
+//								popsend[i] = async(launch::async, &GASP2control::recvPop, this, &split[i], i);
+//						}
+						if(recv & Busy)
+							ownerlist[i] = i;
+						else
+							ownerlist[i] = IDLE;
+						pinged[i] = false;
+
+						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 					}
 				}
+
+				//check stuff and send pings
+				complete = true;
 				for(int i = 1; i < worldSize; i++) {
-					if(popsend[i].valid() && popsend[i].wait_for(timeout)==future_status::ready) {
-						popsend[i].get();
-						ownerlist[i] = IDLE;
-					}
-					if(pinged[i] == false)
+//					if(popsend[i].valid() && popsend[i].wait_for(timeout)==future_status::ready) {
+//						popsend[i].get();
+//						//ownerlist[i] = IDLE;
+//					}
+					//cout << "ow:"<<ownerlist[i] << endl;
+					if(pinged[i] == false) {
 						sendIns(Ping, i);
-					if(ownerlist[i] != IDLE)
+						pinged[i] = true;
+					}
+//					if(ownerlist[i] == IDLE && !popsend[i].valid()) {
+					if(ownerlist[i] == IDLE) {
 						complete = complete & true;
+					}
 					else
 						complete = false;
 				}
 				this_thread::sleep_for(t);
 			}
 
-				//collect
+			for(int i = 1; i < worldSize; i++) {
+				sendIns(SendPop, i);
+				recvPop(&split[i], i);
+			}
 
-//				busy = false;
-//				for(int i = 1; i < worldSize;i++)
-//					sendIns(Ping, i);
-//
-//				for(int i = 1; i < worldSize;i++) {
-//					MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, recvd, &m);
-//						recvIns(recv, i);
-//						if(recv & Busy)
-//							busy = true;
-//				}
-//
-//				this_thread::sleep_for(t);
-//			}
+			cout << mark() << "Fitcell complete" << endl;
 
-			cout << mark() << "Done with fitcell" << endl;
+
+			//combine, then save fitcell
+			lastpop = evalpop;
+			evalpop.clear();
+			for(int i = 0; i < worldSize; i++)
+				evalpop.addIndv(split[i]);
+
+			evalpop.volumesort();
+
+			outname.str("");
+			outname << params.outputfile << "_fitcell_" << setw(3) << setfill('0') << step << ".pop";
+			cout << mark() << "Saving fitcell \"" << outname.str() << "\"..." << endl;
+
+			outf.open(outname.str().c_str(), ofstream::out);
+			if(outf.fail()) {
+				cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! continuing sadly..." << endl;
+			}
+			else {
+				outf << evalpop.saveXML() << endl;
+				cout << mark() << "Save complete" << endl;
+				outf.close();
+			}
+
 
 
 			//evaluate
@@ -294,15 +317,30 @@ void GASP2control::server_prog() {
 
 
 			//sort, scale, and reduce
+			evalpop.energysort();
 			if(params.type == "elitism") {
-
+				evalpop.remIndv(replace);
 			}
 			else if (params.type == "classic") {
 
 			}
+			lastpop = evalpop;
 
 
 			//save pops
+			outname.str("");
+			outname << params.outputfile << "_final_" << setw(3) << setfill('0') << step << ".pop";
+			cout << mark() << "Saving pop \"" << outname.str() << "\"..." << endl;
+
+			outf.open(outname.str().c_str(), ofstream::out);
+			if(outf.fail()) {
+				cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! continuing sadly..." << endl;
+			}
+			else {
+				outf << evalpop.saveXML() << endl;
+				cout << mark() << "Save complete" << endl;
+				outf.close();
+			}
 
 		}
 
@@ -323,21 +361,14 @@ void GASP2control::server_prog() {
 //	outf.close();
 //	rootpop.init(root, params.popsize);
 //	GASP2pop temp = rootpop.newPop(1);
-//
-//	temp.runFitcell(8);
-//	temp.volumesort();
-//
-//	string hosts("blahblahblahblah");
-//	temp.remIndv(temp.size() - 1);
-//	temp.writeCIF("pre.cif");
-//	temp.runEval(localmachinefile, params, QE::runQE);
-//	temp.indv(0)->forceOK();
-//	temp.writeCIF("post.cif");
 
 	//clean up files
 	remove(localmachinefile.c_str());
 	for(int i = 1; i < worldSize; i++)
 		sendIns(Shutdown, i);
+
+	cout << mark() << "got to shutdown" << endl;
+	return;
 
 }
 
@@ -358,7 +389,6 @@ bool GASP2control::runEvals(Instruction i, GASP2pop p, string machinefilename) {
 
 	//only one of these will execute
 	if(i & DoFitcell) {
-		//cout << "runnign fitcell, ID " << ID << endl;
 		p.runFitcell(nodethreads);
 	}
 	if(i & DoCharmm)
@@ -368,7 +398,7 @@ bool GASP2control::runEvals(Instruction i, GASP2pop p, string machinefilename) {
 	if(i & DoCustom)
 		cout << "Custom eval not implemented!" << endl;
 
-	cout << "eval finished on client " << ID << endl;
+	//cout << "eval finished on client " << ID << endl;
 	return true;
 
 }
@@ -386,6 +416,7 @@ void GASP2control::client_prog() {
 
 	MPI_Status m;
 	bool busy = false;
+	bool popsent = true;
 	int recvd;
 	GASP2pop evalpop;
 	Instruction i, ack;
@@ -406,9 +437,9 @@ void GASP2control::client_prog() {
 			//cout << "client received: " << i << endl;
 			if(i & Shutdown) {
 				remove(localmachinefile.c_str());
-				break;
+				return;
 			}
-			if(i & SendPop) {
+			if(i & SendPop || popsent == false) {
 				if(!popsend.valid()) {
 					popsend = async(launch::async, &GASP2control::sendPop, this, evalpop, 0);
 					ack = (Instruction) (ack | PopAvail);
@@ -452,12 +483,15 @@ void GASP2control::client_prog() {
 		//cleanup threads
 		if(popsend.valid() && popsend.wait_for(timeout)==future_status::ready) {
 			popsend.get();
+			popsent = true;
 		}
 
 		if(eval.valid() && eval.wait_for(timeout)==future_status::ready) {
-			cout << "client test" << endl;
+			cout << mark() << "client " << ID << " done" << endl;
 			eval.get();
 			busy = false;
+			sendIns(PopAvail,0);
+			popsent = false;
 			//if the popsend thread is already working, wait until it's done
 			if(popsend.valid())
 				popsend.wait();
@@ -530,14 +564,18 @@ bool GASP2control::recvHost(string &host, int &procs, int target) {
 
 bool GASP2control::sendPop(GASP2pop p, int target) {
 	string pop = p.saveXML();
-	//cout << mark() << " Sendpop " << target << " launched, ID " << ID << endl;
+
 
 	int t = pop.length();
+
+	cout << mark() << " Sendpop to " << target << " launched, ID " << ID << ", size: " << t <<  endl;
 	//send size info
 	MPI_Send(&t, 1, MPI_INT, target,POP,MPI_COMM_WORLD);
 
 	//send info
 	MPI_Send(pop.c_str(),t,MPI_CHAR,target,POP,MPI_COMM_WORLD);
+
+	cout << mark() << " Sendpop " << target << " finished, ID " << ID << endl;
 
 	return true;
 }
@@ -545,7 +583,7 @@ bool GASP2control::sendPop(GASP2pop p, int target) {
 bool GASP2control::recvPop(GASP2pop *p, int target) {
 	string pop;
 	int v = 0;
-	//cout << mark() << " Recvpop " << target << " launched, ID " << ID << endl;
+	cout << mark() << " Recvpop from " << target << " launched, ID " << ID << endl;
 	//recv size info
 	MPI_Recv(&v, 1, MPI_INT, target,POP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	char * buff = new char[v];
@@ -558,8 +596,9 @@ bool GASP2control::recvPop(GASP2pop *p, int target) {
 
 	string error;
 	p->parseXML(pop,error);
-	//cout << "error: " << error << endl;
-	//cout << p.saveXML() << endl << endl << endl;
+
+	cout << mark() << " Recvpop " << target << " finished, ID " << ID << endl;
+
 	return true;
 }
 

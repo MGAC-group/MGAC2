@@ -178,6 +178,7 @@ string getSchoenflies(Schoenflies in);
 
 vector<string> split(string in, char delim=' ');
 
+void checkSeed(int &seed);
 
 bool loadSpaceGroups();
 void parseSymop ( string symm, Mat3 &symmR, Vec3 &symmT );

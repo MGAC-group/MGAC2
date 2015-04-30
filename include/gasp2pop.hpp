@@ -38,6 +38,8 @@ public:
 	//to the expected volume is best structure
 	void energysort();
 	void volumesort();
+	//sort based on symmetry operations
+	void symmsort();
 
 	GASP2pop subpop(int start, int subsize);
 
@@ -57,6 +59,7 @@ public:
 	//adds individuals from another population
 	//to the existing population
 	void addIndv(GASP2pop add);
+	void addIndv(GASP2struct t){ structures.push_back(t); };
 
 	//remove N worst members from the population (for elitism)
 	//returns the removed members
@@ -68,7 +71,9 @@ public:
 	//removes structures from the pop that exceed the
 	//volume limits (based on scaled scores);
 	GASP2pop volLimit() {GASP2pop t; return volLimit(t);};
+	GASP2pop symmLimit(int limit) {GASP2pop t; return symmLimit(t, limit);};
 	GASP2pop volLimit(GASP2pop &bad);
+	GASP2pop symmLimit(GASP2pop &bad, int limit);
 
 
 	void scale(double con, double lin, double exp);

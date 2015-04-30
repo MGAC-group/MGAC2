@@ -352,7 +352,6 @@ bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 					}
 				}
 			}
-
 		}
 	}
 	//cout << mark() << "checkconout: " <<ID.toStr()<< endl;
@@ -452,6 +451,9 @@ void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
 bool GASP2struct::fitcell() {
 	//std::thread::id itit = std::this_thread::get_id();
 	//cout << "pid: " << itit << endl;
+	auto t = std::chrono::high_resolution_clock::now();
+
+	unfitcell();
 
 	if(enforceCrystalType() == false) {
 		//cout << "t" << endl;
@@ -547,6 +549,9 @@ bool GASP2struct::fitcell() {
 	isFitcell = true;
 
 	//cout << "finished fitcell!" << endl;
+	auto t2 = std::chrono::high_resolution_clock::now();
+	//cout << "zzz, " << unit.spacegroup << ", " << nops << ", " << chrono::duration_cast<chrono::milliseconds>(t2-t).count() << endl;
+	//cout << "unit.a: " << unit.a << endl;
 	return true;
 }
 

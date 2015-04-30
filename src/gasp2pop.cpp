@@ -20,6 +20,12 @@ struct {
 	}
 } vcomp;
 
+struct {
+	bool operator() (GASP2struct a, GASP2struct b) {
+		return a.getSymmcount() > b.getSymmcount();
+	}
+} symmcomp;
+
 //sorts by energy first
 //if the structure does not have an energy (ie,
 // energy = 0.0) then it is sorted by volume with
@@ -42,6 +48,13 @@ void GASP2pop::volumesort() {
 
 //	for(int i = 0; i < size(); i++)
 //		cout << structures[i].getVolScore() << endl;
+}
+
+//sorts by number of symmetry operations, with
+//larger numbers coming first
+void GASP2pop::symmsort() {
+	std::sort(structures.begin(), structures.end(), symmcomp);
+
 }
 
 GASP2pop GASP2pop::subpop(int start, int subsize) {
@@ -86,7 +99,7 @@ GASP2pop GASP2pop::newPop(int size, GAselection mode) {
 				selB = d(rgen);
 			structures[selA].crossStruct(structures[selB], a,b);
 			out.structures.push_back(a);
-			cout << "selA/selB: " << selA << "/" << selB << endl;
+			//cout << "selA/selB: " << selA << "/" << selB << endl;
 		}
 	}
 	else { //pattern
@@ -143,14 +156,25 @@ GASP2pop GASP2pop::remIndv(int n) {
 GASP2pop GASP2pop::volLimit(GASP2pop &bad) {
 	GASP2pop ok;
 
-	double min, max, vol;
 	for(int i = 0; i < size(); i++) {
 		if(structures[i].minmaxVol())
 			ok.structures.push_back(structures[i]);
 		else
 			bad.structures.push_back(structures[i]);
 	}
-	//structures = ok.structures;
+
+	return ok;
+}
+
+GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
+	GASP2pop ok;
+
+	for(int i = 0; i < size(); i++) {
+		if(structures[i].getSymmcount() > limit)
+			ok.structures.push_back(structures[i]);
+		else
+			bad.structures.push_back(structures[i]);
+	}
 
 	return ok;
 }
@@ -329,7 +353,7 @@ void GASP2pop::runFitcell(int threads) {
 	chrono::milliseconds timeout(0);
 	chrono::milliseconds thread_wait(20);
 
-
+	//cout << "size: " << size() << endl;
 
 	int thread_run = 0;
 	//for all the structures
@@ -338,7 +362,8 @@ void GASP2pop::runFitcell(int threads) {
 		//launch
 		for(int j = 0; j < threads; j++) {
 			if(!futures[j].valid() && (i < size()) && thread_run < threads ) {
-				futures[j] = async(launch::async, &GASP2struct::fitcell, structures[i]);
+				//cout << "instance i: " << i << endl;
+				futures[j] = async(launch::async, &GASP2struct::fitcell, &structures[i]);
 				i++;
 				thread_run++;
 			}
@@ -346,6 +371,7 @@ void GASP2pop::runFitcell(int threads) {
 		//cleanup
 		for(int j = 0; j < threads; j++) {
 			if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
+				futures[j].get();
 				thread_run--;
 			}
 		}
@@ -356,12 +382,16 @@ void GASP2pop::runFitcell(int threads) {
 
 	for(int j = 0; j < threads; j++) {
 		if(futures[j].valid()) {
+			//cout << "waiting on j: " << j << endl;
 			futures[j].wait();
 			futures[j].get();
+			//cout << "got j: " << j << endl;
 		}
 	}
 
-	cout << mark() << "where am I?" << endl;
+
+	//cout << structures[0].serializeXML() << endl;
+	//cout << mark() << "where am I?" << endl;
 	//return out;
 }
 
@@ -380,9 +410,11 @@ void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2mole
 
 		//launch
 		if(!thread.valid()) {
-			structures[i].setEval(eval);
-			thread = async(launch::async, &GASP2struct::evaluate, &structures[i], hosts, p);
-			i++;
+			if(!structures[i].completed()) {
+				structures[i].setEval(eval);
+				thread = async(launch::async, &GASP2struct::evaluate, &structures[i], hosts, p);
+				i++;
+			}
 		}
 		//cleanup
 		if(thread.wait_for(timeout)==future_status::ready)
