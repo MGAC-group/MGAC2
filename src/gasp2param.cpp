@@ -30,6 +30,8 @@ GASP2param::GASP2param() {
 	exp_scale = 0.5;
 	outputmode = "xml";
 	outputfile = "population_data";
+	spacemode = Limited;
+	group = 1;
 
 	//qe params
 	QEcalculation = "vc-relax"; //vc-relax
@@ -123,6 +125,9 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 		else {
 			errorstring = "A name was not specified but is required!\n"; return false;
 		}
+
+
+
 
 //AML: wrong place
 //		//spacegroup
@@ -295,6 +300,7 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 				errorstring = "The seed must be an unsigned integer value, or -1!\n";
 				return false;
 			}
+			checkSeed(seed);
 		}
 
 		//test_seed
@@ -330,6 +336,52 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 				return false;
 			}
 		}
+
+		//spacemode
+		stemp = run->Attribute("spacemode");
+		if(stemp) {
+			string t = stemp;
+			if (t=="single" ||
+				t=="limited" ||
+				t=="full") {
+				spacemode = getSpacemode(t);
+				if(spacemode == Single) {
+					stemp = run->Attribute("group");
+					if(!run->QueryIntAttribute("group", &itemp)) {
+						if(itemp > 0 && itemp <= spacegroupNames.size())
+							group = itemp;
+						else {
+							errorstring = "A non-valid spacegroup identifier was given for the single spacemode group!\n";
+							return false;
+						}
+					}
+					else if (stemp){
+						//stemp = elem->Attribute("spacegroup");
+						string strtemp = stemp;
+						group = 0;
+						for(int i = 0; i < spacegroupNames.size(); i++) {
+							if(strtemp == spacegroupNames[i]) {
+								group = i;
+								break;
+							}
+						}
+						if(group == 0) {
+							errorstring = "A non-valid string identifier was given for a spacegroup value for the single spacemode group.\n";
+							return false;
+						}
+					}
+				}
+				else {
+					errorstring = "Single spacemode was given, but no group tag was found! Make sure to add the spacegroup info with <group>.\n";
+					return false;
+				}
+			}
+			else {
+				errorstring = "The spacemode specified does not match a valid type!\n";
+				return false;
+			}
+		}
+
 
 	}
 	else {

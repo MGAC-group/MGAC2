@@ -115,6 +115,7 @@ struct GASP2stoich {
 };
 
 struct GASP2cell {
+	GASP2cell() : spacegroup(1) {}
 	double a,b,c; //ANGSTROMS
 	double alpha,beta,gamma; //RADIANS
 	double ratA,ratB,ratC; //UNIT-LESS

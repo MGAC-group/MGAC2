@@ -68,13 +68,14 @@ GASP2pop GASP2pop::subpop(int start, int subsize) {
 	return out;
 }
 
-void GASP2pop::init(GASP2struct s, int size) {
+void GASP2pop::init(GASP2struct s, int size, Spacemode mode, Index spcg) {
 	for(int i = 0; i < size; i++) {
 		structures.push_back(s);
 		//try ten times to get a good init
 		for(int j = 0; j < 10; j++)
-			if(structures.back().init()) break;
+			if(structures.back().init(mode, spcg)) break;
 	}
+	scale(1.0,0.0,0.0);
 
 }
 
@@ -83,23 +84,25 @@ void GASP2pop::init(GASP2struct s, int size) {
 //current population size matches the scaling size
 //if the sizes are different, it applies a constant scaling
 //size the ranking of the population is unknown
-GASP2pop GASP2pop::newPop(int size, GAselection mode) {
+GASP2pop GASP2pop::newPop(int size, Spacemode smode, GAselection mode) {
 	GASP2pop out;
 	GASP2struct a,b;
 	out.structures.reserve(size);
 	int selA, selB; //selection indices
 	if(mode == Roulette) {
-		if(scaling.size() != structures.size())
-			scale(1.0,0.0,0.0);
+		if(scaling.size() != structures.size()) {
+			cout << mark() << "WARNING: Scaling automatically applied on population..." << endl;
+			this->scale(1.0,0.0,0.0);
+		}
 		discrete_distribution<int> d(scaling.begin(), scaling.end());
 		for(int i = 0; i < size; i++) {
 			selA = d(rgen);
 			selB = d(rgen);
 			while(selA == selB)
 				selB = d(rgen);
-			structures[selA].crossStruct(structures[selB], a,b);
+			structures[selA].crossStruct(structures[selB], a,b, 0.5, smode);
 			out.structures.push_back(a);
-			//cout << "selA/selB: " << selA << "/" << selB << endl;
+			cout << "selA/selB: " << selA << "/" << selB << endl;
 		}
 	}
 	else { //pattern
@@ -108,7 +111,7 @@ GASP2pop GASP2pop::newPop(int size, GAselection mode) {
 	return out;
 }
 
-GASP2pop GASP2pop::fullCross() {
+GASP2pop GASP2pop::fullCross(Spacemode mode) {
 	GASP2pop out;
 	GASP2struct a,b;
 	int size = structures.size();
@@ -117,7 +120,7 @@ GASP2pop GASP2pop::fullCross() {
 	for(int i = 0; i < size; i++) {
 		for(int j = i; j < size; j++) {
 			if(i==j) continue;
-			structures[i].crossStruct(structures[j],a,b);
+			structures[i].crossStruct(structures[j],a,b, 1.0, mode);
 			out.structures.push_back(a);
 			out.structures.push_back(b);
 		}
@@ -247,7 +250,7 @@ void GASP2pop::scale(double con, double lin, double exp) {
 		}
 
 		scaling.push_back(val);
-		//cout << " scale " << scaling[i] << endl;
+		cout << " scale " << scaling[i] << endl;
 	}
 }
 
@@ -257,7 +260,7 @@ void GASP2pop::scale(double con, double lin, double exp) {
 //whether or not this is a slient mutation is irrrelevant
 //the point is that the structure is modified
 //enough that it still partially resembles the initial structure
-void GASP2pop::mutate(double rate) {
+void GASP2pop::mutate(double rate, Spacemode mode) {
 	//place boundaries on rate
 	if(rate >= 1.0)
 		rate = 1.0;
@@ -267,7 +270,7 @@ void GASP2pop::mutate(double rate) {
 	std::bernoulli_distribution p(rate);
 	for(int i = 0; i < structures.size(); i++) {
 		if(p(rgen))
-			structures[i].mutateStruct(0.15);
+			structures[i].mutateStruct(0.15, mode);
 	}
 
 }

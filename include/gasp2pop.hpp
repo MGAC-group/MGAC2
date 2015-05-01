@@ -43,16 +43,16 @@ public:
 
 	GASP2pop subpop(int start, int subsize);
 
-	void init(GASP2struct s, int size);
+	void init(GASP2struct s, int size, Spacemode mode, Index spcg = 1);
 
 	//generate a new population by crossing the
 	//existing population (for classic)
 	//using whatever selection scheme is available.
-	GASP2pop newPop(int size, GAselection mode=Roulette);
+	GASP2pop newPop(int size, Spacemode smode, GAselection mode=Roulette);
 
 	//performs a full crossing of all members of
 	//the population and generates a new one
-	GASP2pop fullCross();
+	GASP2pop fullCross(Spacemode mode);
 
 	//add N members to the population (for elitism)
 	void addIndv(int add);
@@ -85,7 +85,7 @@ public:
 //	GASP2pop unique();
 
 	//mutates the population
-	void mutate(double rate);
+	void mutate(double rate, Spacemode mode);
 
 	//fitcell/eval functions
 	void runFitcell(int threads); //threaded

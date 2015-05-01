@@ -155,6 +155,8 @@ private:
 
 	void getHostInfo();
 
+	bool writePop(GASP2pop pop, string tag, int step);
+
 	bool parseInput(tinyxml2::XMLDocument *doc, string & errorstring);
 
 	//string mark();

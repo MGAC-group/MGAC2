@@ -20,7 +20,9 @@ GASP2control::GASP2control(int ID, string infile) {
 
 	//rgen is in gasp2common
 	//kinda wonky, but is okay
-	checkSeed(params.seed);
+//	checkSeed(params.seed);
+	MPI_Status s;
+	MPI_Recv(&params.seed, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &s);
 	rgen.seed(params.seed+ID);
 
 }
@@ -57,8 +59,35 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart)
 
 
 	//parse the restart if it exists
-	checkSeed(params.seed);
+	if(restart.length() > 0) {
+		doc.LoadFile(restart.c_str());
+		if(doc.ErrorID() == 0) {
+			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
+			if(!rootpop.loadXMLrestart(pop, errorstring)) {
+				cout << "There was an error in the restart file: " << errorstring << endl;
+				MPI_Abort(1,MPI_COMM_WORLD);
+			}
+
+		}
+		else {
+			cout << "!!! There was a problem with opening the RESTART file!" << endl;
+			cout << "Check to see if the file exists or if the XML file" << endl;
+			cout << "is properly formed, with tags formatted correctly." << endl;
+			cout << "Aborting... " << endl;
+			MPI_Abort(1,MPI_COMM_WORLD);
+		}
+	}
+
+
+
+	//random gen stuff
+//	checkSeed(params.seed);
+
+	for(int i = 1; i < worldSize; i++)
+		MPI_Send(&params.seed, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+
 	rgen.seed(params.seed);
+
 
 }
 
@@ -142,7 +171,14 @@ void GASP2control::server_prog() {
 
 
 	//do the initialization
-	rootpop.init(root, params.popsize);
+	if(restart.length() == 0) {
+		cout << "params.spacemode " << params.spacemode << endl;
+		rootpop.init(root, params.popsize, params.spacemode);
+	}
+	else
+		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
+	writePop(rootpop, "root", 0);
+
 	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
 
 	//calc the total number of processing elements
@@ -169,19 +205,23 @@ void GASP2control::server_prog() {
 	future<bool> writer;
 
 	MPI_Status m;
-	stringstream outname;
-	ofstream outf;
 
 	if(params.mode == "stepwise") {
 		for(int step = 0; step < params.generations; step++) {
-			//cross
+			//cross and mutate
+			cout << lastpop.size() << endl;
 			if(params.type == "elitism") {
-				evalpop = lastpop.newPop(replace);
+				evalpop = lastpop.newPop(replace, params.spacemode);
+				cout << "got it" << endl;
 				evalpop.addIndv(lastpop);
+				cout << "got it" << endl;
+
 			}
 			else if (params.type == "classic") {
-				evalpop = lastpop.fullCross();
+				evalpop = lastpop.fullCross(params.spacemode);
 			}
+			cout << "got it" << endl;
+			evalpop.mutate(params.mutation_prob, params.spacemode);
 
 			cout << mark() << "Crossover size: " << evalpop.size() << endl;
 			//cout << mark() << "Got to init" << endl;
@@ -295,19 +335,8 @@ void GASP2control::server_prog() {
 
 			evalpop.volumesort();
 
-			outname.str("");
-			outname << params.outputfile << "_fitcell_" << setw(3) << setfill('0') << step << ".pop";
-			cout << mark() << "Saving fitcell \"" << outname.str() << "\"..." << endl;
+			writePop(evalpop, "fitcell", step);
 
-			outf.open(outname.str().c_str(), ofstream::out);
-			if(outf.fail()) {
-				cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! continuing sadly..." << endl;
-			}
-			else {
-				outf << evalpop.saveXML() << endl;
-				cout << mark() << "Save complete" << endl;
-				outf.close();
-			}
 
 
 
@@ -328,19 +357,7 @@ void GASP2control::server_prog() {
 
 
 			//save pops
-			outname.str("");
-			outname << params.outputfile << "_final_" << setw(3) << setfill('0') << step << ".pop";
-			cout << mark() << "Saving pop \"" << outname.str() << "\"..." << endl;
-
-			outf.open(outname.str().c_str(), ofstream::out);
-			if(outf.fail()) {
-				cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! continuing sadly..." << endl;
-			}
-			else {
-				outf << evalpop.saveXML() << endl;
-				cout << mark() << "Save complete" << endl;
-				outf.close();
-			}
+			writePop(evalpop, "final", step);
 
 		}
 
@@ -632,4 +649,27 @@ string GASP2control::makeMachinefile(vector<int> slots) {
 		}
 	}
 	return out.str();
+}
+
+
+bool GASP2control::writePop(GASP2pop pop, string tag, int step) {
+
+	stringstream outname;
+	ofstream outf;
+	outname.str("");
+	outname << params.outputfile << "_" << tag << "_" << setw(3) << setfill('0') << step << ".pop";
+	cout << mark() << "Saving " << tag << " \"" << outname.str() << "\"..." << endl;
+
+	outf.open(outname.str().c_str(), ofstream::out);
+	if(outf.fail()) {
+		cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! continuing sadly..." << endl;
+		return false;
+	}
+	else {
+		outf << "<mgac>\n" << pop.saveXML() << endl << "</mgac>\n";
+		outf.close();
+		cout << mark() << "Save complete" << endl;
+	}
+
+	return true;
 }

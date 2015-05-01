@@ -73,9 +73,9 @@ typedef struct cryGroup {
 }cryGroup;
 
 typedef enum Spacemode {
-	Limited=0, //Excludes Tetrahedral/Octahedral schoenflies and F centerings
-	Single, //Single spacegroup only
-	Full, //All spacegroups (including T,O and F)
+	Limited = 0, //Excludes Tetrahedral/Octahedral schoenflies and F centerings
+	Single = 1, //Single spacegroup only
+	Full = 2, //All spacegroups (including T,O and F)
 }Spacemode;
 
 
@@ -175,6 +175,9 @@ Lattice getLattice(string in);
 
 Schoenflies getSchoenflies(string in);
 string getSchoenflies(Schoenflies in);
+
+Spacemode getSpacemode(string in);
+
 
 vector<string> split(string in, char delim=' ');
 

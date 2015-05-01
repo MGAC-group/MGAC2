@@ -447,6 +447,18 @@ Lattice getLattice(string in) {
 }
 
 
+Spacemode getSpacemode(string in) {
+	Spacemode type;
+	if(in == "full")
+		type = Spacemode::Full;
+	else if(in == "limited")
+		type = Spacemode::Limited;
+	else if(in == "single")
+		type = Spacemode::Single;
+
+	return type;
+}
+
 void checkSeed(int &seed) {
 	if(seed == -1)
 		seed = time(0);

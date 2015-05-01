@@ -642,6 +642,7 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	force = 0.0;
 	time = 0;
 	steps = 0;
+	unit.spacegroup = 1;
 
 	//randomize spacegroup
 	//one, two x4, three, four, six,
@@ -1120,7 +1121,7 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 	if(mode != Single) {
 		if(!childA.setSpacegroup()) {
 			childA.finalstate = FitcellBadCell;
-			childA.complete = true;
+			childA.complete = false;
 		}
 		if(!childB.setSpacegroup()) {
 			childB.finalstate = FitcellBadCell;
@@ -2147,7 +2148,7 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 	stemp = elem->Attribute("spacegroup");
 	if(!elem->QueryIntAttribute("spacegroup", &itemp)) {
 		if(itemp > 0 && itemp <= spacegroupNames.size())
-			cell.spacegroup = itemp - 1;
+			cell.spacegroup = itemp;
 		else {
 			errorstring = "A non-valid spacegroup identifier was given (out of bounds).\n";
 			return false;
@@ -2159,7 +2160,7 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		cell.spacegroup = 0;
 		for(int i = 0; i < spacegroupNames.size(); i++) {
 			if(strtemp == spacegroupNames[i]) {
-				cell.spacegroup = i+1;
+				cell.spacegroup = i;
 				break;
 			}
 		}

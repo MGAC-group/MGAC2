@@ -58,6 +58,8 @@ public:
 	double exp_scale;
 	string outputmode;
 	string outputfile;
+	Spacemode spacemode;
+	Index group;
 
 
 	//qe params
