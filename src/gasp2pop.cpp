@@ -92,7 +92,7 @@ GASP2pop GASP2pop::newPop(int size, Spacemode smode, GAselection mode) {
 	if(mode == Roulette) {
 		if(scaling.size() != structures.size()) {
 			cout << mark() << "WARNING: Scaling automatically applied on population..." << endl;
-			this->scale(1.0,0.0,0.0);
+			scale(1.0,0.0,0.0);
 		}
 		discrete_distribution<int> d(scaling.begin(), scaling.end());
 		for(int i = 0; i < size; i++) {
@@ -102,7 +102,7 @@ GASP2pop GASP2pop::newPop(int size, Spacemode smode, GAselection mode) {
 				selB = d(rgen);
 			structures[selA].crossStruct(structures[selB], a,b, 0.5, smode);
 			out.structures.push_back(a);
-			cout << "selA/selB: " << selA << "/" << selB << endl;
+			//cout << "selA/selB: " << selA << "/" << selB << endl;
 		}
 	}
 	else { //pattern
@@ -204,6 +204,12 @@ void GASP2pop::scale(double con, double lin, double exp) {
 		return;
 	}
 
+	if(lin == 0.0 && exp == 0.0) {
+		for(int i = 0; i < size(); i++)
+			scaling.push_back(1.0);
+		return;
+	}
+
 
 	double val, diffE, diffV;
 	vector<double> vol, ener;
@@ -250,7 +256,7 @@ void GASP2pop::scale(double con, double lin, double exp) {
 		}
 
 		scaling.push_back(val);
-		cout << " scale " << scaling[i] << endl;
+		//cout << " scale " << scaling[i] << endl;
 	}
 }
 

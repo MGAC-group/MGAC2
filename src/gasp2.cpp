@@ -172,7 +172,6 @@ void GASP2control::server_prog() {
 
 	//do the initialization
 	if(restart.length() == 0) {
-		cout << "params.spacemode " << params.spacemode << endl;
 		rootpop.init(root, params.popsize, params.spacemode);
 	}
 	else
@@ -208,23 +207,19 @@ void GASP2control::server_prog() {
 
 	if(params.mode == "stepwise") {
 		for(int step = 0; step < params.generations; step++) {
-			//cross and mutate
-			cout << lastpop.size() << endl;
+			//scale, cross and mutate
+			if(step > 0)
+				lastpop.scale(params.const_scale, params.lin_scale, params.exp_scale);
 			if(params.type == "elitism") {
 				evalpop = lastpop.newPop(replace, params.spacemode);
-				cout << "got it" << endl;
 				evalpop.addIndv(lastpop);
-				cout << "got it" << endl;
-
 			}
 			else if (params.type == "classic") {
 				evalpop = lastpop.fullCross(params.spacemode);
 			}
-			cout << "got it" << endl;
 			evalpop.mutate(params.mutation_prob, params.spacemode);
 
 			cout << mark() << "Crossover size: " << evalpop.size() << endl;
-			//cout << mark() << "Got to init" << endl;
 
 
 			//f
@@ -320,7 +315,7 @@ void GASP2control::server_prog() {
 			}
 
 			for(int i = 1; i < worldSize; i++) {
-				sendIns(SendPop, i);
+				//sendIns(SendPop, i);
 				recvPop(&split[i], i);
 			}
 
@@ -345,7 +340,7 @@ void GASP2control::server_prog() {
 
 
 
-			//sort, scale, and reduce
+			//sort and reduce
 			evalpop.energysort();
 			if(params.type == "elitism") {
 				evalpop.remIndv(replace);
@@ -384,7 +379,7 @@ void GASP2control::server_prog() {
 	for(int i = 1; i < worldSize; i++)
 		sendIns(Shutdown, i);
 
-	cout << mark() << "got to shutdown" << endl;
+	cout << mark() << "Shutting down" << endl;
 	return;
 
 }

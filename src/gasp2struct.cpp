@@ -1121,7 +1121,7 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 	if(mode != Single) {
 		if(!childA.setSpacegroup()) {
 			childA.finalstate = FitcellBadCell;
-			childA.complete = false;
+			childA.complete = true;
 		}
 		if(!childB.setSpacegroup()) {
 			childB.finalstate = FitcellBadCell;

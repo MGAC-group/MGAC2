@@ -26,14 +26,15 @@ struct Arg: public option::Arg
 	  }
 };
 
-enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS };
+enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS,CONVERT };
 
 const option::Descriptor usage[] =
 {
 		{INPUT,0,"i","input",Arg::Required,"-i,--input  The XML input file for running"},
 		{HELP,0,"h","help",option::Arg::Optional,"-h,--help  Displays this help message"},
 		{RESTART,0,"r","restart",Arg::NonEmpty,"-r,--restart  Optional argument for a restart file"},
-		{SPACEGROUPS,0,"ls","spacegroups",Arg::Optional,"-ls,--spacegroups List valid spacegroups"},
+		{SPACEGROUPS,0,"ls","spacegroups",Arg::Optional,"-ls,--spacegroups  List valid spacegroups"},
+		{CONVERT, 0, "c", "cif", Arg::NonEmpty, "-c, --cif  Name of output file for cif; takes the input (-i) and turns it into a cif"},
 		{ 0, 0, 0, 0, 0, 0 }
 };
 
@@ -79,6 +80,44 @@ int main( int argc, char* argv[] ) {
 
     	return 0;
     }
+
+    if(options[CONVERT]) {
+    	if(options[CONVERT].arg == NULL) {
+    		return 0;
+    	}
+    	if(options[INPUT] && options[CONVERT].arg != NULL) {
+
+    		GASP2pop temppop;
+    		string errorstring;
+    		tinyxml2::XMLDocument doc;
+    		doc.LoadFile(options[INPUT].arg);
+    		if(doc.ErrorID() == 0) {
+    			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
+    			if(!temppop.loadXMLrestart(pop, errorstring)) {
+    				cout << "There was an error in the restart file: " << errorstring << endl;
+    				exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
+    			}
+    		}
+    		else {
+    			cout << "!!! There was a problem with opening the input file!" << endl;
+    			cout << "Check to see if the file exists or if the XML file" << endl;
+    			cout << "is properly formed, with tags formatted correctly." << endl;
+    			cout << "Aborting... " << endl;
+    			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
+    		}
+
+    		temppop.writeCIF(string(options[CONVERT].arg));
+    		cout << mark() << "File successfully converted" << endl;
+    	}
+    	else {
+    		cout << "Requires -i for the input file!" << endl;
+
+    	}
+
+
+    	return 0;
+    }
+
 
     if(!options[INPUT]) {
     	cout << "An input file is required! Use -i to specify." << endl;
