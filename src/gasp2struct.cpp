@@ -448,7 +448,7 @@ void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
 
 
 
-bool GASP2struct::fitcell() {
+bool GASP2struct::fitcell(double tlimit) {
 	//std::thread::id itit = std::this_thread::get_id();
 	//cout << "pid: " << itit << endl;
 	auto t = std::chrono::high_resolution_clock::now();
@@ -518,6 +518,11 @@ bool GASP2struct::fitcell() {
 	last_vol = getVolume();
 	vol = last_vol;
 
+	//need to parameterize this later
+	auto start = std::chrono::steady_clock::now();
+
+	std:chrono::duration<double> diff;
+
 	for(int n = 0; n < 3; n++) {
 		while (true) {
 			//cout << mark() << "tn1:"<< n <<" " <<ID.toStr()<< endl;
@@ -533,9 +538,15 @@ bool GASP2struct::fitcell() {
 			}
 			else
 				last_vol = vol;
-
-			//this->cifOut("fitcelldebug.cif");
-
+			//protection against long running
+			auto end = std::chrono::steady_clock::now();
+			diff = end-start;
+			if(diff.count() > tlimit) {
+				cout << "Fitcell took too long on structure " << ID.toStr() << endl;
+				cout << "Structure may be valid but was not evaluated" << endl;
+				finalstate = NoFitcell;
+				return false;
+			}
 		}
 		//this->cifOut("fitcelldebug.cif");
 	}

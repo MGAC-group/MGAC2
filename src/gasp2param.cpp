@@ -370,11 +370,12 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 							return false;
 						}
 					}
+					else {
+						errorstring = "Single spacemode was given, but no group tag was found! Make sure to add the spacegroup info with <group>.\n";
+						return false;
+					}
 				}
-				else {
-					errorstring = "Single spacemode was given, but no group tag was found! Make sure to add the spacegroup info with <group>.\n";
-					return false;
-				}
+
 			}
 			else {
 				errorstring = "The spacemode specified does not match a valid type!\n";

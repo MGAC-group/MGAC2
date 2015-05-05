@@ -372,7 +372,7 @@ void GASP2pop::runFitcell(int threads) {
 		for(int j = 0; j < threads; j++) {
 			if(!futures[j].valid() && (i < size()) && thread_run < threads ) {
 				//cout << "instance i: " << i << endl;
-				futures[j] = async(launch::async, &GASP2struct::fitcell, &structures[i]);
+				futures[j] = async(launch::async, &GASP2struct::fitcell, &structures[i], 300.0);
 				i++;
 				thread_run++;
 			}

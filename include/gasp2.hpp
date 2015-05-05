@@ -87,9 +87,11 @@ using namespace std;
 #define POP 0
 #define HOSTS 1
 #define CONTROL 2
+#define OTHER 3
 
 #define IDLE -1
 #define DOWN -2
+
 
 typedef struct Host {
 	string hostname;
@@ -110,6 +112,8 @@ typedef enum Instruction {
 	Shutdown = (1u<<9), //Send a shutdown signal for cleanup n stuff
 
 }Instruction;
+
+extern std::mutex eval_mut;
 
 class GASP2control {
 public:

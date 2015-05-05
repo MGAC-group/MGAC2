@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <mutex>
 
 #define READ 0
 #define WRITE 1
@@ -32,7 +33,7 @@ extern "C" {
 	extern char _binary_spacegroups_xml_end;
 }
 
-
+extern std::mutex eval_mut;
 
 
 #define PI 3.1415926535897932384626433
