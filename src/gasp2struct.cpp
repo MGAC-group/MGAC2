@@ -542,8 +542,8 @@ bool GASP2struct::fitcell(double tlimit) {
 			auto end = std::chrono::steady_clock::now();
 			diff = end-start;
 			if(diff.count() > tlimit) {
-				cout << "Fitcell took too long on structure " << ID.toStr() << endl;
-				cout << "Structure may be valid but was not evaluated" << endl;
+				cout << mark() << "Fitcell took too long on structure " << ID.toStr();
+				cout << ", structure may be valid but was not evaluated" << endl;
 				finalstate = NoFitcell;
 				return false;
 			}

@@ -296,7 +296,7 @@ void GASP2control::server_prog() {
 			for(int i = 1; i < worldSize; i++) {
 				sendIns(SendPop, i);
 				recvPop(&split[i], i);
-				cout << "i:" << i << endl;
+				//cout << "i:" << i << endl;
 			}
 
 
