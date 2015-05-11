@@ -160,7 +160,7 @@ GASP2pop GASP2pop::volLimit(GASP2pop &bad) {
 	GASP2pop ok;
 
 	for(int i = 0; i < size(); i++) {
-		if(structures[i].minmaxVol())
+		if(structures[i].minmaxVol() && structures[i].fitcelled() && !structures[i].rejected() )
 			ok.structures.push_back(structures[i]);
 		else
 			bad.structures.push_back(structures[i]);

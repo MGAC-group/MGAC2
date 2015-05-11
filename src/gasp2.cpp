@@ -204,14 +204,17 @@ void GASP2control::server_prog() {
 	vector<future<bool>> popsend(worldSize);
 	future<bool> eval;
 	future<bool> writer;
+	vector<int> minnodes;
 
 	MPI_Status m;
 
 	if(params.mode == "stepwise") {
 		for(int step = 0; step < params.generations; step++) {
 			//scale, cross and mutate
+			cout << mark() << "Scaling..." << endl;
 			if(step > 0)
 				lastpop.scale(params.const_scale, params.lin_scale, params.exp_scale);
+			cout << mark() << "Crossing..." << endl;
 			if(params.type == "elitism") {
 				evalpop = lastpop.newPop(replace, params.spacemode);
 				evalpop.addIndv(lastpop);
@@ -316,6 +319,30 @@ void GASP2control::server_prog() {
 
 
 			//evaluate
+			evalpop.symmsort();
+			GASP2pop bad; GASP2pop good;
+			good = evalpop.volLimit(bad);
+			cout << mark() << "Limited volume population size:" << good.size() << endl;
+
+
+			good.volumesort();
+			writePop(good, "vollimit", step);
+
+
+
+			minnodes.resize(good.size());
+			for(int i = 0; i < good.size(); i++) {
+				int symmcount = good.indv(i)->getSymmcount();
+				int factor = symmcount*symmcount;
+
+
+				//.\minnodes[i] =
+			}
+
+				//dispatch
+				//collect/update loop
+
+
 
 
 
@@ -326,7 +353,7 @@ void GASP2control::server_prog() {
 				evalpop.remIndv(replace);
 			}
 			else if (params.type == "classic") {
-				; //?
+				evalpop.remIndv(evalpop.size()-params.popsize);
 			}
 			lastpop = evalpop;
 			//save pops

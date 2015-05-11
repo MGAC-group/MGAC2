@@ -67,7 +67,7 @@ bool GASP2struct::minmaxVol() {
 	double expectvol = 0.0;
 	double vol = getVolume();
 	//must work independent of fitcell
-	cout << "vol: " << vol << " ";
+	//cout << "vol: " << vol << " ";
 	for(int i = 0; i < molecules.size(); i++) {
 		expectvol += molecules[i].expectvol;
 	}
@@ -77,9 +77,9 @@ bool GASP2struct::minmaxVol() {
 		expectvol *= (double) nops;
 	}
 
-	cout << "expectvol: " << expectvol << " ";
-	cout << "a: " << ((vol-expectvol)/expectvol < (minvol/100.0));
-	cout << " b: " << ((vol-expectvol)/expectvol > (maxvol/100.0)) << endl;
+	//cout << "expectvol: " << expectvol << " ";
+	//cout << "a: " << ((vol-expectvol)/expectvol < (minvol/100.0));
+	//cout << " b: " << ((vol-expectvol)/expectvol > (maxvol/100.0)) << endl;
 
 	if( (vol-expectvol)/expectvol < (minvol/100.0) ||
 		(vol-expectvol)/expectvol > (maxvol/100.0) )
@@ -456,7 +456,7 @@ bool GASP2struct::fitcell(double tlimit) {
 	unfitcell();
 
 	if(enforceCrystalType() == false) {
-		//cout << "t" << endl;
+		//cout << "BadCell" << endl;
 		finalstate = FitcellBadCell;
 		return false;
 	}
@@ -464,7 +464,7 @@ bool GASP2struct::fitcell(double tlimit) {
 	//apply dihedrals and rotations to molecules
 	for(int i = 0; i < molecules.size(); i++) {
 		if(applyDihedrals(molecules[i]) == false) {
-			//cout << "t" << endl;
+			//cout << "BadDih" << endl;
 			finalstate = FitcellBadDih;
 			return false;
 		}
@@ -2546,8 +2546,8 @@ bool GASP2struct::cifOut(string name) {
 
 
 	outf << "data_" << names[crylabel]+"_"+ID.toStr() << endl;
-	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<endl;
-	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<< endl;
+	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<",vs="<<getVolScore()<<endl;
+	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<<",fc="<<tfconv(isFitcell)<< endl;
 	outf << "loop_" << endl;
 	outf << "_symmetry_equiv_pos_as_xyz" << endl;
 	outf << "x,y,z" << endl;
@@ -2605,8 +2605,8 @@ bool GASP2struct::cifString(string &out) {
 
 	outf << "data_" << names[crylabel]+"_"+ID.toStr() << endl;
 	outf << "_symmetry_space_group_name_H-M  '" << spacegroupNames[unit.spacegroup] << "'\n";
-	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<endl;
-	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<< endl;
+	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<",vs="<<getVolScore()<<endl;
+	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<<",fc="<<tfconv(isFitcell)<< endl;
 //	outf << "loop_" << endl;
 //	outf << "_symmetry_equiv_pos_site_id" << endl;
 //	outf << "_symmetry_equiv_pos_as_xyz" << endl;
