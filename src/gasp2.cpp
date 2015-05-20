@@ -204,7 +204,7 @@ void GASP2control::server_prog() {
 	vector<future<bool>> popsend(worldSize);
 	future<bool> eval;
 	future<bool> writer;
-	vector<int> minnodes;
+	vector<int> minnodes, maxnodes;
 
 	MPI_Status m;
 
@@ -215,11 +215,14 @@ void GASP2control::server_prog() {
 			if(step > 0)
 				lastpop.scale(params.const_scale, params.lin_scale, params.exp_scale);
 			cout << mark() << "Crossing..." << endl;
+
 			if(params.type == "elitism") {
 				evalpop = lastpop.newPop(replace, params.spacemode);
 				evalpop.addIndv(lastpop);
 			}
+
 			else if (params.type == "classic") {
+				evalpop.addIndv(rootpop);
 				evalpop = lastpop.fullCross(params.spacemode);
 			}
 			evalpop.mutate(params.mutation_prob, params.spacemode);
@@ -313,7 +316,7 @@ void GASP2control::server_prog() {
 			for(int i = 0; i < worldSize; i++)
 				evalpop.addIndv(split[i]);
 			evalpop.volumesort();
-			writePop(evalpop, "fitcell", step);
+			//writePop(evalpop, "fitcell", step);
 
 
 
@@ -324,27 +327,28 @@ void GASP2control::server_prog() {
 			good = evalpop.volLimit(bad);
 			cout << mark() << "Limited volume population size:" << good.size() << endl;
 
-
 			good.volumesort();
 			writePop(good, "vollimit", step);
 
 
 
 			minnodes.resize(good.size());
+			maxnodes.resize(good.size());
 			for(int i = 0; i < good.size(); i++) {
 				int symmcount = good.indv(i)->getSymmcount();
-				int factor = symmcount*symmcount;
-
-
-				//.\minnodes[i] =
+				minnodes[i] = symmcount;
+				maxnodes[i] = 2 * symmcount;
 			}
+			good.symmsort();
 
-				//dispatch
-				//collect/update loop
+			//how many nodes are available?
+			int used = 0;
+			int avail = worldSize;
+			for(int s = 0; s < good.size(); s++) {
 
 
 
-
+			}
 
 
 			//sort and reduce

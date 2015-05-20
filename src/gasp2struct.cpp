@@ -67,7 +67,7 @@ bool GASP2struct::minmaxVol() {
 	double expectvol = 0.0;
 	double vol = getVolume();
 	//must work independent of fitcell
-	//cout << "vol: " << vol << " ";
+	cout << "vol: " << vol << " ";
 	for(int i = 0; i < molecules.size(); i++) {
 		expectvol += molecules[i].expectvol;
 	}
@@ -77,12 +77,13 @@ bool GASP2struct::minmaxVol() {
 		expectvol *= (double) nops;
 	}
 
-	//cout << "expectvol: " << expectvol << " ";
-	//cout << "a: " << ((vol-expectvol)/expectvol < (minvol/100.0));
-	//cout << " b: " << ((vol-expectvol)/expectvol > (maxvol/100.0)) << endl;
+	cout << "expectvol: " << expectvol << " ";
+	cout << "a: " << (((vol/expectvol)-1.0) < (minvol/100.0));
+	cout << " b: " << (((vol/expectvol)-1.0) > (maxvol/100.0)) << endl;
+	cout << "cell:" <<unit.a<<" "<<unit.b<<" "<<unit.c<<endl;
 
-	if( (vol-expectvol)/expectvol < (minvol/100.0) ||
-		(vol-expectvol)/expectvol > (maxvol/100.0) )
+	if( ((vol/expectvol)-1.0) < (minvol/100.0) ||
+		((vol/expectvol)-1.0) > (maxvol/100.0) )
 			return false;
 	return true;
 }
@@ -1276,9 +1277,9 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("a",unit.a);
 		pr.PushAttribute("b",unit.b);
 		pr.PushAttribute("c",unit.c);
-		pr.PushAttribute("alpha",deg(unit.alpha));
-		pr.PushAttribute("beta",deg(unit.beta));
-		pr.PushAttribute("gamma",deg(unit.gamma));
+		pr.PushAttribute("al",deg(unit.alpha));
+		pr.PushAttribute("bt",deg(unit.beta));
+		pr.PushAttribute("gm",deg(unit.gamma));
 		pr.PushAttribute("tA",deg(unit.triA));
 		pr.PushAttribute("tB",deg(unit.triB));
 		pr.PushAttribute("tC",deg(unit.triC));
@@ -2659,9 +2660,9 @@ double cellPhi(GASP2cell cl) {
 	double cosA = cos(cl.alpha);
 	double cosB = cos(cl.beta);
 	double cosC = cos(cl.gamma);
-	double phi = 2 * cosA * cosB * cosC;
+	double phi = 2.0 * cosA * cosB * cosC;
 
-    return   sqrt(1 - cosA*cosA
+    return   sqrt(1.0 - cosA*cosA
             		- cosB*cosB
             		- cosC*cosC
             		+ phi) ;
