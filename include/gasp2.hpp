@@ -110,10 +110,12 @@ typedef enum Instruction {
 	DoQE = (1u<<7), //order to client to perform QE
 	DoCustom = (1u<<8), //order to client to perform custom eval
 	Shutdown = (1u<<9), //Send a shutdown signal for cleanup n stuff
+	GetHost = (1u<<10),
 
 }Instruction;
 
 extern std::mutex eval_mut;
+extern std::mutex longeval_mut;
 
 class GASP2control {
 public:
@@ -158,6 +160,7 @@ private:
 	string makeMachinefile(vector<int> slots);
 
 	void getHostInfo();
+	void writeHost(string name, string data);
 
 	bool writePop(GASP2pop pop, string tag, int step);
 

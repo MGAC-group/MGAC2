@@ -60,6 +60,7 @@ public:
 	//to the existing population
 	void addIndv(GASP2pop add);
 	void addIndv(GASP2struct t){ structures.push_back(t); };
+	void mergeIndv(GASP2pop add, int ind);
 
 	//remove N worst members from the population (for elitism)
 	//returns the removed members

@@ -146,6 +146,15 @@ void GASP2pop::addIndv(GASP2pop add) {
 
 }
 
+void GASP2pop::mergeIndv(GASP2pop add, int ind) {
+	if(add.size() > 1)
+		return;
+	//structures.reserve(structures.size() + add.structures.size());
+	//structures.insert(structures.begin()+ind, add.structures.begin(), add.structures.end());
+	structures[ind] = add.structures[0];
+
+}
+
 GASP2pop GASP2pop::remIndv(int n) {
 	GASP2pop bad;
 	for(int i = 0; i < n; i++) {

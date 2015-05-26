@@ -179,6 +179,10 @@ namespace QE {
 	        length = output.size();
 	        if(length > oldlength) {
 
+	        	while(!longeval_mut.trylock()) {
+	        		this_thread::sleep_for(chrono::milliseconds(200));
+	        	}
+
 	        	//energy - four junk fields
 	        	pos = output.rfind(energy_scan);
 	        	if(pos!=string::npos && pos > epos) {
@@ -265,11 +269,13 @@ namespace QE {
 	        		ap_pos = pos;
 	        	}
 
+	        	longeval_mut.unlock();
+
 	        	//fft error - not an issue, just needs
 	        	//a restart if appropriate
 	        	pos = output.rfind(fft_error);
 	        	if(pos!=string::npos) {
-	        		cout << "FFT error detected in QE run!\n";
+	        		cout << mark() << "FFT error detected in QE run!\n";
 	        		outstat = false;
 	        		break;
 	        	}
@@ -279,7 +285,7 @@ namespace QE {
 	        	//this could leave stray processes, but it's not clear
 	        	pos = output.rfind(any_error);
 	        	if(pos!=string::npos) {
-	        		cout << "Unknown error detected in QE run! Output:\n";
+	        		cout << mark() << "Unknown error detected in QE run! Output:\n";
 	        		cout << output.substr(pos, 2048) << endl << endl;
 	        		pclose2(t,out);
 	        		//send emergency shutdown signal instead of exit?
@@ -289,14 +295,15 @@ namespace QE {
 	        	//early term
 	        	pos = output.rfind(early_term);
 	        	if(pos!=string::npos) {
-	        		cout << "QE finished with maximum number of SCF cycles.\n";
+	        		cout<< mark() << "QE finished with maximum number of SCF cycles.\n";
 	        		outstat = false;
+	        		break;
 	        	}
 
 	        	//normal finish
 	        	pos = output.rfind(complete_scan);
 	        	if(pos!=string::npos) {
-	        		cout << "QE compelted the run\n";
+	        		cout << mark()  << "QE completed the run\n";
 	        		break;
 	        	}
 
@@ -328,7 +335,7 @@ namespace QE {
 
         //add the time:
 	    int duration = chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count();
-	    cout << "QE completed in: " << duration << endl;
+	    cout << mark() << "QE completed in: " << duration << endl;
         time += duration;
 
 	    return outstat;

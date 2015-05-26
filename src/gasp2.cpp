@@ -115,6 +115,8 @@ void GASP2control::getHostInfo() {
 
 }
 
+
+//this function is awful and really needs to be cleaned up. badly
 void GASP2control::server_prog() {
 
 	getHostInfo();
@@ -167,6 +169,7 @@ void GASP2control::server_prog() {
 			ownerlist[i] = IDLE;
 		}
 		else
+			cout << mark() << "Client " << i << " is down!" << endl;
 			ownerlist[i] = DOWN;
 
 	}
@@ -204,7 +207,6 @@ void GASP2control::server_prog() {
 	vector<future<bool>> popsend(worldSize);
 	future<bool> eval;
 	future<bool> writer;
-	vector<int> minnodes, maxnodes;
 
 	MPI_Status m;
 
@@ -222,7 +224,7 @@ void GASP2control::server_prog() {
 			}
 
 			else if (params.type == "classic") {
-				evalpop.addIndv(rootpop);
+				lastpop.addIndv(rootpop);
 				evalpop = lastpop.fullCross(params.spacemode);
 			}
 			evalpop.mutate(params.mutation_prob, params.spacemode);
@@ -230,11 +232,9 @@ void GASP2control::server_prog() {
 			cout << mark() << "Crossover size: " << evalpop.size() << endl;
 
 
-			//f
-//			int count = evalpop.size() / totalPE;
-//			int remainder = evalpop.size() % totalPE;
-//			int remleft = remainder;
-//			int index = 0;
+			evalpop = evalpop.symmLimit(12);
+
+
 			split.clear();
 			split.resize(worldSize);
 			evalpop.symmsort();
@@ -305,8 +305,6 @@ void GASP2control::server_prog() {
 				//cout << "i:" << i << endl;
 			}
 
-
-
 			cout << mark() << "Fitcell complete" << endl;
 
 
@@ -318,9 +316,6 @@ void GASP2control::server_prog() {
 			evalpop.volumesort();
 			//writePop(evalpop, "fitcell", step);
 
-
-
-
 			//evaluate
 			evalpop.symmsort();
 			GASP2pop bad; GASP2pop good;
@@ -330,23 +325,113 @@ void GASP2control::server_prog() {
 			good.volumesort();
 			writePop(good, "vollimit", step);
 
-
-
-			minnodes.resize(good.size());
-			maxnodes.resize(good.size());
-			for(int i = 0; i < good.size(); i++) {
-				int symmcount = good.indv(i)->getSymmcount();
-				minnodes[i] = symmcount;
-				maxnodes[i] = 2 * symmcount;
-			}
 			good.symmsort();
+			int avail = 0;
+			//var to store reference index of sent structure
+			vector<GASP2pop> localpops(worldSize);
+			vector<int> evaldind(worldSize);
+			GASP2pop evald = good;
 
-			//how many nodes are available?
-			int used = 0;
-			int avail = worldSize;
-			for(int s = 0; s < good.size(); s++) {
+			for(int launched=0; ; ) {
+
+				//establish active/idle nodes, receive pops
+				for(int i = 1; i < worldSize; i++) {
+					sendIns(Ping, i);
+				}
+				this_thread::sleep_for(chrono::seconds(1));
+				for(int i = 1; i < worldSize; i++) {
+					if(ownerlist[i] == i) {
+						int recvd;
+						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+						while(recvd){
+							recvIns(recv, i);
+							if(recv & PopAvail) {
+								sendIns(SendPop, i);
+								recvPop(&localpops[i], i);
+								evald.mergeIndv(localpops[i],evaldind[i]);
+							}
+							if(recv & Busy)
+								ownerlist[i] = i;
+							else if(recv & Ackn) {
+								ownerlist[i] = IDLE;
+								for(int j = 0; j < worldSize; j++)
+									if(ownerlist[j] == i) {
+										ownerlist[j] = IDLE;
+										avail++;
+									}
+							}
+							else
+								ownerlist[i] = DOWN;
+
+							MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+						}
+					}
+				}
+
+				//structures available
+				while(avail > 0 && launched < good.size()) {
+					//see how many nodes are needed
+					int given;
+					int needed=2*good.indv(launched)->getSymmcount();
+					if(needed > avail)
+						given = avail;
+					//see if there will be leftovers and how much is next
+					//if there are leftovers just give the extras to this
+					//evaluation (lazy scheduling, but it works)
+					else {
+						int next = 0;
+						if(launched + 1 < good.size())
+							next = 2*good.indv(launched+1)->getSymmcount();
+						if(next > (avail-needed))
+							given = avail;
+						else
+							given = needed;
+
+					}
+
+					vector<int> slots;
+					int first = IDLE;
+					for(int i = 0; i < worldSize; i++) {
+						if(ownerlist[i] == IDLE) {
+							if(first == IDLE)
+								first = i;
+							slots.push_back(i);
+							ownerlist[i] = first;
+						}
+					}
+					string hostfile = makeMachinefile(slots);
+
+					if(first == 0)
+						writeHost(localmachinefile, hostfile);
+					else {
+						sendIns(GetHost, first);
+						sendHost(hostfile, 0, first);
+					}
+
+					if(first == 0) {
 
 
+					}
+					else {
+						evaldind[first] = launched;
+						localpops[first] = good.subpop(launched,1);
+						sendIns(PopAvail, first);
+						sendPop(localpops[first], first);
+						sendIns(DoQE, first);
+					}
+
+					launched++;
+				}
+
+				//test for completion (all nodes idle)
+				bool flag = true;
+				for(int i = 0; i < worldSize; i++) {
+					if(ownerlist[i] >= 0)
+						flag = false;
+				}
+				if(flag)
+					break;
+				this_thread::sleep_for(chrono::seconds(5));
 
 			}
 
@@ -416,8 +501,11 @@ bool GASP2control::runEvals(Instruction i, GASP2pop p, string machinefilename) {
 	}
 	if(i & DoCharmm)
 		cout << "Charmm not implemented!" << endl;
-	if(i & DoQE)
+	if(i & DoQE) {
+		eval_mut.lock();
 		p.runEval(machinefilename, params, QE::runQE);
+		eval_mut.unlock();
+	}
 	if(i & DoCustom)
 		cout << "Custom eval not implemented!" << endl;
 
@@ -452,6 +540,11 @@ void GASP2control::client_prog() {
 	bool recvQueued = false;
 	int target = 0;
 
+	auto start = chrono::steady_clock::now();
+
+	string hostfile;
+	int itemp;
+
 	while(true) {
 		i = None; ack = None;
 
@@ -467,6 +560,11 @@ void GASP2control::client_prog() {
 
 			if(i & Ping){
 				ack = (Instruction) (ack | Ackn);
+			}
+
+			if(i & GetHost) {
+				recvHost(hostfile, itemp, 0);
+				writeHost(localmachinefile, hostfile);
 			}
 
 			if(i & SendPop || sendQueued) {
@@ -514,6 +612,7 @@ void GASP2control::client_prog() {
 
 			if(eval_mut.try_lock()) {
 				eval_mut.unlock();
+				//ack = (Instruction) (ack | PopAvail);
 			}
 			else {
 				ack = (Instruction) (ack | Busy);
@@ -528,6 +627,8 @@ void GASP2control::client_prog() {
 //						break;
 //					}
 
+
+			// new pop is available, so we need to tell the server
 
 
 

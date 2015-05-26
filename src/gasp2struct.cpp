@@ -362,6 +362,7 @@ bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 	//cout << mark() << "collapse: " <<ID.toStr()<< endl;
 	bool touches;
+	bool lastVolOK=false, VolOK=false;
 	double diff_d, last_d;
 	//phase 1: double d until connects are okay
 	double d = 1.0;
@@ -371,8 +372,15 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 		last_d = d;
 		d *= 2.0;
 		resetMols(d, supercell, ratios);
+	//	lastVolOK=VolOK;
+	//	VolOK = minmaxVol();
 		touches = checkConnect(supercell);
 	}
+
+	//optimization: check the volume now to see if it
+	//passes volume constraints. if not, we reject it
+//	if(!lastVolOK)
+//		return -1.0;
 
 	//phase 2: binary search decreasing d
 	while (true) {
@@ -728,8 +736,14 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	unit.ratA = drat(rgen);
 	unit.ratB = drat(rgen);
 	unit.ratC = drat(rgen);
-	uniform_real_distribution<double> dtrimono(0.01,180.0);
-	uniform_real_distribution<double> drhom(0.01,120.0);
+// the original ratios were kind of poorly picked
+//we realyl want to restrict these values to avoid long,
+//thin unit cells
+
+//	uniform_real_distribution<double> dtrimono(0.01,180.0);
+//	uniform_real_distribution<double> drhom(0.01,120.0);
+	uniform_real_distribution<double> dtrimono(30.0,150.0);
+	uniform_real_distribution<double> drhom(30.0,120.0);
 	unit.monoB = rad(dtrimono(rgen));
 	unit.triA = rad(dtrimono(rgen));
 	unit.triB = rad(dtrimono(rgen));
