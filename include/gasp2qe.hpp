@@ -2,6 +2,7 @@
 #include "gasp2common.hpp"
 #include "gasp2param.hpp"
 #include "gasp2struct.hpp"
+#include "gasp2.hpp"
 
 
 using namespace std;

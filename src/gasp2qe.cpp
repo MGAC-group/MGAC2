@@ -155,6 +155,8 @@ namespace QE {
 		Vec3 va,vb,vc;
 		double alat;
 
+		save_state=false;
+
 		auto start = chrono::steady_clock::now();
 
 // debug QE output
@@ -179,7 +181,7 @@ namespace QE {
 	        length = output.size();
 	        if(length > oldlength) {
 
-	        	while(!longeval_mut.trylock()) {
+	        	while(!longeval_mut.try_lock()) {
 	        		this_thread::sleep_for(chrono::milliseconds(200));
 	        	}
 
@@ -267,9 +269,11 @@ namespace QE {
 
 	        		}
 	        		ap_pos = pos;
+	        		save_state=true;
 	        	}
 
-	        	longeval_mut.unlock();
+
+
 
 	        	//fft error - not an issue, just needs
 	        	//a restart if appropriate
@@ -277,6 +281,7 @@ namespace QE {
 	        	if(pos!=string::npos) {
 	        		cout << mark() << "FFT error detected in QE run!\n";
 	        		outstat = false;
+	        		longeval_mut.unlock();
 	        		break;
 	        	}
 
@@ -297,6 +302,7 @@ namespace QE {
 	        	if(pos!=string::npos) {
 	        		cout<< mark() << "QE finished with maximum number of SCF cycles.\n";
 	        		outstat = false;
+	        		longeval_mut.unlock();
 	        		break;
 	        	}
 
@@ -304,10 +310,12 @@ namespace QE {
 	        	pos = output.rfind(complete_scan);
 	        	if(pos!=string::npos) {
 	        		cout << mark()  << "QE completed the run\n";
+	        		longeval_mut.unlock();
 	        		break;
 	        	}
 
 	        	oldlength = length;
+	        	longeval_mut.unlock();
 	        }
 
 

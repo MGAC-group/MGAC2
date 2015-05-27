@@ -116,6 +116,7 @@ typedef enum Instruction {
 
 extern std::mutex eval_mut;
 extern std::mutex longeval_mut;
+extern std::atomic<bool> save_state;
 
 class GASP2control {
 public:
