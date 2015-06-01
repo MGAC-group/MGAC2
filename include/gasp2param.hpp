@@ -60,6 +60,7 @@ public:
 	string outputfile;
 	Spacemode spacemode;
 	Index group;
+	int symmlimit;
 
 
 	//qe params

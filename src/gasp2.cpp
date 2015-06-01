@@ -234,7 +234,7 @@ void GASP2control::server_prog() {
 			cout << mark() << "Crossover size: " << evalpop.size() << endl;
 
 
-			evalpop = evalpop.symmLimit(12);
+			evalpop = evalpop.symmLimit(params.symmlimit);
 
 
 			split.clear();
@@ -327,133 +327,187 @@ void GASP2control::server_prog() {
 			good.volumesort();
 			writePop(good, "vollimit", step);
 
+			if(good.size() > 0) {
 
-			if(params.calcmethod == "qe") {
-				good.symmsort();
-				int avail = 0;
-				//var to store reference index of sent structure
-				vector<GASP2pop> localpops(worldSize);
-				vector<int> evaldind(worldSize);
-				GASP2pop evald = good;
+				if(params.calcmethod == "qe") {
+					good.symmsort();
+					int avail = 0;
+					//var to store reference index of sent structure
+					vector<GASP2pop> localpops(worldSize);
+					vector<int> evaldind(worldSize);
+					GASP2pop evald = good;
 
-				for(int launched=0; ; ) {
+//					for(int i = 0; i < worldSize; i++)
+//						if(ownerlist[i] == IDLE)
+//							avail++;
 
-					//test node 0
-					if(ownerlist[0] == 0) {
-						if(eval_mut.try_lock()) {
-							eval_mut.unlock();
-							ownerlist[0]=IDLE;
-							evald.mergeIndv(localpops[0],evaldind[0]);
-						}
-					}
+					for(int launched=0; ; ) {
+						cout << mark() << "start of launch block" << endl;
 
-					//establish active/idle nodes, receive pops
-					for(int i = 1; i < worldSize; i++) {
-						sendIns(Ping, i);
-					}
-					this_thread::sleep_for(chrono::seconds(1));
-					for(int i = 1; i < worldSize; i++) {
-						if(ownerlist[i] == i) {
-							int recvd;
-							MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-							while(recvd){
-								recvIns(recv, i);
-								if(recv & PopAvail) {
-									//sendIns(SendPop, i);
-									recvPop(&localpops[i], i);
-									evald.mergeIndv(localpops[i],evaldind[i]);
-								}
-								if(recv & Busy)
-									ownerlist[i] = i;
-								else if(recv & Ackn) {
-									ownerlist[i] = IDLE;
-									for(int j = 0; j < worldSize; j++)
-										if(ownerlist[j] == i) {
-											ownerlist[j] = IDLE;
-											avail++;
-										}
-								}
-								else
-									ownerlist[i] = DOWN;
-
-								MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-							}
-						}
-					}
-
-					//structures available
-					while(avail > 0 && launched < good.size()) {
-						//see how many nodes are needed
-						int given;
-						int needed=2*good.indv(launched)->getSymmcount();
-						if(needed > avail)
-							given = avail;
-						//see if there will be leftovers and how much is next
-						//if there are leftovers just give the extras to this
-						//evaluation (lazy scheduling, but it works)
-						else {
-							int next = 0;
-							if(launched + 1 < good.size())
-								next = 2*good.indv(launched+1)->getSymmcount();
-							if(next > (avail-needed))
-								given = avail;
-							else
-								given = needed;
-
-						}
-
-						vector<int> slots;
-						int first = IDLE;
-						for(int i = 0; i < worldSize; i++) {
-							if(ownerlist[i] == IDLE) {
-								if(first == IDLE)
-									first = i;
-								slots.push_back(i);
-								ownerlist[i] = first;
-							}
-						}
-						string hostfile = makeMachinefile(slots);
-
-						if(first == 0)
-							writeHost(localmachinefile, hostfile);
-						else {
-							sendIns(GetHost, first);
-							sendHost(hostfile, 0, first);
-						}
-
-
-						evaldind[first] = launched;
-						localpops[first] = good.subpop(launched,1);
-
-						if(first == 0) {
+						//test node 0
+						if(ownerlist[0] == 0) {
 							if(eval_mut.try_lock()) {
 								eval_mut.unlock();
-								//cout << "Evalpop size: " << evalpop.size() << endl;
-								//eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
-								async(launch::async, &GASP2control::runEvals, this, DoQE, localpops[first], localmachinefile);
+								ownerlist[0]=IDLE;
+								evald.mergeIndv(localpops[0],evaldind[0]);
 							}
 						}
-						else {
-							sendIns(PopAvail, first);
-							sendPop(localpops[first], first);
-							sendIns(DoQE, first);
+
+						//establish active/idle nodes, receive pops
+						cout << mark() << "pinging" << endl;
+						for(int i = 1; i < worldSize; i++) {
+							sendIns(Ping, i);
+						}
+						this_thread::sleep_for(chrono::seconds(1));
+						for(int i = 1; i < worldSize; i++) {
+							if(ownerlist[i] == i) {
+								int recvd;
+								MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+								while(recvd){
+									recvIns(recv, i);
+									if(recv & PopAvail) {
+										//sendIns(SendPop, i);
+										recvPop(&localpops[i], i);
+										evald.mergeIndv(localpops[i],evaldind[i]);
+									}
+									if(recv & Busy)
+										ownerlist[i] = i;
+									else if(recv & Ackn)
+										ownerlist[i] = IDLE;
+									else
+										ownerlist[i] = DOWN;
+
+									MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+								}
+							}
 						}
 
-						launched++;
+
+						//cleanup node control lists
+						for(int i = 0; i < worldSize; i++) {
+							if(ownerlist[ownerlist[i]] == IDLE)
+								ownerlist[i] = IDLE;
+						}
+
+						avail = 0;
+						for(int i = 0; i < worldSize; i++)
+							if(ownerlist[i] == IDLE)
+								avail++;
+
+						cout << mark() << "structures avail block: " << avail << endl;
+						cout << "ownerlist: ";
+						for(int i = 0; i < worldSize; i++)
+							cout << ownerlist[i] << " ";
+						cout << endl;
+
+
+						//structures available
+						while(avail > 0 && launched < good.size()) {
+							//see how many nodes are needed
+							int given;
+							int needed=2*good.indv(launched)->getSymmcount();
+							if(needed > avail)
+								given = avail;
+							//see if there will be leftovers and how much is next
+							//if there are leftovers just give the extras to this
+							//evaluation (lazy scheduling, but it works)
+							else {
+								int next = 0;
+								if(launched + 1 < good.size())
+									next = 2*good.indv(launched+1)->getSymmcount();
+								if(next > (avail-needed))
+									given = avail;
+								else
+									given = needed;
+
+							}
+
+							cout << mark() << "given is " << given << endl;
+
+							vector<int> slots;
+							slots.clear();
+							int first = IDLE;
+							for(int i = 0; i < given; i++) {
+								if(ownerlist[i] == IDLE) {
+									if(first == IDLE)
+										first = i;
+									slots.push_back(i);
+									ownerlist[i] = first;
+								}
+							}
+
+
+							cout << mark() << "first is " << first << endl;
+							if(first == IDLE)
+								break;
+
+							avail -= given;
+							cout << mark() << "avail is " << avail << endl;
+
+							string hostfile = makeMachinefile(slots);
+
+							if(first == 0) {
+								writeHost(localmachinefile, hostfile);
+							}
+							else {
+								sendIns(GetHost, first);
+								sendHost(hostfile, 0, first);
+							}
+
+
+							evaldind[first] = launched;
+							localpops[first] = good.subpop(launched,1);
+
+							if(first == 0) {
+								if(eval_mut.try_lock()) {
+									cout << mark() << "Launching QE on server..."<< endl;
+									eval_mut.unlock();
+									//cout << "Evalpop size: " << evalpop.size() << endl;
+									//eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
+									async(launch::async, &GASP2control::runEvals, this, DoQE, localpops[first], localmachinefile);
+								}
+								launched++;
+								break;
+							}
+							else {
+								cout << mark() << "Launching QE on client " << first << "..." << endl;
+								sendIns(PopAvail, first);
+								sendPop(localpops[first], first);
+								sendIns(DoQE, first);
+								launched++;
+								break;
+							}
+
+
+						}
+
+						cout << mark() << "launched is " << launched << endl;
+						//test for completion (all nodes idle)
+						bool flag = true;
+						for(int i = 0; i < worldSize; i++) {
+							if(ownerlist[i] != IDLE && ownerlist[i] != DOWN )
+								flag = false;
+						}
+						if(flag && (launched >= good.size()) )
+							break;
+
+						this_thread::sleep_for(chrono::seconds(5));
+
 					}
 
-					//test for completion (all nodes idle)
-					bool flag = true;
-					for(int i = 0; i < worldSize; i++) {
-						if(ownerlist[i] >= 0)
-							flag = false;
-					}
-					if(flag && (launched == worldSize) )
-						break;
-					this_thread::sleep_for(chrono::seconds(5));
+					evald.energysort();
+					writePop(evald, "evald", step);
+					good = evald;
 
-				}
+				} //end QE eval block
+
+			} //if good size > 0
+			else {
+				cout << mark() << "No structures to be energy evaluated, continuing..." << endl;
 			}
+
+			good.addIndv(bad);
+			evalpop = good;
 
 			//sort and reduce
 			evalpop.energysort();

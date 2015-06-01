@@ -169,7 +169,7 @@ namespace QE {
 	    while(true) {
 	    	if(chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count()
 		    		>= params.QEscftimeout) {
-	    		cout << "Timeout limit reached for a QE run!\n";
+	    		cout << mark() << "Timeout limit reached for a QE run!\n";
 	    		outstat = false;
 	    		break;
 	    	}
@@ -196,7 +196,7 @@ namespace QE {
 	        		//only the number of spacegroup operations
 	        		energy /= static_cast<double>(spacegroups[unit.spacegroup].R.size());
 	        		energy *= RydToKCalMol;
-	        		//cout << "New energy: " << energy << endl;
+	        		cout << "New energy: " << energy << endl;
 	        		epos = pos;
 	        	}
 

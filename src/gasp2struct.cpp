@@ -67,7 +67,7 @@ bool GASP2struct::minmaxVol() {
 	double expectvol = 0.0;
 	double vol = getVolume();
 	//must work independent of fitcell
-	cout << "vol: " << vol << " ";
+	//cout << "vol: " << vol << " ";
 	for(int i = 0; i < molecules.size(); i++) {
 		expectvol += molecules[i].expectvol;
 	}
@@ -77,10 +77,10 @@ bool GASP2struct::minmaxVol() {
 		expectvol *= (double) nops;
 	}
 
-	cout << "expectvol: " << expectvol << " ";
-	cout << "a: " << (((vol/expectvol)-1.0) < (minvol/100.0));
-	cout << " b: " << (((vol/expectvol)-1.0) > (maxvol/100.0)) << endl;
-	cout << "cell:" <<unit.a<<" "<<unit.b<<" "<<unit.c<<endl;
+	//cout << "expectvol: " << expectvol << " ";
+	//cout << "a: " << (((vol/expectvol)-1.0) < (minvol/100.0));
+	//cout << " b: " << (((vol/expectvol)-1.0) > (maxvol/100.0)) << endl;
+	//cout << "cell:" <<unit.a<<" "<<unit.b<<" "<<unit.c<<endl;
 
 	if( ((vol/expectvol)-1.0) < (minvol/100.0) ||
 		((vol/expectvol)-1.0) > (maxvol/100.0) )
