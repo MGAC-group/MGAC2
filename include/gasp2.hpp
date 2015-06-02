@@ -111,6 +111,7 @@ typedef enum Instruction {
 	DoCustom = (1u<<8), //order to client to perform custom eval
 	Shutdown = (1u<<9), //Send a shutdown signal for cleanup n stuff
 	GetHost = (1u<<10),
+	Complete = (1u<<11),
 
 }Instruction;
 

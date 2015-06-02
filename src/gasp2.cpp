@@ -377,8 +377,12 @@ void GASP2control::server_prog() {
 									}
 									if(recv & Busy)
 										ownerlist[i] = i;
-									else if(recv & Ackn)
+									else if(recv & Complete) {
 										ownerlist[i] = IDLE;
+										complete++;
+									}
+									//else if(recv & Ackn)
+									//	ownerlist[i] = IDLE;
 
 									//else
 									//ownerlist[i] = DOWN;
@@ -440,7 +444,7 @@ void GASP2control::server_prog() {
 									slots.push_back(i);
 									ownerlist[i] = first;
 								}
-								if(slots.size() == given)
+								if(slots.size() >= given)
 									break;
 							}
 
@@ -683,7 +687,7 @@ void GASP2control::client_prog() {
 					eval_mut.unlock();
 					//cout << "Evalpop size: " << evalpop.size() << endl;
 					//eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
-					async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
+					eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
 					evalQueued = false;
 				}
 				else {
@@ -697,11 +701,12 @@ void GASP2control::client_prog() {
 
 			if(eval_mut.try_lock()) {
 				eval_mut.unlock();
-				//ack = (Instruction) (ack | PopAvail);
+				ack = (Instruction) (ack | Complete);
 			}
 			else {
 				ack = (Instruction) (ack | Busy);
 			}
+
 //
 //					if(popsend.valid() && popsend.wait_for(timeout)==future_status::ready) {
 //						popsend.get();
