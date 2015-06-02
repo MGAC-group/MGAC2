@@ -326,6 +326,7 @@ void GASP2control::server_prog() {
 
 			good.volumesort();
 			writePop(good, "vollimit", step);
+			future<bool> serverthread;
 
 			if(good.size() > 0) {
 
@@ -341,15 +342,17 @@ void GASP2control::server_prog() {
 //						if(ownerlist[i] == IDLE)
 //							avail++;
 
-					for(int launched=0; ; ) {
+					for(int launched=0,completed=0; ; ) {
 						cout << mark() << "start of launch block" << endl;
 
 						//test node 0
 						if(ownerlist[0] == 0) {
 							if(eval_mut.try_lock()) {
 								eval_mut.unlock();
+								serverthread.get();
 								ownerlist[0]=IDLE;
 								evald.mergeIndv(localpops[0],evaldind[0]);
+								completed++;
 							}
 						}
 
@@ -369,13 +372,16 @@ void GASP2control::server_prog() {
 										//sendIns(SendPop, i);
 										recvPop(&localpops[i], i);
 										evald.mergeIndv(localpops[i],evaldind[i]);
+										//ownerlist[i] = IDLE;
+										//completed++;
 									}
 									if(recv & Busy)
 										ownerlist[i] = i;
 									else if(recv & Ackn)
 										ownerlist[i] = IDLE;
-									else
-										ownerlist[i] = DOWN;
+
+									//else
+									//ownerlist[i] = DOWN;
 
 									MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 								}
@@ -427,13 +433,15 @@ void GASP2control::server_prog() {
 							vector<int> slots;
 							slots.clear();
 							int first = IDLE;
-							for(int i = 0; i < given; i++) {
+							for(int i = 0; i < worldSize; i++) {
 								if(ownerlist[i] == IDLE) {
 									if(first == IDLE)
 										first = i;
 									slots.push_back(i);
 									ownerlist[i] = first;
 								}
+								if(slots.size() == given)
+									break;
 							}
 
 
@@ -464,7 +472,7 @@ void GASP2control::server_prog() {
 									eval_mut.unlock();
 									//cout << "Evalpop size: " << evalpop.size() << endl;
 									//eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
-									async(launch::async, &GASP2control::runEvals, this, DoQE, localpops[first], localmachinefile);
+									serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, localpops[first], localmachinefile);
 								}
 								launched++;
 								break;
@@ -488,7 +496,7 @@ void GASP2control::server_prog() {
 							if(ownerlist[i] != IDLE && ownerlist[i] != DOWN )
 								flag = false;
 						}
-						if(flag && (launched >= good.size()) )
+						if(flag && (launched >= good.size()) && (completed >= good.size()) )
 							break;
 
 						this_thread::sleep_for(chrono::seconds(5));
@@ -498,16 +506,18 @@ void GASP2control::server_prog() {
 					evald.energysort();
 					writePop(evald, "evald", step);
 					good = evald;
+					good.addIndv(bad);
+					evalpop = good;
 
 				} //end QE eval block
 
 			} //if good size > 0
 			else {
 				cout << mark() << "No structures to be energy evaluated, continuing..." << endl;
+
 			}
 
-			good.addIndv(bad);
-			evalpop = good;
+
 
 			//sort and reduce
 			evalpop.energysort();
@@ -604,7 +614,7 @@ void GASP2control::client_prog() {
 	int recvd;
 	GASP2pop evalpop;
 	Instruction i, ack;
-	//future<bool> popsend, eval;
+	future<bool> popsend, eval;
 	chrono::milliseconds timeout(0);
 	chrono::milliseconds t(200);
 

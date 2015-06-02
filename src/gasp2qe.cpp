@@ -196,7 +196,7 @@ namespace QE {
 	        		//only the number of spacegroup operations
 	        		energy /= static_cast<double>(spacegroups[unit.spacegroup].R.size());
 	        		energy *= RydToKCalMol;
-	        		cout << "New energy: " << energy << endl;
+	        		//cout << "New energy: " << energy << endl;
 	        		epos = pos;
 	        	}
 
