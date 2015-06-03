@@ -409,7 +409,7 @@ void GASP2pop::runFitcell(int threads) {
 
 
 	//cout << structures[0].serializeXML() << endl;
-	//cout << mark() << "where am I?" << endl;
+	cout << mark() << "where am I?" << endl;
 	//return out;
 }
 
@@ -430,7 +430,7 @@ void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2mole
 		if(!thread.valid()) {
 			if(!structures[i].completed()) {
 				structures[i].setEval(eval);
-				thread = async(launch::async, &GASP2struct::evaluate, &structures[i], hosts, p);
+				thread = async(launch::async, &GASP2struct::evaluate, &this->structures[i], hosts, p);
 				i++;
 			}
 		}
@@ -442,12 +442,15 @@ void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2mole
 		this_thread::sleep_for(thread_wait);
 
 	}
-	if(thread.valid())
+	if(thread.valid()) {
 		thread.wait();
+		thread.get();
+	}
 
 
-	//for(int i = 0; i < size(); i++)
-		//cout << structures[i].getEnergy() << endl;
+//	cout << mark() << "pop energies" << endl;
+//	for(int i = 0; i < size(); i++)
+//		cout << "energy: " << structures[i].getEnergy() << endl;
 
 
 }

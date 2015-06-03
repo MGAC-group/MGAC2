@@ -1170,6 +1170,7 @@ bool GASP2struct::evaluate(string hostfile, GASP2param params) {
 	if(!didOpt) {
 		complete = eval(molecules, unit, energy, force, pressure, time, hostfile, params);
 		steps++;
+		cout << mark() << "evaluate energy: " << energy << endl;
 		check();
 		didOpt = true;
 	}

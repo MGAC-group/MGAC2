@@ -371,6 +371,9 @@ void GASP2control::server_prog() {
 									if(recv & PopAvail) {
 										//sendIns(SendPop, i);
 										recvPop(&localpops[i], i);
+//										cout << mark() << "gasp server pop energies" << endl;
+//										for(int j = 0; j < evalpop.size(); j++)
+//											cout << "energy: " << localpops[i].indv(j)->getEnergy() << endl;
 										evald.mergeIndv(localpops[i],evaldind[i]);
 										//ownerlist[i] = IDLE;
 										//completed++;
@@ -379,7 +382,7 @@ void GASP2control::server_prog() {
 										ownerlist[i] = i;
 									else if(recv & Complete) {
 										ownerlist[i] = IDLE;
-										complete++;
+										completed++;
 									}
 									//else if(recv & Ackn)
 									//	ownerlist[i] = IDLE;
@@ -476,7 +479,7 @@ void GASP2control::server_prog() {
 									eval_mut.unlock();
 									//cout << "Evalpop size: " << evalpop.size() << endl;
 									//eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
-									serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, localpops[first], localmachinefile);
+									serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
 								}
 								launched++;
 								break;
@@ -566,7 +569,7 @@ void GASP2control::server_prog() {
 }
 
 
-bool GASP2control::runEvals(Instruction i, GASP2pop p, string machinefilename) {
+bool GASP2control::runEvals(Instruction i, GASP2pop* p, string machinefilename) {
 
 	//get the hostfile stuff
 //	string machinefile; int junk;
@@ -583,14 +586,14 @@ bool GASP2control::runEvals(Instruction i, GASP2pop p, string machinefilename) {
 	//only one of these will execute
 	if(i & DoFitcell) {
 		eval_mut.lock();
-		p.runFitcell(nodethreads);
+		p->runFitcell(nodethreads);
 		eval_mut.unlock();
 	}
 	if(i & DoCharmm)
 		cout << "Charmm not implemented!" << endl;
 	if(i & DoQE) {
 		eval_mut.lock();
-		p.runEval(machinefilename, params, QE::runQE);
+		p->runEval(machinefilename, params, QE::runQE);
 		eval_mut.unlock();
 	}
 	if(i & DoCustom)
@@ -638,10 +641,10 @@ void GASP2control::client_prog() {
 		i = None; ack = None;
 
 		MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-		while(recvd) {
+		while(recvd || sendQueued || recvQueued) {
 			recvIns(i, 0);
 
-			//cout << "client received: " << i << endl;
+			cout << "client received: " << i << endl;
 			if(i & Shutdown) {
 				remove(localmachinefile.c_str());
 				return;
@@ -659,8 +662,13 @@ void GASP2control::client_prog() {
 			if(i & SendPop || sendQueued) {
 				if(eval_mut.try_lock()) {
 					eval_mut.unlock();
+					cout << mark() << "sendpop block sendQueued" << endl;
+//					cout << mark() << "gasp client pop energies" << endl;
+//					for(int i = 0; i < evalpop.size(); i++)
+//						cout << "energy: " << evalpop.indv(i)->getEnergy() << endl;
 					sendPop(evalpop, 0);
 					sendQueued = false;
+
 				}
 				else {
 					sendQueued = true;
@@ -676,6 +684,7 @@ void GASP2control::client_prog() {
 					recvQueued = false;
 				}
 				else {
+					cout << mark() << "Eval thread is locked, retrying in ~200 ms..." << endl;
 					recvQueued = true;
 					ack = (Instruction) (ack | Busy);
 				}
@@ -687,7 +696,7 @@ void GASP2control::client_prog() {
 					eval_mut.unlock();
 					//cout << "Evalpop size: " << evalpop.size() << endl;
 					//eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
-					eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
+					eval = async(launch::async, &GASP2control::runEvals, this, i, &evalpop, localmachinefile);
 					evalQueued = false;
 				}
 				else {
@@ -701,6 +710,7 @@ void GASP2control::client_prog() {
 
 			if(eval_mut.try_lock()) {
 				eval_mut.unlock();
+				cout << mark() << "sending unlock" << endl;
 				ack = (Instruction) (ack | Complete);
 			}
 			else {
@@ -722,6 +732,10 @@ void GASP2control::client_prog() {
 			if(save_state) {
 				if(longeval_mut.try_lock()) {
 					sendIns(PopAvail, 0);
+					cout << mark() << "sendpop block save_state" << endl;
+//					cout << mark() << "gasp client pop energies" << endl;
+//					for(int i = 0; i < evalpop.size(); i++)
+//						cout << "energy: " << evalpop.indv(i)->getEnergy() << endl;
 					sendPop(evalpop, 0);
 				}
 				save_state=false;

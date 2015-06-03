@@ -118,6 +118,7 @@ typedef enum Instruction {
 extern std::mutex eval_mut;
 extern std::mutex longeval_mut;
 extern std::atomic<bool> save_state;
+extern std::atomic<GASP2pop*> sharedpop;
 
 class GASP2control {
 public:
@@ -157,7 +158,7 @@ private:
 	bool sendHost(string host, int procs, int target);
 	bool recvHost(string &host, int &procs, int target);
 
-	bool runEvals(Instruction i, GASP2pop p, string machinefilename);
+	bool runEvals(Instruction i, GASP2pop *p, string machinefilename);
 
 	string makeMachinefile(vector<int> slots);
 

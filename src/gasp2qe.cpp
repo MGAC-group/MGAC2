@@ -14,7 +14,7 @@ namespace QE {
 		return true;
 	};
 
-	bool runQE(vector<GASP2molecule>& mols, GASP2cell& unit, double& energy, double& force, double&pressure, time_t&time, string hostfile, GASP2param params) {
+	bool runQE(vector<GASP2molecule>& mols, GASP2cell& unit, double &energy, double &force, double&pressure, time_t&time, string hostfile, GASP2param params) {
 
 		bool outstat = true;
 
