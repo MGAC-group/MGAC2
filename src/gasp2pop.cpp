@@ -182,7 +182,7 @@ GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 	GASP2pop ok;
 
 	for(int i = 0; i < size(); i++) {
-		if(structures[i].getSymmcount() < limit)
+		if(structures[i].getSymmcount() <= limit)
 			ok.structures.push_back(structures[i]);
 		else
 			bad.structures.push_back(structures[i]);
@@ -409,7 +409,7 @@ void GASP2pop::runFitcell(int threads) {
 
 
 	//cout << structures[0].serializeXML() << endl;
-	cout << mark() << "where am I?" << endl;
+	//cout << mark() << "where am I?" << endl;
 	//return out;
 }
 

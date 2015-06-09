@@ -9,6 +9,7 @@ using namespace std;
 std::mutex eval_mut;
 std::mutex longeval_mut;
 std::atomic<bool> save_state;
+std::atomic<bool> completed;
 
 GASP2control::GASP2control(int ID, string infile) {
 
@@ -170,16 +171,17 @@ void GASP2control::server_prog() {
 			cout << mark() << "Client " << i << " ack'd" << endl;
 			ownerlist[i] = IDLE;
 		}
-		else
+		else {
 			cout << mark() << "Client " << i << " is down!" << endl;
 			ownerlist[i] = DOWN;
+		}
 
 	}
 
 
 	//do the initialization
 	if(restart.length() == 0) {
-		rootpop.init(root, params.popsize, params.spacemode);
+		rootpop.init(root, params.popsize, params.spacemode, params.group);
 	}
 	else
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
@@ -214,6 +216,7 @@ void GASP2control::server_prog() {
 
 	if(params.mode == "stepwise") {
 		for(int step = 0; step < params.generations; step++) {
+			cout << mark() << "Starting new generation " << step << endl;
 			//scale, cross and mutate
 			cout << mark() << "Scaling..." << endl;
 			if(step > 0)
@@ -275,6 +278,7 @@ void GASP2control::server_prog() {
 			}
 			//do the local fitcell
 			split[0].runFitcell(hostlist[0].threads);
+			cout << mark() << "Server fitcell finished" << endl;
 
 
 			//wait for completion of threads
@@ -320,9 +324,9 @@ void GASP2control::server_prog() {
 
 			//evaluate
 			evalpop.symmsort();
-			GASP2pop bad; GASP2pop good;
+			GASP2pop bad, good, restart;
 			good = evalpop.volLimit(bad);
-			cout << mark() << "Limited volume population size:" << good.size() << endl;
+			cout << mark() << "Volume limited population size:" << good.size() << endl;
 
 			good.volumesort();
 			writePop(good, "vollimit", step);
@@ -330,7 +334,39 @@ void GASP2control::server_prog() {
 
 			if(good.size() > 0) {
 
+				//establish who is paying attention initially
+				for(int i = 1; i < worldSize; i++) {
+
+					//clear the message queue for safety
+					int recvd;
+					recv = None;
+					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+					while(recvd){
+						recvIns(recv, i);
+						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+					}
+
+					//try to get a signal for ~5 seconds
+					sendIns(Ping, i);
+					cout << mark() << "Sending initial ping to client " << i << endl;
+				}
+				this_thread::sleep_for(chrono::seconds(2));
+				for(int i = 1; i < worldSize; i++) {
+					recvIns(recv, i);
+					if(recv & Ackn) {
+						cout << mark() << "Client " << i << " ack'd" << endl;
+						ownerlist[i] = IDLE;
+					}
+					else {
+						cout << mark() << "Client " << i << " is down!" << endl;
+						ownerlist[i] = DOWN;
+					}
+
+				}
+
 				if(params.calcmethod == "qe") {
+
+					cout << mark() << "Beginning QE evaluation" << endl;
 					good.symmsort();
 					int avail = 0;
 					//var to store reference index of sent structure
@@ -338,11 +374,7 @@ void GASP2control::server_prog() {
 					vector<int> evaldind(worldSize);
 					GASP2pop evald = good;
 
-//					for(int i = 0; i < worldSize; i++)
-//						if(ownerlist[i] == IDLE)
-//							avail++;
-
-					for(int launched=0,completed=0; ; ) {
+					for(int launched=0,completesteps=0; ; ) {
 						cout << mark() << "start of launch block" << endl;
 
 						//test node 0
@@ -352,44 +384,54 @@ void GASP2control::server_prog() {
 								serverthread.get();
 								ownerlist[0]=IDLE;
 								evald.mergeIndv(localpops[0],evaldind[0]);
-								completed++;
+								completesteps++;
 							}
 						}
 
 						//establish active/idle nodes, receive pops
 						cout << mark() << "pinging" << endl;
 						for(int i = 1; i < worldSize; i++) {
-							sendIns(Ping, i);
+							if(ownerlist[i] == 1)
+								sendIns(Ping, i);
 						}
 						this_thread::sleep_for(chrono::seconds(1));
 						for(int i = 1; i < worldSize; i++) {
 							if(ownerlist[i] == i) {
 								int recvd;
+								recv = None;
 								MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 								while(recvd){
 									recvIns(recv, i);
-									cout << mark() << "server QE received: " << recv << endl;
-									if(recv & PopAvail) {
-										//sendIns(SendPop, i);
-										recvPop(&localpops[i], i);
-//										cout << mark() << "gasp server pop energies" << endl;
-//										for(int j = 0; j < evalpop.size(); j++)
-//											cout << "energy: " << localpops[i].indv(j)->getEnergy() << endl;
-										evald.mergeIndv(localpops[i],evaldind[i]);
-										//ownerlist[i] = IDLE;
-										//completed++;
-									}
-									if(recv & Busy)
-										ownerlist[i] = i;
-									else if(recv & Complete) {
-										ownerlist[i] = IDLE;
-										completed++;
-									}
-									//else if(recv & Ackn)
-									//	ownerlist[i] = IDLE;
 
-									//else
-									//ownerlist[i] = DOWN;
+									cout << mark() << "server QE received from " << i << ": " << recv << endl;
+
+										if(recv & PopAvail) {
+											sendIns(SendPop, i);
+											recvPop(&localpops[i], i);
+		//										cout << mark() << "gasp server pop energies" << endl;
+		//										for(int j = 0; j < evalpop.size(); j++)
+		//											cout << "energy: " << localpops[i].indv(j)->getEnergy() << endl;
+											evald.mergeIndv(localpops[i],evaldind[i]);
+											restart = evald;
+											restart.addIndv(bad);
+											writePop(restart, "restart", 0);
+										}
+										if(recv & Busy) {
+											cout << "marking busy " << i << endl;
+											ownerlist[i] = i;
+										}
+										else if(recv & Complete) {
+											sendIns(SendPop,i);
+											recvPop(&localpops[i],i);
+											evald.mergeIndv(localpops[i],evaldind[i]);
+											restart = evald;
+											restart.addIndv(bad);
+											writePop(restart, "restart", 0);
+
+											cout << mark() << "Client " << i << " finished eval" << endl;
+											ownerlist[i] = IDLE;
+											completesteps++;
+										}
 
 									MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 								}
@@ -409,7 +451,7 @@ void GASP2control::server_prog() {
 								avail++;
 
 						cout << mark() << "structures avail block: " << avail << endl;
-						cout << "ownerlist: ";
+						cout << "Ownerlist: ";
 						for(int i = 0; i < worldSize; i++)
 							cout << ownerlist[i] << " ";
 						cout << endl;
@@ -419,7 +461,7 @@ void GASP2control::server_prog() {
 						while(avail > 0 && launched < good.size()) {
 							//see how many nodes are needed
 							int given;
-							int needed=2*good.indv(launched)->getSymmcount();
+							int needed=1*good.indv(launched)->getSymmcount();
 							if(needed > avail)
 								given = avail;
 							//see if there will be leftovers and how much is next
@@ -428,8 +470,10 @@ void GASP2control::server_prog() {
 							else {
 								int next = 0;
 								if(launched + 1 < good.size())
-									next = 2*good.indv(launched+1)->getSymmcount();
+									next = 1*good.indv(launched+1)->getSymmcount();
 								if(next > (avail-needed))
+									given = avail;
+								else if (next == 0)
 									given = avail;
 								else
 									given = needed;
@@ -476,7 +520,7 @@ void GASP2control::server_prog() {
 
 							if(first == 0) {
 								if(eval_mut.try_lock()) {
-									cout << mark() << "Launching QE on server..."<< endl;
+									cout << mark() << "Launching QE on server with "<< given << "nodes..."<< endl;
 									eval_mut.unlock();
 									//cout << "Evalpop size: " << evalpop.size() << endl;
 									//eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
@@ -486,7 +530,7 @@ void GASP2control::server_prog() {
 								break;
 							}
 							else {
-								cout << mark() << "Launching QE on client " << first << "..." << endl;
+								cout << mark() << "Launching QE on client " << first << "with "<< given << "nodes..." << endl;
 								sendIns(PopAvail, first);
 								sendPop(localpops[first], first);
 								sendIns(DoQE, first);
@@ -504,10 +548,10 @@ void GASP2control::server_prog() {
 							if(ownerlist[i] != IDLE && ownerlist[i] != DOWN )
 								flag = false;
 						}
-						if(flag && (launched >= good.size()) && (completed >= good.size()) )
+						if(flag && (launched >= good.size()) && (completesteps >= good.size()) )
 							break;
 
-						this_thread::sleep_for(chrono::seconds(5));
+						this_thread::sleep_for(chrono::seconds(2));
 
 					}
 
@@ -585,24 +629,22 @@ bool GASP2control::runEvals(Instruction i, GASP2pop* p, string machinefilename) 
 //	}
 //	outf << machinefile << endl;
 //	outf.close();
-
+	eval_mut.lock();
 	//only one of these will execute
 	if(i & DoFitcell) {
-		eval_mut.lock();
 		p->runFitcell(nodethreads);
-		eval_mut.unlock();
 	}
 	if(i & DoCharmm)
 		cout << "Charmm not implemented!" << endl;
 	if(i & DoQE) {
-		eval_mut.lock();
 		p->runEval(machinefilename, params, QE::runQE);
-		eval_mut.unlock();
 	}
 	if(i & DoCustom)
 		cout << "Custom eval not implemented!" << endl;
 
-	//cout << "eval finished on client " << ID << endl;
+	eval_mut.unlock();
+
+	cout << "Eval finished on client " << ID << endl;
 	return true;
 
 }
@@ -622,15 +664,15 @@ void GASP2control::client_prog() {
 	bool busy = false;
 	bool popsent = true;
 	int recvd;
-	GASP2pop evalpop;
-	Instruction i, ack;
+	GASP2pop evalpop, temppop;
+	Instruction i, ack, evalmode = (Instruction)(0u);
 	future<bool> popsend, eval;
 	chrono::milliseconds timeout(0);
 	chrono::milliseconds t(200);
 
-	bool sendQueued = false;
-	bool evalQueued = false;
-	bool recvQueued = false;
+	bool queueSend = false;
+	bool queueEval = false;
+	bool queueRecv = false;
 	int target = 0;
 
 	auto start = chrono::steady_clock::now();
@@ -639,9 +681,12 @@ void GASP2control::client_prog() {
 	int itemp;
 
 	save_state=false;
+	completed = false;
 
 	while(true) {
 		i = None; ack = None;
+
+		//cout << "client cycle " << this->ID << endl;
 
 		MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 		while(recvd) {
@@ -662,105 +707,114 @@ void GASP2control::client_prog() {
 				writeHost(localmachinefile, hostfile);
 			}
 
-			if(i & SendPop || sendQueued) {
-				if(eval_mut.try_lock()) {
-					eval_mut.unlock();
-					//cout << mark() << "sendpop block sendQueued" << endl;
-//					cout << mark() << "gasp client pop energies" << endl;
-//					for(int i = 0; i < evalpop.size(); i++)
-//						cout << "energy: " << evalpop.indv(i)->getEnergy() << endl;
-					sendPop(evalpop, 0);
-					sendQueued = false;
+			if(i & PopAvail)
+				queueRecv = true;
 
-				}
-				else {
-					sendQueued = true;
-					cout << "sendQueued client " << this->ID << endl;
-					ack = (Instruction) (ack | Busy);
-				}
-			}
+			if(i & SendPop)
+				queueSend = true;
 
-			if( ((i & PopAvail) || recvQueued) && !sendQueued ) {
-				if(eval_mut.try_lock()) {
-					eval_mut.unlock();
-					//sendPop(evalpop, 0);
-					recvPop(&evalpop, 0);
-					recvQueued = false;
-				}
-				else {
-					cout << mark() << "RecvQueued thread is locked, retrying in ~200 ms... " << ID << endl;
-					recvQueued = true;
-					ack = (Instruction) (ack | Busy);
-				}
-			}
-
-
-			if(i & (DoFitcell | DoCharmm | DoQE | DoCustom) || evalQueued){
-				//if(!eval.valid() && eval_mut.try_lock()) {
-				if(eval_mut.try_lock()) {
-					eval_mut.unlock();
-					//cout << "Evalpop size: " << evalpop.size() << endl;
-					//eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
-					eval = async(launch::async, &GASP2control::runEvals, this, i, &evalpop, localmachinefile);
-					evalQueued = false;
-				}
-				else {
-					//cout << mark() << "ERROR ON CLIENT " << ID << ": COULD NOT LAUNCH EVAL THREAD!" << endl;
-					//MPI_Abort(MPI_COMM_WORLD,1);
-					cout << mark() << "Eval thread is locked, retrying in ~200 ms..." << ID << endl;
-					evalQueued = true;
-				}
-
+			//do not allow the evalmode to change
+			if(i & (DoFitcell | DoCharmm | DoQE | DoCustom) && !queueEval) {
+				evalmode = i;
+				queueEval = true;
 			}
 
 			if(eval_mut.try_lock()) {
 				eval_mut.unlock();
 				//cout << mark() << "sending Complete" << endl;
-				ack = (Instruction) (ack | Complete);
+				//ack = (Instruction) (ack | Complete);
 			}
 			else {
 				ack = (Instruction) (ack | Busy);
 			}
 
-//
-//					if(popsend.valid() && popsend.wait_for(timeout)==future_status::ready) {
-//						popsend.get();
-//					}
-			if(eval_mut.try_lock() && eval.valid()) {// && eval.valid() && eval.wait_for(timeout)==future_status::ready) {
-				eval.get();
-				eval_mut.unlock();
-				break;
-			}
-
-
-			// new pop is available, so we need to tell the server
-			if(save_state) {
-				if(longeval_mut.try_lock()) {
-					sendIns(PopAvail, 0);
-					cout << mark() << "sendpop block save_state " << ID << endl;
-//					cout << mark() << "gasp client pop energies" << endl;
-//					for(int i = 0; i < evalpop.size(); i++)
-//						cout << "energy: " << evalpop.indv(i)->getEnergy() << endl;
-					sendPop(evalpop, 0);
-					save_state=false;
-					longeval_mut.unlock();
-				}
-
-			}
-
-
 			if(ack != None) {
-				cout << "client " << ID << " sent ack" << ack << endl;
+				cout << "client " << ID << " sent ack " << ack << endl;
 				sendIns(ack,0);
-
-			}
-
-			if(sendQueued || recvQueued || evalQueued) {
-				cout << "client " << ID << " has outstanding work" << endl;
-				this_thread::sleep_for(t);
 			}
 
 			MPI_Iprobe(0, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+
+		}
+
+		//execute work
+		//A SEND ALWAYS TAKES PRECEDENCE OVER A RECEIVE
+
+		if(queueSend) {
+			//see what the current evalmode
+			cout << "client " << ID << ": send queued" << endl;
+			if(evalmode & DoFitcell) {
+				if(eval_mut.try_lock()) {
+					sendPop(evalpop, 0);
+					queueSend = false;
+					eval_mut.unlock();
+				}
+				else {
+					cout << "client " << ID << ": cannot send, thread still working (retrying in 200 ms)" << endl;
+				}
+			}
+			else if(evalmode & DoQE) {
+				//evaluation not happening
+				if(eval_mut.try_lock()) {
+					sendPop(evalpop, 0);
+					queueSend = false;
+					eval_mut.unlock();
+				}
+				else {
+					//in this instance the client sends info
+					sendPop(temppop, 0);
+					queueSend = false;
+				}
+
+			}
+		}
+
+		if(queueRecv) {
+			cout << "client " << ID << ": recv queued" << endl;
+			if(!queueSend) {
+				if(eval_mut.try_lock()) {
+					eval_mut.unlock();
+					recvPop(&evalpop, 0);
+					queueRecv = false;
+				}
+				else {
+					cout << "client " << ID << ":Eval thread is locked, cannot send yet..." << endl;
+				}
+
+			}
+			else {
+				cout << "client " << ID << ": send queued, cannot receive yet" << endl;
+			}
+		}
+
+		if(queueEval) {
+			cout << "client " << ID << ": eval queued" << endl;
+			if(eval_mut.try_lock()) {
+				eval_mut.unlock();
+				temppop = evalpop;
+				async(launch::async, &GASP2control::runEvals, this, evalmode, &evalpop, localmachinefile);
+				queueEval = false;
+			}
+			else {
+				cout << mark() << "Eval thread is locked, retrying in ~200 ms..." << ID << endl;
+			}
+		}
+
+		//store the temppop
+		if( save_state && longeval_mut.try_lock()) {
+			cout << "queueing intermediate pop info on client " << ID << endl;
+//					cout << mark() << "gasp client pop energies" << endl;
+//					for(int i = 0; i < evalpop.size(); i++)
+//						cout << "energy: " << evalpop.indv(i)->getEnergy() << endl;
+			temppop = evalpop;
+			sendIns(PopAvail, 0);
+			save_state=false;
+			longeval_mut.unlock();
+		}
+
+		if(completed) {
+			sendIns(Complete, 0);
+			completed = false;
 		}
 
         this_thread::sleep_for(t);

@@ -91,6 +91,8 @@ public:
 	int QErestart_limit; //3
 	int QEscftimeout; //time in seconds
 	vector<string> QEpseudos; //REQUIRED
+//	int QEscalemin;
+// 	int QEscalemax;
 
 	//CHARMM params
 	//AML: at some point I may add in CHARMM support

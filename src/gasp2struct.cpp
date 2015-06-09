@@ -2186,7 +2186,7 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		strtemp = stemp;
 		cell.spacegroup = 0;
 		for(int i = 0; i < spacegroupNames.size(); i++) {
-			if(strtemp == spacegroupNames[i]) {
+			if(strtemp.compare(spacegroupNames[i]) == 0) {
 				cell.spacegroup = i;
 				break;
 			}

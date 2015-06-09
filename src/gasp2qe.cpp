@@ -22,9 +22,15 @@ namespace QE {
 		UUID runID;
 		runID.generate();
 		string name = runID.toStr();
-		string prefix = params.QEoutdir + "/" + name;
-		string infile = prefix + ".in";
+		string prefix = params.QEoutdir + "/" + name + "/";
+		string infile = prefix + name + ".in";
 		//string outfile = prefix + ".out";
+		int result = mkdir(prefix.c_str(), 0700);
+		if(result == -1) {
+			cout << "Cannot make QE temp directory! Aborting..." << endl;
+			MPI_Abort(MPI_COMM_WORLD, 1);
+			exit(1);
+		}
 
 
 		//write the inputfile
@@ -38,7 +44,7 @@ namespace QE {
 		input << "  tprnfor = " << params.QEtprnfor << endl;
 		input << "  nstep = " << params.QEnstep << endl;
 		input << "  pseudo_dir = '" << params.QEpseudo_dir << "'"<< endl;
-		input << "  outdir = '" << params.QEoutdir << "'" << endl;
+		input << "  outdir = '" << prefix << "'" << endl;
 		input << "  wf_collect = " << params.QEwf_collect << endl;
 		input << "  verbosity = " << params.QEverbosity << endl;
 		input << "  etot_conv_thr = " << params.QEetot_conv_thr << endl;
@@ -154,17 +160,18 @@ namespace QE {
 		Mat3 toCart;
 		Vec3 va,vb,vc;
 		double alat;
+		int numprocesses;
 
 		save_state=false;
 
 		auto start = chrono::steady_clock::now();
 
 // debug QE output
-		outf.open("qedebug.out", ofstream::out);
-		if(outf.fail()) {
-			cout << "A problem was detected when trying to write a QE debug file!" << endl;
-			return false;
-		}
+//		outf.open("qedebug.out", ofstream::out);
+//		if(outf.fail()) {
+//			cout << "A problem was detected when trying to write a QE debug file!" << endl;
+//			return false;
+//		}
 
 	    while(true) {
 	    	if(chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count()
@@ -175,7 +182,7 @@ namespace QE {
 	    	}
 
 	        while(fgets(buff, sizeof(buff), out)) {
-	        	outf << buff;
+	        	//outf << buff;
 	        	output.append(buff);
 	        }
 	        length = output.size();
@@ -335,17 +342,21 @@ namespace QE {
 	        this_thread::sleep_for(t);
 	    }
 
-		outf.close();
+		//outf.close();
 
 
 	    pclose2(t,out);
 		//cleanup inputs
+	    string rem = "rm -rf " + prefix;
+	    system(rem.c_str());
 
         //add the time:
 	    int duration = chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count();
 	    cout << mark() << "QE completed in: " << duration << endl;
         time += duration;
 
+
+        completed = true;
 	    return outstat;
 	}
 

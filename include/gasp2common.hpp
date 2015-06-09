@@ -25,6 +25,8 @@
 #include <sys/wait.h>
 #include <mutex>
 #include <atomic>
+#include <sys/stat.h>
+
 
 #define READ 0
 #define WRITE 1

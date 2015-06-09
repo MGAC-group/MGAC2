@@ -371,7 +371,7 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 						string strtemp = stemp;
 						group = 0;
 						for(int i = 0; i < spacegroupNames.size(); i++) {
-							if(strtemp == spacegroupNames[i]) {
+							if(strtemp.compare(spacegroupNames[i]) == 0) {
 								group = i;
 								break;
 							}
