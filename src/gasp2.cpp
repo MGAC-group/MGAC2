@@ -179,12 +179,20 @@ void GASP2control::server_prog() {
 	}
 
 
-	//do the initialization
-	if(restart.length() == 0) {
-		rootpop.init(root, params.popsize, params.spacemode, params.group);
-	}
-	else
+	GASP2pop evalpop, lastpop;
+
+	vector<GASP2pop> split;
+
+
+	if(restart.length() > 0) {
+		lastpop = rootpop;
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
+	}
+
+	//do the initialization
+	//we always generate a rootpop
+	//this is to prevent over optimization.
+	rootpop.init(root, params.popsize, params.spacemode, params.group);
 	writePop(rootpop, "root", 0);
 
 	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
@@ -204,9 +212,7 @@ void GASP2control::server_prog() {
 //	else if(params.calcmethod == "fitcell")
 //		evalmode = (Instruction) (evalmode | DoFitcell);
 
-	GASP2pop evalpop, lastpop;
-	lastpop = rootpop;
-	vector<GASP2pop> split;
+
 
 	vector<future<bool>> popsend(worldSize);
 	future<bool> eval;
@@ -389,7 +395,7 @@ void GASP2control::server_prog() {
 						}
 
 						//establish active/idle nodes, receive pops
-						cout << mark() << "pinging" << endl;
+						//cout << mark() << "pinging" << endl;
 						for(int i = 1; i < worldSize; i++) {
 							if(ownerlist[i] == 1)
 								sendIns(Ping, i);
@@ -414,6 +420,8 @@ void GASP2control::server_prog() {
 											evald.mergeIndv(localpops[i],evaldind[i]);
 											restart = evald;
 											restart.addIndv(bad);
+											restart.energysort();
+											restart.remIndv(evalpop.size()-params.popsize);
 											writePop(restart, "restart", 0);
 										}
 										if(recv & Busy) {
@@ -633,6 +641,7 @@ bool GASP2control::runEvals(Instruction i, GASP2pop* p, string machinefilename) 
 	//only one of these will execute
 	if(i & DoFitcell) {
 		p->runFitcell(nodethreads);
+		completed = true;
 	}
 	if(i & DoCharmm)
 		cout << "Charmm not implemented!" << endl;
@@ -692,7 +701,7 @@ void GASP2control::client_prog() {
 		while(recvd) {
 			recvIns(i, 0);
 
-			cout << "client " << this->ID << "received: " << i << endl;
+			cout << "client " << this->ID << " received: " << i << endl;
 			if(i & Shutdown) {
 				remove(localmachinefile.c_str());
 				return;
@@ -728,7 +737,7 @@ void GASP2control::client_prog() {
 				ack = (Instruction) (ack | Busy);
 			}
 
-			if(ack != None) {
+			if(ack > None) {
 				cout << "client " << ID << " sent ack " << ack << endl;
 				sendIns(ack,0);
 			}
@@ -788,12 +797,14 @@ void GASP2control::client_prog() {
 		}
 
 		if(queueEval) {
-			cout << "client " << ID << ": eval queued" << endl;
+			cout << "client " << ID << ": eval queued " << evalmode << endl;
 			if(eval_mut.try_lock()) {
 				eval_mut.unlock();
 				temppop = evalpop;
-				async(launch::async, &GASP2control::runEvals, this, evalmode, &evalpop, localmachinefile);
-				queueEval = false;
+				if(!eval.valid()) {
+					eval = std::async(launch::async, &GASP2control::runEvals, this, evalmode, &evalpop, localmachinefile);
+					queueEval = false;
+				}
 			}
 			else {
 				cout << mark() << "Eval thread is locked, retrying in ~200 ms..." << ID << endl;
@@ -816,7 +827,14 @@ void GASP2control::client_prog() {
 			sendIns(Complete, 0);
 			completed = false;
 		}
-
+		if(eval.valid() && eval.wait_for(timeout)==future_status::ready){
+			eval.get();
+			if(completed == false) {
+				cout << mark() << "Client " << ID << ": weird exit on thread occurred..." << endl;
+				completed = true;
+			}
+		}
+		cout << flush;
         this_thread::sleep_for(t);
 	};
 
