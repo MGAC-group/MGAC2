@@ -204,7 +204,7 @@ public:
 	//bool writeH5() {return true;};
 	void logStruct();
 	bool cifOut(string name);
-	bool cifString(string &out);
+	bool cifString(string &out, int rank);
 	void clear() { molecules.clear(); unit.clear(); };
 
 

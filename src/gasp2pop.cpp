@@ -353,7 +353,7 @@ bool GASP2pop::writeCIF(string name) {
 
 	for(int i = 0; i < size(); i++) {
 		temp = "";
-		if(structures[i].cifString(temp))
+		if(structures[i].cifString(temp, i))
 			outf << temp << endl;
 	}
 

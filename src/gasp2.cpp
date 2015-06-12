@@ -72,6 +72,8 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart)
 				cout << "There was an error in the restart file: " << errorstring << endl;
 				MPI_Abort(1,MPI_COMM_WORLD);
 			}
+			rootpop.energysort();
+			rootpop.remIndv(rootpop.size() - params.popsize);
 
 		}
 		else {
@@ -186,6 +188,7 @@ void GASP2control::server_prog() {
 
 	if(restart.length() > 0) {
 		lastpop = rootpop;
+		rootpop.clear();
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
 	}
 
@@ -237,6 +240,7 @@ void GASP2control::server_prog() {
 			else if (params.type == "classic") {
 				lastpop.addIndv(rootpop);
 				evalpop = lastpop.fullCross(params.spacemode);
+				evalpop.addIndv(lastpop);
 			}
 			evalpop.mutate(params.mutation_prob, params.spacemode);
 
@@ -390,8 +394,28 @@ void GASP2control::server_prog() {
 								serverthread.get();
 								ownerlist[0]=IDLE;
 								evald.mergeIndv(localpops[0],evaldind[0]);
+								restart = evald;
+								restart.addIndv(bad);
+								restart.energysort();
+								//restart.remIndv(restart.size()-params.popsize);
+								writePop(restart, "restart", 0);
 								completesteps++;
 							}
+						}
+
+						if( save_state && longeval_mut.try_lock()) {
+							cout << "queueing intermediate pop info on client " << ID << endl;
+				//					cout << mark() << "gasp client pop energies" << endl;
+				//					for(int i = 0; i < evalpop.size(); i++)
+				//						cout << "energy: " << evalpop.indv(i)->getEnergy() << endl;
+							evald.mergeIndv(localpops[0],evaldind[0]);
+							restart = evald;
+							restart.addIndv(bad);
+							restart.energysort();
+							//restart.remIndv(restart.size()-params.popsize);
+							writePop(restart, "restart", 0);
+							save_state=false;
+							longeval_mut.unlock();
 						}
 
 						//establish active/idle nodes, receive pops
@@ -421,7 +445,7 @@ void GASP2control::server_prog() {
 											restart = evald;
 											restart.addIndv(bad);
 											restart.energysort();
-											restart.remIndv(evalpop.size()-params.popsize);
+											//restart.remIndv(restart.size()-params.popsize);
 											writePop(restart, "restart", 0);
 										}
 										if(recv & Busy) {
@@ -434,6 +458,8 @@ void GASP2control::server_prog() {
 											evald.mergeIndv(localpops[i],evaldind[i]);
 											restart = evald;
 											restart.addIndv(bad);
+											restart.energysort();
+											//restart.remIndv(restart.size()-params.popsize);
 											writePop(restart, "restart", 0);
 
 											cout << mark() << "Client " << i << " finished eval" << endl;
@@ -559,7 +585,7 @@ void GASP2control::server_prog() {
 						if(flag && (launched >= good.size()) && (completesteps >= good.size()) )
 							break;
 
-						this_thread::sleep_for(chrono::seconds(2));
+						this_thread::sleep_for(chrono::seconds(5));
 
 					}
 

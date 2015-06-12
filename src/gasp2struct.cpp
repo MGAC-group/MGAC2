@@ -665,8 +665,8 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	unit.spacegroup = 1;
 
 	//randomize spacegroup
-	//one, two x4, three, four, six,
-	discrete_distribution<> daxis({1,4,1,1,1});
+	//one, two x2, three, four, six,
+	discrete_distribution<> daxis({1,2,1,1,1});
 
 	uniform_real_distribution<double> dcent(0.0,1.0);
 	uniform_real_distribution<double> dsub(0.0,1.0);
@@ -1093,7 +1093,11 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 		int end = temp.size() - 1;
 		for(int j = 0; j < temp.size() / 2; j++) {
 			if(crx(rgen))
-				swap(temp[j].pos,temp[end-j].pos);
+				swap(temp[j].pos[0],temp[end-j].pos[0]);
+			if(crx(rgen))
+				swap(temp[j].pos[1],temp[end-j].pos[1]);
+			if(crx(rgen))
+				swap(temp[j].pos[2],temp[end-j].pos[2]);
 			//the rotation matrix is not simply
 			//swapped; to properly search the space
 			//multiplication is required
@@ -2594,7 +2598,7 @@ bool GASP2struct::cifOut(string name) {
 
 }
 
-bool GASP2struct::cifString(string &out) {
+bool GASP2struct::cifString(string &out, int rank) {
 
 	out = "";
 
@@ -2619,7 +2623,8 @@ bool GASP2struct::cifString(string &out) {
 	//limiter
 	//int size = molecules[0].atoms.size();
 
-	outf << "data_" << names[crylabel]+"_"+ID.toStr() << endl;
+	outf << setprecision(5) << fixed;
+	outf << "data_" << setfill('0') << setw(3) << rank << "_" << names[crylabel]+"_"+ID.toStr() << endl;
 	outf << "_symmetry_space_group_name_H-M  '" << spacegroupNames[unit.spacegroup] << "'\n";
 	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<",vs="<<getVolScore()<<endl;
 	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<<",fc="<<tfconv(isFitcell)<< endl;

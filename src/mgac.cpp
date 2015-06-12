@@ -106,6 +106,7 @@ int main( int argc, char* argv[] ) {
     			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
     		}
     		remove(options[CONVERT].arg);
+    		temppop.energysort();
     		temppop.writeCIF(string(options[CONVERT].arg));
     		cout << mark() << "File successfully converted" << endl;
     	}
