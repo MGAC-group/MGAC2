@@ -173,6 +173,9 @@ namespace QE {
 //			return false;
 //		}
 
+        chrono::seconds start_wait(15);
+        this_thread::sleep_for(start_wait);
+
 	    while(true) {
 	    	if(chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count()
 		    		>= params.QEscftimeout) {
@@ -327,10 +330,10 @@ namespace QE {
 
 
 
-//	        pid_t result = waitpid(t, &status, WNOHANG);
-//	        if(result == 0) ;//cout << "alive" << endl;
-//	        else if(result == -1) cout << "problems" << endl;
-//	        else { cout << "done!" << endl; break; }
+	        pid_t result = waitpid(t, &status, WNOHANG);
+	        if(result == 0) ;//cout << "alive" << endl;
+	        else if(result == -1) cout << "problems" << endl;
+	        else { cout << "done!" << endl; break; }
 
 	        //cout << buff << endl;
 
@@ -338,7 +341,7 @@ namespace QE {
 	        //if(sbuff.find("Error")!=string::npos) {
 	        //  flag = true; pclose(in);
 	        //}
-	        chrono::milliseconds t(200);
+	        chrono::milliseconds t(500);
 	        this_thread::sleep_for(t);
 	    }
 

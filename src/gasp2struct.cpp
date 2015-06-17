@@ -1001,7 +1001,7 @@ bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
 }
 
 void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate,  Spacemode mode) {
-	unfitcell();
+	this->unfitcell();
 	partner.unfitcell();
 
 	childA = *this;

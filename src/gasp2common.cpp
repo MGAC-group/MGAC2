@@ -685,6 +685,8 @@ string mark() {
 	string out = "[";
 	time_t t = time(0);
 	string dt = ctime(&t);
+	out.append(dt.substr(8, 2));
+	out.append("-");
 	out.append(dt.substr(11, 8));
 	out.append("]");
 	return out;

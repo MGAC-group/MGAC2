@@ -26,7 +26,7 @@ struct Arg: public option::Arg
 	  }
 };
 
-enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS,CONVERT };
+enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS,CONVERT,COMBINE,SIZE };
 
 const option::Descriptor usage[] =
 {
@@ -35,6 +35,8 @@ const option::Descriptor usage[] =
 		{RESTART,0,"r","restart",Arg::NonEmpty,"-r,--restart  Optional argument for a restart file"},
 		{SPACEGROUPS,0,"ls","spacegroups",Arg::Optional,"-ls,--spacegroups  List valid spacegroups"},
 		{CONVERT, 0, "c", "cif", Arg::NonEmpty, "-c, --cif  Name of output file for cif; takes the input (-i) and turns it into a cif"},
+		{COMBINE, 0, "m","merge",Arg::NonEmpty, "-m, --merge Combine multiple files to form a single population file (comma delimited)"},
+		{SIZE, 0, "s","size", Arg::NonEmpty, "-s, --size Used in conjunction with merge to denote the size of merged population"},
 		{ 0, 0, 0, 0, 0, 0 }
 };
 
@@ -77,6 +79,15 @@ int main( int argc, char* argv[] ) {
     	cout << " Index  Name" << endl;
     	for(int i = 1; i < spacegroupNames.size(); i++)
     		cout << " " << setw(4) << i << ":  " << spacegroupNames[i] << endl;
+
+    	return 0;
+    }
+
+    if(options[COMBINE]) {
+    	if(options[SIZE]) {
+
+
+    	}
 
     	return 0;
     }

@@ -54,6 +54,13 @@ public:
 	//the population and generates a new one
 	GASP2pop fullCross(Spacemode mode);
 
+	//performs an inplace cross,
+	//where individuals in the population are mixed
+	//with each other
+	//this is the actual crossing algorithm for a classic GA
+	GASP2pop inplaceCross(Spacemode mode);
+
+
 	//add N members to the population (for elitism)
 	void addIndv(int add);
 	//adds individuals from another population

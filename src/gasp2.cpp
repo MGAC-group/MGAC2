@@ -181,7 +181,7 @@ void GASP2control::server_prog() {
 	}
 
 
-	GASP2pop evalpop, lastpop;
+	GASP2pop evalpop, lastpop, bestpop;
 
 	vector<GASP2pop> split;
 
@@ -191,12 +191,10 @@ void GASP2control::server_prog() {
 		rootpop.clear();
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
 	}
+	else {
+		lastpop.init(root, params.popsize, params.spacemode, params.group);
+	}
 
-	//do the initialization
-	//we always generate a rootpop
-	//this is to prevent over optimization.
-	rootpop.init(root, params.popsize, params.spacemode, params.group);
-	writePop(rootpop, "root", 0);
 
 	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
 
@@ -220,12 +218,26 @@ void GASP2control::server_prog() {
 	vector<future<bool>> popsend(worldSize);
 	future<bool> eval;
 	future<bool> writer;
+	vector<int> stats;
+
 
 	MPI_Status m;
 
 	if(params.mode == "stepwise") {
 		for(int step = 0; step < params.generations; step++) {
+
+			GASP2pop bad, restart, good;
+
+
 			cout << mark() << "Starting new generation " << step << endl;
+
+			//we always reinitialize the rootpop at each generation
+			//this is designed to precent
+			cout << mark() << "Generating new rootpop..." << endl;
+			rootpop.clear();
+			rootpop.init(root, params.popsize, params.spacemode, params.group);
+			writePop(rootpop, "root", step);
+
 			//scale, cross and mutate
 			cout << mark() << "Scaling..." << endl;
 			if(step > 0)
@@ -238,26 +250,41 @@ void GASP2control::server_prog() {
 			}
 
 			else if (params.type == "classic") {
-				lastpop.addIndv(rootpop);
-				evalpop = lastpop.fullCross(params.spacemode);
-				evalpop.addIndv(lastpop);
+				//lastpop.addIndv(rootpop);
+				//evalpop = lastpop.fullCross(params.spacemode);
+				//evalpop.addIndv(lastpop);
+				evalpop = lastpop.inplaceCross(params.spacemode);
 			}
 			evalpop.mutate(params.mutation_prob, params.spacemode);
 
 			cout << mark() << "Crossover size: " << evalpop.size() << endl;
 
+			stats.clear();
+			stats.resize(231);
+			for(int i = 0; i < stats.size(); i++)
+				stats[i] = 0;
+			for(int i = 0; i < evalpop.size(); i++)
+				stats[evalpop.indv(i)->getSpace()]+=1;
+			ofstream statfile;
+			stringstream statname;
+			statname << params.outputfile << "_stats_" << setw(3) << setfill('0') << step;
+			statfile.open(statname.str().c_str(), ofstream::out);
+			for(int i = 1; i < stats.size(); i++)
+				statfile << i - 1 << " " << stats[i] << endl;
+			statfile.close();
 
-			evalpop = evalpop.symmLimit(params.symmlimit);
+
+			good = evalpop.symmLimit(bad, params.symmlimit);
 
 
 			split.clear();
 			split.resize(worldSize);
-			evalpop.symmsort();
+			good.symmsort();
 
 			//distribute the structures evenly so
 			//that one host doesn't get too overloaded.
 			for(int i = 0; i < evalpop.size(); i++) {
-				split[i % worldSize].addIndv(*evalpop.indv(i));
+				split[i % worldSize].addIndv(*good.indv(i));
 			}
 			cout << mark() << "Pop sizes: ";
 			for(int i = 0; i < worldSize; i++)
@@ -329,12 +356,17 @@ void GASP2control::server_prog() {
 			evalpop.clear();
 			for(int i = 0; i < worldSize; i++)
 				evalpop.addIndv(split[i]);
-			evalpop.volumesort();
+			if (params.type == "classic")
+				evalpop.addIndv(bad);
+			//evalpop.volumesort();
 			//writePop(evalpop, "fitcell", step);
 
 			//evaluate
 			evalpop.symmsort();
-			GASP2pop bad, good, restart;
+			//GASP2pop bad, good, restart;
+
+			good.clear();
+			bad.clear();
 			good = evalpop.volLimit(bad);
 			cout << mark() << "Volume limited population size:" << good.size() << endl;
 
@@ -385,20 +417,21 @@ void GASP2control::server_prog() {
 					GASP2pop evald = good;
 
 					for(int launched=0,completesteps=0; ; ) {
-						cout << mark() << "start of launch block" << endl;
+						//cout << mark() << "start of launch block" << endl;
 
 						//test node 0
 						if(ownerlist[0] == 0) {
 							if(eval_mut.try_lock()) {
 								eval_mut.unlock();
-								serverthread.get();
+								if(serverthread.valid())
+									serverthread.get();
 								ownerlist[0]=IDLE;
 								evald.mergeIndv(localpops[0],evaldind[0]);
 								restart = evald;
-								restart.addIndv(bad);
+								//restart.addIndv(bad);
 								restart.energysort();
 								//restart.remIndv(restart.size()-params.popsize);
-								writePop(restart, "restart", 0);
+								writePop(restart, "restart", step);
 								completesteps++;
 							}
 						}
@@ -410,10 +443,10 @@ void GASP2control::server_prog() {
 				//						cout << "energy: " << evalpop.indv(i)->getEnergy() << endl;
 							evald.mergeIndv(localpops[0],evaldind[0]);
 							restart = evald;
-							restart.addIndv(bad);
+							//restart.addIndv(bad);
 							restart.energysort();
 							//restart.remIndv(restart.size()-params.popsize);
-							writePop(restart, "restart", 0);
+							writePop(restart, "restart", step);
 							save_state=false;
 							longeval_mut.unlock();
 						}
@@ -443,10 +476,10 @@ void GASP2control::server_prog() {
 		//											cout << "energy: " << localpops[i].indv(j)->getEnergy() << endl;
 											evald.mergeIndv(localpops[i],evaldind[i]);
 											restart = evald;
-											restart.addIndv(bad);
+											//restart.addIndv(bad);
 											restart.energysort();
 											//restart.remIndv(restart.size()-params.popsize);
-											writePop(restart, "restart", 0);
+											writePop(restart, "restart", step);
 										}
 										if(recv & Busy) {
 											cout << "marking busy " << i << endl;
@@ -457,10 +490,10 @@ void GASP2control::server_prog() {
 											recvPop(&localpops[i],i);
 											evald.mergeIndv(localpops[i],evaldind[i]);
 											restart = evald;
-											restart.addIndv(bad);
+											//restart.addIndv(bad);
 											restart.energysort();
 											//restart.remIndv(restart.size()-params.popsize);
-											writePop(restart, "restart", 0);
+											writePop(restart, "restart", step);
 
 											cout << mark() << "Client " << i << " finished eval" << endl;
 											ownerlist[i] = IDLE;
@@ -484,15 +517,17 @@ void GASP2control::server_prog() {
 							if(ownerlist[i] == IDLE)
 								avail++;
 
-						cout << mark() << "structures avail block: " << avail << endl;
-						cout << "Ownerlist: ";
-						for(int i = 0; i < worldSize; i++)
-							cout << ownerlist[i] << " ";
-						cout << endl;
+
 
 
 						//structures available
 						while(avail > 0 && launched < good.size()) {
+							cout << mark() << "structures avail block: " << avail << endl;
+							cout << "Ownerlist: ";
+							for(int i = 0; i < worldSize; i++)
+								cout << ownerlist[i] << " ";
+							cout << endl;
+
 							//see how many nodes are needed
 							int given;
 							int needed=1*good.indv(launched)->getSymmcount();
@@ -558,9 +593,19 @@ void GASP2control::server_prog() {
 									eval_mut.unlock();
 									//cout << "Evalpop size: " << evalpop.size() << endl;
 									//eval = async(launch::async, &GASP2control::runEvals, this, i, evalpop, localmachinefile);
-									serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
+									if(!serverthread.valid())
+										serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
+									else {
+
+
+									}
 								}
 								launched++;
+								cout << mark() << launched  << " structures launched" << endl;
+								cout << "Ownerlist: ";
+								for(int i = 0; i < worldSize; i++)
+									cout << ownerlist[i] << " ";
+								cout << endl;
 								break;
 							}
 							else {
@@ -569,13 +614,18 @@ void GASP2control::server_prog() {
 								sendPop(localpops[first], first);
 								sendIns(DoQE, first);
 								launched++;
+								cout << mark() << launched  << " structures launched" << endl;
+								cout << "Ownerlist: ";
+								for(int i = 0; i < worldSize; i++)
+									cout << ownerlist[i] << " ";
+								cout << endl;
 								break;
 							}
 
 
 						}
 
-						cout << mark() << "launched is " << launched << endl;
+
 						//test for completion (all nodes idle)
 						bool flag = true;
 						for(int i = 0; i < worldSize; i++) {
@@ -613,7 +663,11 @@ void GASP2control::server_prog() {
 				evalpop.remIndv(replace);
 			}
 			else if (params.type == "classic") {
-				evalpop.remIndv(evalpop.size()-params.popsize);
+				bestpop.addIndv(evalpop);
+				bestpop.energysort();
+				bestpop.remIndv(bestpop.size()-50);
+				writePop(bestpop, "best", step);
+				//evalpop.remIndv(evalpop.size()-params.popsize);
 			}
 			lastpop = evalpop;
 			//save pops

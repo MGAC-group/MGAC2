@@ -120,10 +120,27 @@ GASP2pop GASP2pop::fullCross(Spacemode mode) {
 	for(int i = 0; i < size; i++) {
 		for(int j = i; j < size; j++) {
 			if(i==j) continue;
-			structures[i].crossStruct(structures[j],a,b, 1.0, mode);
+			structures[i].crossStruct(structures[j],a,b, 0.5, mode);
 			out.structures.push_back(a);
 			out.structures.push_back(b);
 		}
+	}
+	return out;
+}
+
+GASP2pop GASP2pop::inplaceCross(Spacemode mode) {
+	GASP2pop out;
+	GASP2struct a,b;
+	int size = structures.size();
+	out.structures.reserve(size);
+
+	std::shuffle(structures.begin(), structures.end(), rgen);
+
+	for(int i = 0; (i < size) && ((i+1) < size); i+=2) {
+
+			structures[i].crossStruct(structures[i+1],a,b, 0.2, mode);
+			out.structures.push_back(a);
+			out.structures.push_back(b);
 	}
 	return out;
 }
