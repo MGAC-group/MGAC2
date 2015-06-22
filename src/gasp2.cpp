@@ -250,11 +250,12 @@ void GASP2control::server_prog() {
 			}
 
 			else if (params.type == "classic") {
-				//lastpop.addIndv(rootpop);
-				//evalpop = lastpop.fullCross(params.spacemode);
-				//evalpop.addIndv(lastpop);
-				evalpop = lastpop.inplaceCross(params.spacemode);
+				lastpop.addIndv(rootpop);
+				evalpop = lastpop.fullCross(params.spacemode);
+				evalpop.addIndv(lastpop);
+				//evalpop = lastpop.inplaceCross(params.spacemode);
 			}
+
 			evalpop.mutate(params.mutation_prob, params.spacemode);
 
 			cout << mark() << "Crossover size: " << evalpop.size() << endl;
@@ -270,10 +271,11 @@ void GASP2control::server_prog() {
 			statname << params.outputfile << "_stats_" << setw(3) << setfill('0') << step;
 			statfile.open(statname.str().c_str(), ofstream::out);
 			for(int i = 1; i < stats.size(); i++)
-				statfile << i - 1 << " " << stats[i] << endl;
+				statfile << i << " " << stats[i] << endl;
 			statfile.close();
 
-
+			good.clear();
+			bad.clear();
 			good = evalpop.symmLimit(bad, params.symmlimit);
 
 
@@ -353,11 +355,13 @@ void GASP2control::server_prog() {
 
 			//combine, then save fitcell
 			lastpop = evalpop;
-			evalpop.clear();
+			good.clear();
 			for(int i = 0; i < worldSize; i++)
-				evalpop.addIndv(split[i]);
-			if (params.type == "classic")
-				evalpop.addIndv(bad);
+				good.addIndv(split[i]);
+//			if (params.type == "classic")
+//				good.addIndv(bad);
+
+			evalpop = good;
 			//evalpop.volumesort();
 			//writePop(evalpop, "fitcell", step);
 
@@ -642,12 +646,14 @@ void GASP2control::server_prog() {
 					evald.energysort();
 					writePop(evald, "evald", step);
 					good = evald;
-					good.addIndv(bad);
-					evalpop = good;
+
 
 					cout << mark() << "End of QE evalution" << endl;
 
 				} //end QE eval block
+
+				good.addIndv(bad);
+				evalpop = good;
 
 			} //if good size > 0
 			else {
@@ -660,14 +666,14 @@ void GASP2control::server_prog() {
 			//sort and reduce
 			evalpop.energysort();
 			if(params.type == "elitism") {
-				evalpop.remIndv(replace);
+				//evalpop.remIndv(replace);
 			}
 			else if (params.type == "classic") {
-				bestpop.addIndv(evalpop);
-				bestpop.energysort();
-				bestpop.remIndv(bestpop.size()-50);
-				writePop(bestpop, "best", step);
-				//evalpop.remIndv(evalpop.size()-params.popsize);
+//				bestpop.addIndv(evalpop);
+//				bestpop.energysort();
+//				bestpop.remIndv(bestpop.size()-50);
+//				writePop(bestpop, "best", step);
+				evalpop.remIndv(evalpop.size()-params.popsize);
 			}
 			lastpop = evalpop;
 			//save pops
