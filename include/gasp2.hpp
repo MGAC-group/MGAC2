@@ -84,10 +84,13 @@ using namespace std;
  *
  */
 
-#define POP 0
-#define HOSTS 1
-#define CONTROL 2
-#define OTHER 3
+#define POP1 0
+#define POP2 1
+#define HOSTS1 2
+#define HOSTS2 3
+#define HOSTS3 4
+#define CONTROL 5
+#define OTHER 6
 
 #define IDLE -1
 #define DOWN -2

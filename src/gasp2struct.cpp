@@ -88,6 +88,26 @@ bool GASP2struct::minmaxVol() {
 	return true;
 }
 
+bool GASP2struct::checkMaxVol() {
+	double expectvol = 0.0;
+	double vol = getVolume();
+	//must work independent of fitcell
+	//cout << "vol: " << vol << " ";
+	for(int i = 0; i < molecules.size(); i++) {
+		expectvol += molecules[i].expectvol;
+	}
+	if(!isFitcell) {
+		Spgroup spg = spacegroups[unit.spacegroup];
+		int nops = spg.R.size();
+		expectvol *= (double) nops;
+	}
+
+	if( ((vol/expectvol)-1.0) > (maxvol/100.0) )
+			return true;
+	return false;
+
+}
+
 bool GASP2struct::enforceCrystalType() {
 	//find the crystal type from
 	Spgroup spg = spacegroups[unit.spacegroup];
@@ -159,8 +179,13 @@ bool GASP2struct::enforceCrystalType() {
 
 void GASP2struct::centerMol(GASP2molecule & mol) {
 	Vec3 center = getMolCentroid(mol);
+	double length;
+	mol.extent = 0.0;
 	for(int i = 0; i < mol.atoms.size(); i++) {
 		mol.atoms[i].pos -= center;
+		length = len(mol.atoms[i].pos);
+		if(length > mol.extent)
+			mol.extent = length;
 	}
 }
 
@@ -325,11 +350,11 @@ void GASP2struct::resetMols(double d, vector<GASP2molecule> &supercell, Vec3 rat
 	unit.c = d * ratios[2];
 
 	Mat3 toCart = fracToCart(unit);
-	Vec3 center;
+	//Vec3 center;
 
 	for(int i = 0; i < supercell.size(); i++) {
-		center = toCart*supercell[i].pos;
-		centerMol(supercell[i],center);
+		supercell[i].center = toCart*supercell[i].pos;
+		centerMol(supercell[i],supercell[i].center);
 	}
 	//cout << mark() << "resetmolout: " <<ID.toStr()<< endl;
 }
@@ -341,6 +366,10 @@ bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 	for(int i = 0; i < supercell.size(); i++) {
 		for(int j = i; j < supercell.size(); j++) {
 			if(i == j) continue;
+			//check to see if there is interaction
+			dist = len(supercell[i].center-supercell[j].center);
+			if(dist > (VDWLimit + interdist + supercell[i].extent + supercell[j].extent) )
+				continue;
 
 			for(int m = 0; m < supercell[i].atoms.size(); m++) {
 				for(int n = 0; n < supercell[j].atoms.size(); n++) {
@@ -364,7 +393,7 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 	bool touches;
 	bool lastVolOK=false, VolOK=false;
 	double diff_d, last_d;
-	//phase 1: double d until connects are okay
+	//phase 1: double d until connects are okay or volume exceeded
 	double d = 1.0;
 	resetMols(d, supercell, ratios);
 	touches = checkConnect(supercell);
@@ -372,8 +401,9 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 		last_d = d;
 		d *= 2.0;
 		resetMols(d, supercell, ratios);
-	//	lastVolOK=VolOK;
-	//	VolOK = minmaxVol();
+//		if(checkMaxVol()) {
+//			return d;
+//		}
 		touches = checkConnect(supercell);
 	}
 

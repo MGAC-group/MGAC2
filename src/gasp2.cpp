@@ -195,6 +195,10 @@ void GASP2control::server_prog() {
 		lastpop.init(root, params.popsize, params.spacemode, params.group);
 	}
 
+//	if (params.type == "classic") {
+//		bestpop = lastpop;
+//	}
+
 
 	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
 
@@ -219,6 +223,8 @@ void GASP2control::server_prog() {
 	future<bool> eval;
 	future<bool> writer;
 	vector<int> stats;
+
+	//auto restart_timer;
 
 
 	MPI_Status m;
@@ -250,6 +256,14 @@ void GASP2control::server_prog() {
 			}
 
 			else if (params.type == "classic") {
+				//bestpop = lastpop;
+				//writePop(bestpop, "best", step);
+
+				if(step > 0 && params.spacemode != Spacemode::Single)
+					lastpop = bestpop.spacebin(params.binlimit);
+				else
+					lastpop = bestpop;
+
 				lastpop.addIndv(rootpop);
 				evalpop = lastpop.fullCross(params.spacemode);
 				evalpop.addIndv(lastpop);
@@ -412,6 +426,8 @@ void GASP2control::server_prog() {
 
 				if(params.calcmethod == "qe") {
 
+					auto restart_timer = chrono::steady_clock::now();
+
 					cout << mark() << "Beginning QE evaluation" << endl;
 					good.symmsort();
 					int avail = 0;
@@ -462,7 +478,9 @@ void GASP2control::server_prog() {
 								sendIns(Ping, i);
 						}
 						this_thread::sleep_for(chrono::seconds(1));
+						bool queue_restart_write = false;
 						for(int i = 1; i < worldSize; i++) {
+
 							if(ownerlist[i] == i) {
 								int recvd;
 								recv = None;
@@ -472,22 +490,10 @@ void GASP2control::server_prog() {
 
 									cout << mark() << "server QE received from " << i << ": " << recv << endl;
 
-										if(recv & PopAvail) {
-											sendIns(SendPop, i);
-											recvPop(&localpops[i], i);
-		//										cout << mark() << "gasp server pop energies" << endl;
-		//										for(int j = 0; j < evalpop.size(); j++)
-		//											cout << "energy: " << localpops[i].indv(j)->getEnergy() << endl;
-											evald.mergeIndv(localpops[i],evaldind[i]);
-											restart = evald;
-											//restart.addIndv(bad);
-											restart.energysort();
-											//restart.remIndv(restart.size()-params.popsize);
-											writePop(restart, "restart", step);
-										}
 										if(recv & Busy) {
 											cout << "marking busy " << i << endl;
 											ownerlist[i] = i;
+
 										}
 										else if(recv & Complete) {
 											sendIns(SendPop,i);
@@ -504,9 +510,36 @@ void GASP2control::server_prog() {
 											completesteps++;
 										}
 
+										if( (recv & PopAvail) && chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - restart_timer).count() >= 180) {
+
+											sendIns(SendPop, i);
+											cout << mark() << "initializing restart receive" << endl;
+											recvPop(&localpops[i], i);
+		//										cout << mark() << "gasp server pop energies" << endl;
+		//										for(int j = 0; j < evalpop.size(); j++)
+		//											cout << "energy: " << localpops[i].indv(j)->getEnergy() << endl;
+											evald.mergeIndv(localpops[i],evaldind[i]);
+											restart = evald;
+											//restart.addIndv(bad);
+											restart.energysort();
+											//restart.remIndv(restart.size()-params.popsize);
+											//writePop(restart, "restart", step);
+											queue_restart_write = true;
+											//restart_timer = chrono::steady_clock::now();
+										}
+
+
 									MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 								}
 							}
+
+
+						}
+
+						if(queue_restart_write) {
+							writePop(restart, "restart", step);
+							restart_timer = chrono::steady_clock::now();
+							queue_restart_write = false;
 						}
 
 
@@ -666,18 +699,32 @@ void GASP2control::server_prog() {
 			//sort and reduce
 			evalpop.energysort();
 			if(params.type == "elitism") {
-				//evalpop.remIndv(replace);
+				evalpop.remIndv(replace);
+				lastpop = evalpop;
+				writePop(evalpop, "final", step);
 			}
 			else if (params.type == "classic") {
-//				bestpop.addIndv(evalpop);
-//				bestpop.energysort();
-//				bestpop.remIndv(bestpop.size()-50);
+
 //				writePop(bestpop, "best", step);
-				evalpop.remIndv(evalpop.size()-params.popsize);
+				if(params.spacemode == Spacemode::Single) {
+					bestpop.addIndv(evalpop);
+					bestpop.energysort();
+					bestpop.remIndv(bestpop.size()-params.popsize);
+				}
+				else {
+					bestpop.addIndv(evalpop);
+					bestpop = bestpop.spacebin(params.popsize, 50);
+					bestpop.energysort();
+					writePop(bestpop, "final", step);
+				}
+//				evalpop = bestpop;
+//				evalpop.energysort();
+//				evalpop.remIndv(evalpop.size()-params.popsize);
+
 			}
-			lastpop = evalpop;
+
 			//save pops
-			writePop(evalpop, "final", step);
+
 
 		}
 
@@ -947,12 +994,12 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 bool GASP2control::sendHost(string host, int procs, int target) {
 	int t = host.length();
 	//send size info
-	MPI_Send(&t, 1, MPI_INT, target,HOSTS,MPI_COMM_WORLD);
+	MPI_Send(&t, 1, MPI_INT, target,HOSTS1,MPI_COMM_WORLD);
 
 	//send info
-	MPI_Send(host.c_str(),t,MPI_CHAR,target,HOSTS,MPI_COMM_WORLD);
+	MPI_Send(host.c_str(),t,MPI_CHAR,target,HOSTS2,MPI_COMM_WORLD);
 	//send proc info
-	MPI_Send(&procs, 1, MPI_INT, target, HOSTS, MPI_COMM_WORLD);
+	MPI_Send(&procs, 1, MPI_INT, target, HOSTS3, MPI_COMM_WORLD);
 	return true;
 }
 
@@ -960,14 +1007,14 @@ bool GASP2control::recvHost(string &host, int &procs, int target) {
 	int ierr;
 	int v = 0;
 	//recv size info
-	MPI_Recv(&v, 1, MPI_INT, target,HOSTS,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	MPI_Recv(&v, 1, MPI_INT, target,HOSTS1,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	char * buff = new char[v];
 	//recv hostname
-	MPI_Recv((void *) buff, v, MPI_CHAR, target,HOSTS,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+	MPI_Recv((void *) buff, v, MPI_CHAR, target,HOSTS2,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
 	host = buff;
 	//recv proc count
 
-	MPI_Recv(&procs, 1, MPI_INT, target, HOSTS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	MPI_Recv(&procs, 1, MPI_INT, target, HOSTS3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	//cout << "procs:" << procs << endl;
 	delete [] buff;
 
@@ -984,10 +1031,10 @@ bool GASP2control::sendPop(GASP2pop p, int target) {
 
 	cout << mark() << " Sendpop to " << target << " launched, ID " << ID << ", size: " << t <<  endl;
 	//send size info
-	MPI_Send(&t, 1, MPI_INT, target,POP,MPI_COMM_WORLD);
+	MPI_Send(&t, 1, MPI_INT, target,POP1,MPI_COMM_WORLD);
 
 	//send info
-	MPI_Send(pop.c_str(),t,MPI_CHAR,target,POP,MPI_COMM_WORLD);
+	MPI_Send(pop.c_str(),t,MPI_CHAR,target,POP2,MPI_COMM_WORLD);
 
 	cout << mark() << " Sendpop " << target << " finished, ID " << ID << endl;
 
@@ -999,13 +1046,13 @@ bool GASP2control::recvPop(GASP2pop *p, int target) {
 	int v = 0;
 
 	//recv size info
-	MPI_Recv(&v, 1, MPI_INT, target,POP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	MPI_Recv(&v, 1, MPI_INT, target,POP1,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	cout << mark() << " Recvpop from " << target << " launched, ID " << ID << ", size: " << v << endl;
 	//char * buff = new char[v+1];
 	//recv hostname
 	pop.resize(v+1);
 
-	MPI_Recv((void *) pop.data(), v, MPI_CHAR, target,POP,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+	MPI_Recv((void *) pop.data(), v, MPI_CHAR, target,POP2,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
 
 	//buff[v] = '\0';
 	//pop = buff;

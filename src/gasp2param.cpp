@@ -33,6 +33,7 @@ GASP2param::GASP2param() {
 	spacemode = Limited;
 	group = 1;
 	symmlimit = 12;
+	binlimit = 3;
 
 	//qe params
 	QEcalculation = "vc-relax"; //vc-relax
@@ -314,11 +315,21 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 		//symmlimit
 		if(!run->QueryIntAttribute("symmlimit", &itemp)) {
 			symmlimit = itemp;
-			if(generations <= 0) {
+			if(symmlimit <= 0) {
 				errorstring = "Symmlimit must be greater than 0!\n";
 				return false;
 			}
 		}
+
+		//binlimit
+		if(!run->QueryIntAttribute("binlimit", &itemp)) {
+			binlimit = itemp;
+			if(binlimit <= 0) {
+				errorstring = "Binlimit must be greater than 0!\n";
+				return false;
+			}
+		}
+
 
 
 		//const_scale
@@ -614,7 +625,7 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 			//QEscftimeout
 			if(!qe->QueryIntAttribute("scftimeout", &itemp)) {
 				QEscftimeout = itemp;
-				if(QEnstep < 20) {
+				if(QEscftimeout < 20) {
 					errorstring = "The scftimeout must be at least 20 seconds!\n";
 					return false;
 				}

@@ -26,6 +26,17 @@ struct {
 	}
 } symmcomp;
 
+struct {
+	bool operator() (GASP2pop a, GASP2pop b) {
+		double ae = 0.0, be = 0.0;
+		if(a.size() >= 1)
+			ae = a.indv(0)->getEnergy();
+		if(b.size() >= 1)
+			be = b.indv(0)->getEnergy();
+		return ae < be;
+	}
+} popcomp;
+
 //sorts by energy first
 //if the structure does not have an energy (ie,
 // energy = 0.0) then it is sorted by volume with
@@ -172,6 +183,12 @@ void GASP2pop::mergeIndv(GASP2pop add, int ind) {
 
 }
 
+void GASP2pop::completeCheck() {
+	for(int i = 0; i < size(); i++)
+		structures[i].checkOpted();
+
+}
+
 GASP2pop GASP2pop::remIndv(int n) {
 	GASP2pop bad;
 	for(int i = 0; i < n; i++) {
@@ -206,6 +223,38 @@ GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 	}
 
 	return ok;
+}
+
+//semi complicated function
+//sorts all the structures by spacegroup,
+//then removes all except the best binsize structures
+//for each spacegroup, then combines them into a single
+//pop for reuse
+GASP2pop GASP2pop::spacebin(int binsize, int binsave) {
+	vector<GASP2pop> bins(230);
+	GASP2pop out;
+
+
+	for(int i = 0; i < size(); i++) {
+		int group = structures[i].getSpace();
+		bins[group-1].addIndv(structures[i]);
+	}
+
+	for(int i = 0; i < 230; i++) {
+		bins[i].energysort();
+		bins[i].dedup();
+	}
+
+	std::sort(bins.begin(), bins.end(), popcomp);
+
+	for(int i = 0; i < binsave; i++) {
+		if(bins[i].size() > binsize)
+			bins[i].remIndv(bins[i].size() - binsize);
+		out.addIndv(bins[i]);
+	}
+
+	return out;
+
 }
 
 //scaling must be manually after ranking
@@ -472,4 +521,16 @@ void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2mole
 
 }
 
+void GASP2pop::dedup() {
+	for(int i = 0; i < structures.size(); i++) {
+		for(int j = i; j < structures.size(); j++) {
+			if(i==j) continue;
+			if(structures[i].getID() == structures[j].getID()) {
+				structures.erase(structures.begin()+j);
+				j--;
+			}
+		}
+	}
 
+
+}

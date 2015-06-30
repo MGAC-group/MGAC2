@@ -52,6 +52,8 @@ struct GASP2dihedral {
 
 struct GASP2molecule {
 	Vec3 pos; //ALWAYS fractional, refers to centroid XMLOUT
+	Vec3 center;
+	double extent;
 	Mat3 rot; //the rotation matrix of the molecule XMLOUT
 	//Why rotation matrix? Space is cheap (realtively speaking)
 	//
@@ -228,7 +230,10 @@ public:
 	int getSpace() { return unit.spacegroup; };
 	double getVolScore(); //returns a score based on closeness to expectvol
 	bool minmaxVol(); //returns true if in volume is in bounds
+	bool checkMaxVol();
+	UUID getID() {return ID;};
 
+	void checkOpted() { if (didOpt && !complete) didOpt = false; };
 
 	void forceOK() {finalstate = OKStruct;};
 private:

@@ -69,6 +69,10 @@ public:
 	void addIndv(GASP2struct t){ structures.push_back(t); };
 	void mergeIndv(GASP2pop add, int ind);
 
+	//checks to see if a structure is compelte
+	//sets opt to False if not complete
+	void completeCheck();
+
 	//remove N worst members from the population (for elitism)
 	//returns the removed members
 	//removes based on sort order,
@@ -82,6 +86,7 @@ public:
 	GASP2pop symmLimit(int limit) {GASP2pop t; return symmLimit(t, limit);};
 	GASP2pop volLimit(GASP2pop &bad);
 	GASP2pop symmLimit(GASP2pop &bad, int limit);
+	GASP2pop spacebin(int binsize, int binsaved = 230);
 
 
 	void scale(double con, double lin, double exp);
@@ -110,6 +115,9 @@ public:
 
 	bool writeCIF(string name);
 
+	//remove duplicate UUIDs
+	//since the chance of a collision is so low, is not problematic
+	void dedup();
 
 
 };

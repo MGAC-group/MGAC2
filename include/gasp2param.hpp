@@ -61,6 +61,7 @@ public:
 	Spacemode spacemode;
 	Index group;
 	int symmlimit;
+	int binlimit;
 
 
 	//qe params
