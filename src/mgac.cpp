@@ -44,9 +44,9 @@ const option::Descriptor usage[] =
 int main( int argc, char* argv[] ) {
 
 	int mpithreading;
-	MPI_Init(&argc,&argv);
-	//MPI_Init_thread(&argc,&argv, MPI_THREAD_MULTIPLE, &mpithreading);
-	if(mpithreading == MPI_THREAD_MULTIPLE)
+	//MPI_Init(&argc,&argv);
+	MPI_Init_thread(&argc,&argv, MPI_THREAD_FUNNELED, &mpithreading);
+	if(mpithreading == MPI_THREAD_FUNNELED)
 		cout << "Threading requested was given!" << endl;
 
 	int size, ID;
@@ -86,6 +86,33 @@ int main( int argc, char* argv[] ) {
     if(options[COMBINE]) {
     	if(options[SIZE]) {
 
+    	}
+
+    	if(options[INPUT] && options[CONVERT].arg != NULL) {
+
+    		GASP2pop temppop, finalpop;
+
+    		string errorstring;
+    		tinyxml2::XMLDocument doc;
+    		doc.LoadFile(options[INPUT].arg);
+    		if(doc.ErrorID() == 0) {
+    			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
+    			if(!temppop.loadXMLrestart(pop, errorstring)) {
+    				cout << "There was an error in the restart file: " << errorstring << endl;
+    				exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
+    			}
+    		}
+    		else {
+    			cout << "!!! There was a problem with opening the input file!" << endl;
+    			cout << "Check to see if the file exists or if the XML file" << endl;
+    			cout << "is properly formed, with tags formatted correctly." << endl;
+    			cout << "Aborting... " << endl;
+    			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
+    		}
+    		//remove(options[CONVERT].arg);
+    		temppop.energysort();
+    		//temppop.writeCIF(string(options[CONVERT].arg));
+    		cout << mark() << "Files successfully merged" << endl;
 
     	}
 

@@ -115,8 +115,10 @@ void GASP2control::getHostInfo() {
 
 	nodethreads = phys*core;
 	char _host[1024];
-	gethostname(_host,1024);
+	hostname[1023] = '\0';
+	gethostname(_host,1023);
 	hostname = _host;
+	cout << "Hostname ID " << ID << ":" << hostname << endl;
 
 }
 
@@ -134,6 +136,8 @@ void GASP2control::server_prog() {
 		recvHost(h.hostname, h.threads, i);
 		hostlist.push_back(h);
 	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	//generate the local machinefile info
 	UUID u; u.generate();
@@ -158,27 +162,28 @@ void GASP2control::server_prog() {
 	chrono::milliseconds timeout(0);
 
 	//initialize ownerlist
-	ownerlist[0] = IDLE;
+	for(int i = 0; i < worldSize; i++)
+		ownerlist[i] = IDLE;
 
-	//establish who is paying attention initially
-	for(int i = 1; i < worldSize; i++) {
-		//try to get a signal for ~5 seconds
-		sendIns(Ping, i);
-		cout << mark() << "Sending initial ping to client " << i << endl;
-	}
-	this_thread::sleep_for(chrono::seconds(1));
-	for(int i = 1; i < worldSize; i++) {
-		recvIns(recv, i);
-		if(recv & Ackn) {
-			cout << mark() << "Client " << i << " ack'd" << endl;
-			ownerlist[i] = IDLE;
-		}
-		else {
-			cout << mark() << "Client " << i << " is down!" << endl;
-			ownerlist[i] = DOWN;
-		}
-
-	}
+//	//establish who is paying attention initially
+//	for(int i = 1; i < worldSize; i++) {
+//		//try to get a signal for ~5 seconds
+//		sendIns(Ping, i);
+//		cout << mark() << "Sending initial ping to client " << i << endl;
+//	}
+//	this_thread::sleep_for(chrono::seconds(1));
+//	for(int i = 1; i < worldSize; i++) {
+//		recvIns(recv, i);
+//		if(recv & Ackn) {
+//			cout << mark() << "Client " << i << " ack'd" << endl;
+//			ownerlist[i] = IDLE;
+//		}
+//		else {
+//			cout << mark() << "Client " << i << " is down!" << endl;
+//			ownerlist[i] = DOWN;
+//		}
+//
+//	}
 
 
 	GASP2pop evalpop, lastpop, bestpop;
@@ -408,18 +413,20 @@ void GASP2control::server_prog() {
 
 					//try to get a signal for ~5 seconds
 					sendIns(Ping, i);
-					cout << mark() << "Sending initial ping to client " << i << endl;
+					cout << mark() << "Sent initial ping to client " << i << endl;
 				}
-				this_thread::sleep_for(chrono::seconds(2));
+				this_thread::sleep_for(chrono::seconds(10));
 				for(int i = 1; i < worldSize; i++) {
 					recvIns(recv, i);
 					if(recv & Ackn) {
 						cout << mark() << "Client " << i << " ack'd" << endl;
 						ownerlist[i] = IDLE;
 					}
-					else {
+					else{
 						cout << mark() << "Client " << i << " is down!" << endl;
-						ownerlist[i] = DOWN;
+						//HACK HACK HACK HACK HACK HACK HACK
+						//should be DOWN
+						ownerlist[i] = IDLE;
 					}
 
 				}
@@ -438,7 +445,7 @@ void GASP2control::server_prog() {
 
 					for(int launched=0,completesteps=0; ; ) {
 						//cout << mark() << "start of launch block" << endl;
-
+						bool queue_restart_write = false;
 						//test node 0
 						if(ownerlist[0] == 0) {
 							if(eval_mut.try_lock()) {
@@ -457,28 +464,31 @@ void GASP2control::server_prog() {
 						}
 
 						if( save_state && longeval_mut.try_lock()) {
-							cout << "queueing intermediate pop info on client " << ID << endl;
-				//					cout << mark() << "gasp client pop energies" << endl;
-				//					for(int i = 0; i < evalpop.size(); i++)
-				//						cout << "energy: " << evalpop.indv(i)->getEnergy() << endl;
-							evald.mergeIndv(localpops[0],evaldind[0]);
-							restart = evald;
-							//restart.addIndv(bad);
-							restart.energysort();
-							//restart.remIndv(restart.size()-params.popsize);
-							writePop(restart, "restart", step);
-							save_state=false;
+							if(chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - restart_timer).count() >= 180) {
+								cout << "queueing intermediate pop info on client " << ID << endl;
+					//					cout << mark() << "gasp client pop energies" << endl;
+					//					for(int i = 0; i < evalpop.size(); i++)
+					//						cout << "energy: " << evalpop.indv(i)->getEnergy() << endl;
+								evald.mergeIndv(localpops[0],evaldind[0]);
+								//restart = evald;
+								//restart.addIndv(bad);
+								//restart.energysort();
+								//restart.remIndv(restart.size()-params.popsize);
+								//writePop(restart, "restart", step);
+								queue_restart_write = true;
+								save_state=false;
+							}
 							longeval_mut.unlock();
 						}
 
 						//establish active/idle nodes, receive pops
 						//cout << mark() << "pinging" << endl;
 						for(int i = 1; i < worldSize; i++) {
-							if(ownerlist[i] == 1)
+							if(ownerlist[i] == i)
 								sendIns(Ping, i);
 						}
 						this_thread::sleep_for(chrono::seconds(1));
-						bool queue_restart_write = false;
+
 						for(int i = 1; i < worldSize; i++) {
 
 							if(ownerlist[i] == i) {
@@ -488,10 +498,10 @@ void GASP2control::server_prog() {
 								while(recvd){
 									recvIns(recv, i);
 
-									cout << mark() << "server QE received from " << i << ": " << recv << endl;
+									//cout << mark() << "server QE received from " << i << ": " << recv << endl;
 
 										if(recv & Busy) {
-											cout << "marking busy " << i << endl;
+											//cout << "marking busy " << i << endl;
 											ownerlist[i] = i;
 
 										}
@@ -519,9 +529,9 @@ void GASP2control::server_prog() {
 		//										for(int j = 0; j < evalpop.size(); j++)
 		//											cout << "energy: " << localpops[i].indv(j)->getEnergy() << endl;
 											evald.mergeIndv(localpops[i],evaldind[i]);
-											restart = evald;
+											//restart = evald;
 											//restart.addIndv(bad);
-											restart.energysort();
+											//restart.energysort();
 											//restart.remIndv(restart.size()-params.popsize);
 											//writePop(restart, "restart", step);
 											queue_restart_write = true;
@@ -537,6 +547,8 @@ void GASP2control::server_prog() {
 						}
 
 						if(queue_restart_write) {
+							restart = evald;
+							restart.energysort();
 							writePop(restart, "restart", step);
 							restart_timer = chrono::steady_clock::now();
 							queue_restart_write = false;
@@ -610,7 +622,9 @@ void GASP2control::server_prog() {
 							avail -= given;
 							cout << mark() << "avail is " << avail << endl;
 
-							string hostfile = makeMachinefile(slots);
+							string hostfile;
+							hostfile.clear();
+							hostfile = makeMachinefile(slots);
 
 							if(first == 0) {
 								writeHost(localmachinefile, hostfile);
@@ -797,6 +811,8 @@ void GASP2control::client_prog() {
 	//cout << "client prog: " << ID << endl;
 	sendHost(hostname, nodethreads, 0);
 
+	MPI_Barrier(MPI_COMM_WORLD);
+
 	UUID u; u.generate();
 	string localmachinefile = "/tmp/machinefile-";
 	localmachinefile.append(u.toStr());
@@ -834,7 +850,7 @@ void GASP2control::client_prog() {
 		while(recvd) {
 			recvIns(i, 0);
 
-			cout << "client " << this->ID << " received: " << i << endl;
+			//cout << "client " << this->ID << " received: " << i << endl;
 			if(i & Shutdown) {
 				remove(localmachinefile.c_str());
 				return;
@@ -871,7 +887,7 @@ void GASP2control::client_prog() {
 			}
 
 			if(ack > None) {
-				cout << "client " << ID << " sent ack " << ack << endl;
+				//cout << "client " << ID << " sent ack " << ack << endl;
 				sendIns(ack,0);
 			}
 
@@ -936,6 +952,7 @@ void GASP2control::client_prog() {
 				temppop = evalpop;
 				if(!eval.valid()) {
 					eval = std::async(launch::async, &GASP2control::runEvals, this, evalmode, &evalpop, localmachinefile);
+					this_thread::sleep_for(t);
 					queueEval = false;
 				}
 			}
@@ -993,12 +1010,19 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 
 bool GASP2control::sendHost(string host, int procs, int target) {
 	int t = host.length();
+
+
+	//cout << mark() << "hostinfo sender size " << t << endl << endl << host << endl << endl;
+
 	//send size info
 	MPI_Send(&t, 1, MPI_INT, target,HOSTS1,MPI_COMM_WORLD);
 
 	//send info
 	MPI_Send(host.c_str(),t,MPI_CHAR,target,HOSTS2,MPI_COMM_WORLD);
 	//send proc info
+
+
+
 	MPI_Send(&procs, 1, MPI_INT, target, HOSTS3, MPI_COMM_WORLD);
 	return true;
 }
@@ -1008,11 +1032,14 @@ bool GASP2control::recvHost(string &host, int &procs, int target) {
 	int v = 0;
 	//recv size info
 	MPI_Recv(&v, 1, MPI_INT, target,HOSTS1,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	char * buff = new char[v];
+	char * buff = new char[v+1];
+	buff[v] = '\0';
+	//cout << mark() << "hostsize:" << v << endl;
 	//recv hostname
 	MPI_Recv((void *) buff, v, MPI_CHAR, target,HOSTS2,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
 	host = buff;
 	//recv proc count
+	//cout << mark() << "hostinfo recveiver" << endl << endl << host << endl << endl;
 
 	MPI_Recv(&procs, 1, MPI_INT, target, HOSTS3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	//cout << "procs:" << procs << endl;
@@ -1133,6 +1160,6 @@ void GASP2control::writeHost(string name, string data) {
 			cout << "Could not write machinefile!\n";
 			exit(1);
 		}
-		outf << data <<endl;
+		outf << data.c_str(); // <<endl;
 		outf.close();
 }

@@ -390,6 +390,7 @@ bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 
 double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 	//cout << mark() << "collapse: " <<ID.toStr()<< endl;
+	int steps;
 	bool touches;
 	bool lastVolOK=false, VolOK=false;
 	double diff_d, last_d;
@@ -413,7 +414,8 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 //		return -1.0;
 
 	//phase 2: binary search decreasing d
-	while (true) {
+	steps = 0;
+	while (steps < 1000) {
 		diff_d = std::abs(d - last_d) / 2.0;
 		last_d = d;
 		if (diff_d < 0.0625 && touches==false)
@@ -424,6 +426,10 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 			d += diff_d;
 		else
 			d -= diff_d;
+		steps++;
+	}
+	if(steps >= 1000) {
+		cout << mark() << "Something bad happened with a collapse cell" << endl;
 	}
 	//cout << mark() << "collapseout: " <<ID.toStr()<< endl;
 	return d;
@@ -1204,7 +1210,7 @@ bool GASP2struct::evaluate(string hostfile, GASP2param params) {
 	if(!didOpt) {
 		complete = eval(molecules, unit, energy, force, pressure, time, hostfile, params);
 		steps++;
-		cout << mark() << "evaluate energy: " << energy << endl;
+		cout << mark() << "evaluate energy: " << fixed << setw(6) <<  energy << endl;
 		check();
 		didOpt = true;
 	}
