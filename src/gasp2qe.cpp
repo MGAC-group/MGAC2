@@ -7,9 +7,8 @@ namespace QE {
 	bool empty(vector<GASP2molecule>& mols, GASP2cell& unit, double& energy, double& force, double&pressure, time_t&time, string hostfile, GASP2param params)
 	{
 		uniform_real_distribution<> d(0,1);
-		chrono::milliseconds thread_wait(100);
-		cout << "Running the energy eval.." << endl;
-		this_thread::sleep_for(thread_wait);
+		//cout << "Running the energy eval.." << endl;
+		this_thread::sleep_for(chrono::seconds(5));
 		energy = -255.0 + d(rgen);
 		return true;
 	};

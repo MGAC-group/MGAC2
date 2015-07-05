@@ -94,6 +94,7 @@ using namespace std;
 
 #define IDLE -1
 #define DOWN -2
+#define GETPOP -3
 
 
 typedef struct Host {
