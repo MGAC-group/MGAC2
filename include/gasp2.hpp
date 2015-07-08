@@ -149,6 +149,8 @@ private:
 
 	vector<Host> hostlist;
 
+	bool testReq(MPI_Request &m);
+
 	//control instructions
 	bool sendIns(Instruction i, int target);
 	bool recvIns(Instruction &i, int target);
