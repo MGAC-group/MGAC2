@@ -405,17 +405,20 @@ void GASP2control::server_prog() {
 
 
 				//establish who is paying attention initially
-				for(int i = 0; i < worldSize; i++) {
+				for(int i = 1; i < worldSize; i++) {
 					//ownerlist[i] = IDLE;
 
 					//clear the message queue for safety
 					int recvd;
 					recv = None;
+					int queuelength = 0;
 					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 					while(recvd){
 						recvIns(recv, i);
+						queuelength++;
 						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 					}
+					cout << mark() << "Messages were in the queue: " << queuelength << endl;
 
 					//try to get a signal for ~5 seconds
 					sendIns(Ping, i);
@@ -423,17 +426,16 @@ void GASP2control::server_prog() {
 				}
 				this_thread::sleep_for(chrono::seconds(3));
 				for(int i = 1; i < worldSize; i++) {
-					//clear the message queue for safety
 					int recvd;
 					recv = None;
 					ownerlist[i] = DOWN;
 					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 					while(recvd){
 						recvIns(recv, i);
-						if(recv & Ackn) {
+						if(recv != None) {
 							cout << mark() << "Client " << i << " ack'd" << endl;
 							ownerlist[i] = IDLE;
-							break;
+							//break;
 						}
 						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 					}
@@ -552,6 +554,7 @@ void GASP2control::server_prog() {
 						//check the down nodes and re-idle them if they are okay
 						for(int i = 1; i < worldSize; i++) {
 							if(ownerlist[i] == DOWN) {
+								cout << mark() << "Testing " << i << "..." << endl;
 								sendIns(Ping, i);
 								int recvd;
 								MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
@@ -560,7 +563,7 @@ void GASP2control::server_prog() {
 									recvIns(recv, i);
 									if(recv & Ackn) {
 										ownerlist[i] = IDLE;
-										break;
+										//break;
 									}
 									MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 								}
@@ -671,7 +674,6 @@ void GASP2control::server_prog() {
 											serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
 										else {
 											cout << mark() << "serverthread stuck" << endl;
-
 										}
 										launched++;
 									}
@@ -769,9 +771,9 @@ void GASP2control::server_prog() {
 					while(recvd){
 						recv = None;
 						recvIns(recv, i);
-						if(recv & Ackn) {
+						if(recv != None) {
 							ownerlist[i] = IDLE;
-							break;
+							//break;
 						}
 						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 					}
@@ -1030,16 +1032,17 @@ void GASP2control::client_prog() {
 			longeval_mut.unlock();
 		}
 
-		if(completed) {
-			sendIns(Complete, 0);
-			completed = false;
-		}
+
 		if(eval.valid() && eval.wait_for(timeout)==future_status::ready){
 			eval.get();
 			//if(completed == false) {
 				//cout << mark() << "Client " << ID << ": weird exit on thread occurred..." << endl;
 			completed = true;
 			//}
+		}
+		if(completed) {
+			sendIns(Complete, 0);
+			completed = false;
 		}
 		cout << flush;
         this_thread::sleep_for(t);
@@ -1074,19 +1077,19 @@ bool GASP2control::sendHost(string host, int procs, int target) {
 
 	//send size info
 	MPI_Issend(&t, 1, MPI_INT, target,HOSTS1,MPI_COMM_WORLD, &m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 
 	//send info
 	MPI_Issend(host.c_str(),t,MPI_CHAR,target,HOSTS2,MPI_COMM_WORLD, &m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 	//send proc info
 
 
 
 	MPI_Issend(&procs, 1, MPI_INT, target, HOSTS3, MPI_COMM_WORLD, &m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 
 	cout << mark() << " Sendhost " << target << " finished, ID " << ID << endl;
@@ -1100,7 +1103,7 @@ bool GASP2control::recvHost(string &host, int &procs, int target) {
 	MPI_Request m;
 	//recv size info
 	MPI_Irecv(&v, 1, MPI_INT, target,HOSTS1,MPI_COMM_WORLD, &m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 
 	char * buff = new char[v+1];
@@ -1109,14 +1112,14 @@ bool GASP2control::recvHost(string &host, int &procs, int target) {
 	cout << mark() << " Recvhost from " << target << " launched, ID " << ID << ", size: " << v << endl;
 	//recv hostname
 	MPI_Irecv((void *) buff, v, MPI_CHAR, target,HOSTS2,MPI_COMM_WORLD,&m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 	host = buff;
 	//recv proc count
 	//cout << mark() << "hostinfo recveiver" << endl << endl << host << endl << endl;
 
 	MPI_Irecv(&procs, 1, MPI_INT, target, HOSTS3, MPI_COMM_WORLD, &m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 	//cout << "procs:" << procs << endl;
 	delete [] buff;
@@ -1127,16 +1130,17 @@ bool GASP2control::recvHost(string &host, int &procs, int target) {
 //this tests a request for completion every
 //five seconds for up to a minute. if the request
 //fails to complete in that time, it is cancelled.
-bool GASP2control::testReq(MPI_Request &m) {
+bool GASP2control::testReq(MPI_Request &m, int t) {
 	int ok;
 
 	MPI_Test(&m, &ok, MPI_STATUS_IGNORE);
-	for(int i = 0; i < 90; i++) {
+	for(int i = 0; i < t; i++) {
 		if(ok==true) break;
 		this_thread::sleep_for(chrono::seconds(1));
 		MPI_Test(&m, &ok, MPI_STATUS_IGNORE);
 	}
 	if(ok==false) {
+		cout << mark() << "A testReq failed on ID " << ID << endl;
 		MPI_Cancel(&m);
 		MPI_Request_free(&m);
 		return false;
@@ -1156,13 +1160,13 @@ bool GASP2control::sendPop(GASP2pop p, int target) {
 	cout << mark() << " Sendpop to " << target << " launched, ID " << ID << ", size: " << t <<  endl;
 	//send size info
 	MPI_Issend(&t, 1, MPI_INT, target,POP1,MPI_COMM_WORLD, &m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 
 
 	//send info
 	MPI_Issend(pop.c_str(),t,MPI_CHAR,target,POP2,MPI_COMM_WORLD, &m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 
 	cout << mark() << " Sendpop " << target << " finished, ID " << ID << endl;
@@ -1178,7 +1182,7 @@ bool GASP2control::recvPop(GASP2pop *p, int target) {
 
 	//recv size info
 	MPI_Irecv(&v, 1, MPI_INT, target,POP1,MPI_COMM_WORLD, &m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 	cout << mark() << " Recvpop from " << target << " launched, ID " << ID << ", size: " << v << endl;
 	//char * buff = new char[v+1];
@@ -1186,7 +1190,7 @@ bool GASP2control::recvPop(GASP2pop *p, int target) {
 	pop.resize(v+1);
 
 	MPI_Irecv((void *) pop.data(), v, MPI_CHAR, target,POP2,MPI_COMM_WORLD, &m);
-	if(!testReq(m))
+	if(!testReq(m, 120))
 		return false;
 
 	//buff[v] = '\0';
@@ -1211,7 +1215,9 @@ bool GASP2control::sendIns(Instruction i, int target) {
 	//cout << "sending ins to target " << target << endl;
 
 	MPI_Request r;
-	MPI_Isend(&i, 1, MPI_INT, target, CONTROL, MPI_COMM_WORLD, &r);
+	MPI_Issend(&i, 1, MPI_INT, target, CONTROL, MPI_COMM_WORLD, &r);
+	//if(!testReq(r, 120))
+	//	return false;
 	//MPI_Request_free(&r);
 	return true;
 }
@@ -1220,6 +1226,8 @@ bool GASP2control::recvIns(Instruction &i, int target) {
 	//cout << "receiving ins from target " << target << endl;
 	MPI_Request r;
 	MPI_Irecv(&i, 1, MPI_INT, target, CONTROL, MPI_COMM_WORLD, &r);
+	if(!testReq(r, 120))
+		return false;
 	//cout << "procs:" << procs << endl;
 	//MPI_Request_free(&r);
 	return true;
@@ -1232,7 +1240,7 @@ string GASP2control::makeMachinefile(vector<int> slots) {
 
 	for(int i = 0; i < slots.size(); i++) {
 		if(slots[i] < hostlist.size()) {
-			for(int j = 0; j < hostlist[slots[i]].threads; j++)
+			for(int j = 0; j < (hostlist[slots[i]].threads - 1); j++)
 				out << hostlist[slots[i]].hostname << endl;
 		}
 	}
