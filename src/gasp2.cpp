@@ -397,10 +397,10 @@ void GASP2control::server_prog() {
 
 			good.volumesort();
 			writePop(good, "vollimit", step);
-			future<bool> serverthread;
+
 
 			if(good.size() > 0) {
-
+				future<bool> serverthread;
 
 
 
@@ -418,13 +418,13 @@ void GASP2control::server_prog() {
 						queuelength++;
 						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 					}
-					cout << mark() << "Messages were in the queue: " << queuelength << endl;
+					cout << mark() << "ID " << ID << ": messages were in the queue: " << queuelength << endl;
 
 					//try to get a signal for ~5 seconds
 					sendIns(Ping, i);
 					cout << mark() << "Sent initial ping to client " << i << endl;
 				}
-				this_thread::sleep_for(chrono::seconds(3));
+				this_thread::sleep_for(chrono::seconds(5));
 				for(int i = 1; i < worldSize; i++) {
 					int recvd;
 					recv = None;
@@ -464,6 +464,9 @@ void GASP2control::server_prog() {
 					bool idle = false;
 					save_state=false;
 
+					ownerlist[0] = IDLE;
+					eval_mut.unlock();
+
 					for(int launched=0,completesteps=0; ; ) {
 						//cout << mark() << "start of launch block" << endl;
 						bool queue_restart_write = false;
@@ -473,10 +476,9 @@ void GASP2control::server_prog() {
 
 						//test node 0
 						if(ownerlist[0] == 0) {
-							if(eval_mut.try_lock()) {
-								eval_mut.unlock();
-								if(serverthread.valid())
-									serverthread.get();
+							if(serverthread.valid() && serverthread.wait_for(timeout)==future_status::ready) {
+								//eval_mut.unlock();
+								serverthread.get();
 								ownerlist[0]=IDLE;
 								queue_restart_write=true;
 								completesteps++;
@@ -511,7 +513,7 @@ void GASP2control::server_prog() {
 									recv = None;
 									recvIns(recv, i);
 
-									//cout << mark() << "server QE received from " << i << ": " << recv << endl;
+									cout << mark() << "server QE received from " << i << ": " << recv << endl;
 										if(recv & Busy) {
 											//cout << "marking busy " << i << endl;
 											ownerlist[i] = i;
@@ -543,9 +545,12 @@ void GASP2control::server_prog() {
 									else {
 										cout << mark() << "Server receive failed on client " << i << endl;
 										if(ownerlist[i] == GETPOP) {
-											cout << mark() << "A final structure was lost..." << endl;
-											ownerlist[i] = DOWN;
+											cout << mark() << "A final structure was lost on " << ID << "..." << endl;
 										}
+										else {
+											cout << mark() << "An intermediate send failed on " << ID << "..." << endl;
+										}
+										ownerlist[i] = DOWN;
 									}
 								}
 							}
@@ -571,6 +576,8 @@ void GASP2control::server_prog() {
 						}
 
 
+
+
 						//output temporary save file
 						if(queue_restart_write) {
 							restart = evald;
@@ -583,7 +590,7 @@ void GASP2control::server_prog() {
 
 						//cleanup node control lists
 						for(int i = 0; i < worldSize; i++) {
-							if(ownerlist[ownerlist[i]] == IDLE)
+							if(ownerlist[ownerlist[i]] == IDLE || ownerlist[ownerlist[i]] == DOWN)
 								ownerlist[i] = IDLE;
 						}
 						avail = 0;
@@ -597,7 +604,7 @@ void GASP2control::server_prog() {
 						//if there are clients available
 						if(avail > 0 && launched < good.size()) {
 							cout << mark() << "structures avail block: " << avail << endl;
-							cout << "Ownerlist: ";
+							cout << mark() << " ownerlist: ";
 							for(int i = 0; i < worldSize; i++)
 								cout << ownerlist[i] << " ";
 							cout << endl;
@@ -621,6 +628,9 @@ void GASP2control::server_prog() {
 								else
 									given = needed;
 							}
+							if(given > (params.symmlimit * 2))
+								given = params.symmlimit * 2;
+
 							cout << mark() << "given is " << given << endl;
 
 
@@ -677,6 +687,10 @@ void GASP2control::server_prog() {
 										}
 										launched++;
 									}
+									else {
+										cout << mark() << "server thread is locked! marking DOWN" << endl;
+										ownerlist[0] = DOWN;
+									}
 								}
 								else {
 									cout << mark() << "Launching QE on client " << first << "with "<< given << "nodes..." << endl;
@@ -692,7 +706,7 @@ void GASP2control::server_prog() {
 								}
 							}
 							cout << mark() << launched  << " structures launched" << endl;
-							cout << "Ownerlist: ";
+							cout << mark() << " ownerlist: ";
 							for(int i = 0; i < worldSize; i++)
 								cout << ownerlist[i] << " ";
 							cout << endl;
@@ -780,16 +794,18 @@ void GASP2control::server_prog() {
 				}
 			}
 //
-//
-//			// if there are down nodes at the end of the process, then we kill
-//			for(int i = 0; i < worldSize; i++) {
-//				if(ownerlist[i] == DOWN) {
-//					cout << mark() << "At the end of the QE evaluation, there were down nodes. Killing this job..." << endl;
-//					MPI_Abort(MPI_COMM_WORLD);
-//					exit(1);
-//				}
-//			}
-
+			int downlimit = 0;
+			// if there are more than 3 down nodes at the end of the process, then we kill
+			for(int i = 0; i < worldSize; i++) {
+				if(ownerlist[i] == DOWN) {
+					downlimit++;
+				}
+			}
+			if(downlimit > 3) {
+				cout << mark() << "At the end of the QE evaluation, there were down nodes. Killing this job..." << endl;
+				MPI_Abort(MPI_COMM_WORLD, 1);
+				exit(1);
+			}
 
 		}
 
@@ -903,7 +919,7 @@ void GASP2control::client_prog() {
 			i = None;
 			recvIns(i, 0);
 
-			//cout << "client " << this->ID << " received: " << i << endl;
+			cout << mark() << "client " << this->ID << " received: " << i << endl;
 			if(i & Shutdown) {
 				remove(localmachinefile.c_str());
 				return;
