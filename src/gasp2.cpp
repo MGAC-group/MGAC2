@@ -682,10 +682,11 @@ void GASP2control::server_prog() {
 										eval_mut.unlock();
 										if(!serverthread.valid())
 											serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
+											launched++;
 										else {
 											cout << mark() << "serverthread stuck" << endl;
 										}
-										launched++;
+
 									}
 									else {
 										cout << mark() << "server thread is locked! marking DOWN" << endl;
