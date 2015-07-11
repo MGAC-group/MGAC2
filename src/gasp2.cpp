@@ -611,7 +611,11 @@ void GASP2control::server_prog() {
 
 							//see how many nodes are needed
 							int given;
+
 							int needed=1*good.indv(launched)->getSymmcount();
+
+							if(good.indv(launched)->getSymmcount() == 1)
+								needed = 2;
 							if(needed > avail)
 								given = avail;
 							//see if there will be leftovers and how much is next
@@ -678,9 +682,9 @@ void GASP2control::server_prog() {
 
 								if(first == 0) {
 									if(eval_mut.try_lock()) {
-										cout << mark() << "Launching QE on server with "<< given << "nodes..."<< endl;
 										eval_mut.unlock();
 										if(!serverthread.valid()) {
+											cout << mark() << "Launching QE on server with "<< given << "nodes..."<< endl;
 											serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
 											launched++;
 										}
