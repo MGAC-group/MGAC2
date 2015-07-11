@@ -680,9 +680,10 @@ void GASP2control::server_prog() {
 									if(eval_mut.try_lock()) {
 										cout << mark() << "Launching QE on server with "<< given << "nodes..."<< endl;
 										eval_mut.unlock();
-										if(!serverthread.valid())
+										if(!serverthread.valid()) {
 											serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
 											launched++;
+										}
 										else {
 											cout << mark() << "serverthread stuck" << endl;
 										}
