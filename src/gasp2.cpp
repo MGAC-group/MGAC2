@@ -36,8 +36,9 @@ GASP2control::GASP2control(int ID, string infile) {
 //controller ONLY. the server acts as both client
 //and server by dispatching pthreads in addition
 //to managing the other clients
-GASP2control::GASP2control(time_t start, int size, string input, string restart) {
+GASP2control::GASP2control(time_t start, int size, string input, string restart, int _startstep) {
 	starttime = start;
+	startstep = _startstep;
 	worldSize = size;
 	this->restart = restart;
 	infile = input;
@@ -187,6 +188,7 @@ void GASP2control::server_prog() {
 
 
 	GASP2pop evalpop, lastpop, bestpop;
+	vector<GASP2pop> bins(230);
 
 	vector<GASP2pop> split;
 
@@ -194,6 +196,9 @@ void GASP2control::server_prog() {
 		lastpop = rootpop;
 		rootpop.clear();
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
+		if(params.spacemode != Spacemode::Single) {
+			bestpop = lastpop;
+		}
 	}
 	else {
 		lastpop.init(root, params.popsize, params.spacemode, params.group);
@@ -229,7 +234,7 @@ void GASP2control::server_prog() {
 	MPI_Status m;
 
 	if(params.mode == "stepwise") {
-		for(int step = 0; step < params.generations; step++) {
+		for(int step = startstep; step < params.generations; step++) {
 
 
 ////////////////////START GEN BUILD/////////////////////////
@@ -249,28 +254,30 @@ void GASP2control::server_prog() {
 			cout << mark() << "Scaling..." << endl;
 			if(step > 0)
 				lastpop.scale(params.const_scale, params.lin_scale, params.exp_scale);
+
 			cout << mark() << "Crossing..." << endl;
 
+
+
+			evalpop.clear();
 			if(params.type == "elitism") {
 				evalpop = lastpop.newPop(replace, params.spacemode);
 				evalpop.addIndv(lastpop);
 			}
 
 			else if (params.type == "classic") {
-				//bestpop = lastpop;
-				//writePop(bestpop, "best", step);
 
-				if(step > 0 && params.spacemode != Spacemode::Single)
-					lastpop = bestpop.spacebin(params.binlimit);
-				else
-					lastpop = bestpop;
+				if(params.spacemode != Spacemode::Single) {
+					lastpop = lastpop.spacebin(params.binlimit);
+				}
 
-				lastpop.addIndv(rootpop);
-				evalpop = lastpop.fullCross(params.spacemode);
-				evalpop.addIndv(lastpop);
-				//evalpop = lastpop.inplaceCross(params.spacemode);
+				rootpop.addIndv(lastpop);
+				evalpop = rootpop.fullCross(params.spacemode);
+				evalpop.addIndv(rootpop);
+
 			}
 
+			cout << mark() << "Mutating..." << endl;
 			evalpop.mutate(params.mutation_prob, params.spacemode);
 
 			cout << mark() << "Crossover size: " << evalpop.size() << endl;
@@ -473,28 +480,29 @@ void GASP2control::server_prog() {
 						bool complete_flag = false;
 
 
+//AML: I am eliminating serverside threads for QE for the time being
 
 						//test node 0
-						if(ownerlist[0] == 0) {
-							if(serverthread.valid() && serverthread.wait_for(timeout)==future_status::ready) {
-								//eval_mut.unlock();
-								serverthread.get();
-								ownerlist[0]=IDLE;
-								queue_restart_write=true;
-								completesteps++;
-							}
-						}
-						//save node 0
-						if( save_state && longeval_mut.try_lock()) {
-							if(chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - restart_timer).count() >= 180) {
-								cout << "queueing intermediate pop info on client " << ID << endl;
-								evald.mergeIndv(localpops[0],evaldind[0]);
-								complete_flag = true;
-								queue_restart_write = true;
-								save_state=false;
-							}
-							longeval_mut.unlock();
-						}
+//						if(ownerlist[0] == 0) {
+//							if(serverthread.valid() && serverthread.wait_for(timeout)==future_status::ready) {
+//								//eval_mut.unlock();
+//								serverthread.get();
+//								ownerlist[0]=IDLE;
+//								queue_restart_write=true;
+//								completesteps++;
+//							}
+//						}
+//						//save node 0
+//						if( save_state && longeval_mut.try_lock()) {
+//							if(chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - restart_timer).count() >= 180) {
+//								cout << "queueing intermediate pop info on client " << ID << endl;
+//								evald.mergeIndv(localpops[0],evaldind[0]);
+//								complete_flag = true;
+//								queue_restart_write = true;
+//								save_state=false;
+//							}
+//							longeval_mut.unlock();
+//						}
 
 
 
@@ -601,123 +609,143 @@ void GASP2control::server_prog() {
 
 
 
-						//if there are clients available
-						if(avail > 0 && launched < good.size()) {
-							cout << mark() << "structures avail block: " << avail << endl;
-							cout << mark() << " ownerlist: ";
-							for(int i = 0; i < worldSize; i++)
-								cout << ownerlist[i] << " ";
-							cout << endl;
+						//if there are clients available, try three times to launch a job
+						for(int n = 0; n < 3; n++) {
+							if(avail > 0 && launched < good.size()) {
+								cout << mark() << "structures avail block: " << avail << endl;
+								cout << mark() << " ownerlist: ";
+								for(int i = 0; i < worldSize; i++)
+									cout << ownerlist[i] << " ";
+								cout << endl;
 
-							//see how many nodes are needed
-							int given;
+								//see how many nodes are needed
+								int given;
+								int needed;
+								int next_needed;
 
-							int needed=1*good.indv(launched)->getSymmcount();
+								//we need as many nodes as there are symmops
+								//if P1, we take two nodes to avoid serverthread
+								if(good.indv(launched)->getSymmcount() == 1)
+									needed = 2;
+								else
+									needed = good.indv(launched)->getSymmcount();
 
-							if(good.indv(launched)->getSymmcount() == 1)
-								needed = 2;
-							if(needed > avail)
-								given = avail;
-							//see if there will be leftovers and how much is next
-							//if there are leftovers just give the extras to this
-							//evaluation (lazy scheduling, but it works)
-							else {
-								int next = 0;
-								if(launched + 1 < good.size())
-									next = 1*good.indv(launched+1)->getSymmcount();
-								if(next > (avail-needed))
+								//we see how many nodes the next structure needs
+								if(launched + 1 < good.size()) {
+									if(good.indv(launched + 1)->getSymmcount() == 1)
+										next_needed = 2;
+									else
+										next_needed = good.indv(launched + 1)->getSymmcount();
+								}
+								else
+									next_needed = 0;
+
+								//in the event we do not have enough nodes
+								//to fulfill the symmetry needs
+								if(needed > worldSize)
 									given = avail;
-								else if (next == 0)
+
+								if(next_needed > (avail-needed))
+									given = avail;
+								else if (next_needed == 0)
 									given = avail;
 								else
 									given = needed;
-							}
-							if(given > (params.symmlimit * 2))
-								given = params.symmlimit * 2;
 
-							cout << mark() << "given is " << given << endl;
+								//limit the maximum number of nodes
+								//to 2x the symmlimit
+								if(given > (params.symmlimit * 2))
+									given = params.symmlimit * 2;
+
+								cout << mark() << "needed is " << needed << endl;
+								cout << mark() << "next_needed is " << next_needed << endl;
+								cout << mark() << "given is " << given << endl;
 
 
-							//get the slots
-							vector<int> slots;
-							slots.clear();
-							int first = IDLE;
-							for(int i = worldSize-1; i >= 0; i--) {
-								if(ownerlist[i] == IDLE) {
-									if(first == IDLE)
-										first = i;
-									slots.push_back(i);
-									ownerlist[i] = first;
+								//get the slots
+								vector<int> slots;
+								slots.clear();
+								int first = IDLE;
+								for(int i = worldSize-1; i >= 0; i--) {
+									if(ownerlist[i] == IDLE) {
+										if(first == IDLE)
+											first = i;
+										slots.push_back(i);
+										ownerlist[i] = first;
+									}
+									if(slots.size() >= given)
+										break;
 								}
-								if(slots.size() >= given)
-									break;
-							}
 
 
-							cout << mark() << "first is " << first << endl;
-							if(first == IDLE)
-								break;
+								cout << mark() << "first is " << first << endl;
+//								if(first == IDLE)
+//									break;
 
-							avail -= given;
-							cout << mark() << "avail is " << avail << endl;
+								avail -= given;
+								cout << mark() << "avail is " << avail << endl;
 
-							string hostfile;
-							hostfile.clear();
-							hostfile = makeMachinefile(slots);
-
-							if(first == 0) {
-								writeHost(localmachinefile, hostfile);
-							}
-							else {
-								sendIns(GetHost, first);
-								if(!sendHost(hostfile, 0, first)) {
-									cout << mark() << "Sever host send failed" << endl;
-									ownerlist[first] = DOWN;
-								}
-							}
-
-							if(ownerlist[first] = first) {
-								evaldind[first] = launched;
-								localpops[first] = good.subpop(launched,1);
+								string hostfile;
+								hostfile.clear();
+								hostfile = makeMachinefile(slots);
 
 								if(first == 0) {
-									if(eval_mut.try_lock()) {
-										eval_mut.unlock();
-										if(!serverthread.valid()) {
-											cout << mark() << "Launching QE on server with "<< given << "nodes..."<< endl;
-											serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
-											launched++;
-										}
-										else {
-											cout << mark() << "serverthread stuck" << endl;
-										}
-
-									}
-									else {
-										cout << mark() << "server thread is locked! marking DOWN" << endl;
-										ownerlist[0] = DOWN;
-									}
+									//writeHost(localmachinefile, hostfile);
 								}
 								else {
-									cout << mark() << "Launching QE on client " << first << "with "<< given << "nodes..." << endl;
-									sendIns(PopAvail, first);
-									if(!sendPop(localpops[first], first)) {
-										cout << mark() << "Server send failed" << endl;
+									sendIns(GetHost, first);
+									if(!sendHost(hostfile, 0, first)) {
+										cout << mark() << "Sever host send failed" << endl;
 										ownerlist[first] = DOWN;
 									}
+								}
+
+								if(ownerlist[first] = first) {
+									evaldind[first] = launched;
+									localpops[first] = good.subpop(launched,1);
+
+									if(first == 0) {
+//										if(eval_mut.try_lock()) {
+//											eval_mut.unlock();
+//											if(!serverthread.valid()) {
+//												cout << mark() << "Launching QE on server with "<< given << "nodes..."<< endl;
+//												serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
+//												launched++;
+//											}
+//											else {
+//												cout << mark() << "serverthread stuck" << endl;
+//											}
+//
+//										}
+//										else {
+//											cout << mark() << "server thread is locked! marking DOWN" << endl;
+//											ownerlist[0] = DOWN;
+//										}
+										cout << mark() << "first is 0! something went wrong..." << endl;
+										ownerlist[0] = IDLE;
+									}
 									else {
-										sendIns(DoQE, first);
-										launched++;
+										cout << mark() << "Launching QE on client " << first << "with "<< given << "nodes..." << endl;
+										sendIns(PopAvail, first);
+										if(!sendPop(localpops[first], first)) {
+											cout << mark() << "Server send failed" << endl;
+											ownerlist[first] = DOWN;
+										}
+										else {
+											sendIns(DoQE, first);
+											launched++;
+										}
 									}
 								}
-							}
-							cout << mark() << launched  << " structures launched" << endl;
-							cout << mark() << " ownerlist: ";
-							for(int i = 0; i < worldSize; i++)
-								cout << ownerlist[i] << " ";
-							cout << endl;
+								cout << mark() << launched  << " structures launched" << endl;
+								cout << mark() << " ownerlist: ";
+								for(int i = 0; i < worldSize; i++)
+									cout << ownerlist[i] << " ";
+								cout << endl;
 
-						}
+							} //if avail structures and not all structures launched
+						} //for three steps
+
 
 						idle = true;
 						for(int i = 0; i < worldSize; i++) {
@@ -764,13 +792,16 @@ void GASP2control::server_prog() {
 
 //				writePop(bestpop, "best", step);
 				if(params.spacemode == Spacemode::Single) {
-					bestpop.addIndv(evalpop);
-					bestpop.energysort();
-					bestpop.remIndv(bestpop.size()-params.popsize);
+					lastpop.addIndv(evalpop);
+					lastpop.energysort();
+					lastpop.remIndv(lastpop.size()-params.popsize);
+					writePop(lastpop, "final", step);
 				}
 				else {
+					cout << mark() << "Sorting bestpop..." << endl;
 					bestpop.addIndv(evalpop);
 					bestpop = bestpop.spacebin(params.popsize, 50);
+					lastpop = bestpop;
 					bestpop.energysort();
 					writePop(bestpop, "final", step);
 				}

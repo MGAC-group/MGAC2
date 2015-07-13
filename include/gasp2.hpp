@@ -97,6 +97,7 @@ using namespace std;
 #define GETPOP -3
 
 
+
 typedef struct Host {
 	string hostname;
 	int threads;
@@ -127,13 +128,14 @@ extern std::atomic<bool> completed;
 class GASP2control {
 public:
 	GASP2control(int ID, string infile);
-	GASP2control(time_t start, int size, string input, string restart="");
+	GASP2control(time_t start, int size, string input, string restart="", int _startstep=0);
 	void server_prog();
 	void client_prog();
 
 private:
 	//procedural variables
 	time_t starttime;
+	int startstep;
 	string infile;
 	string restart;
 	int worldSize;

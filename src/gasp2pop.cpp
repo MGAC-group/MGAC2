@@ -37,6 +37,8 @@ struct {
 	}
 } popcomp;
 
+
+
 //sorts by energy first
 //if the structure does not have an energy (ie,
 // energy = 0.0) then it is sorted by volume with
@@ -139,6 +141,24 @@ GASP2pop GASP2pop::fullCross(Spacemode mode) {
 	return out;
 }
 
+//alternative fullcross for two pops;
+GASP2pop GASP2pop::fullCross(Spacemode mode, GASP2pop alt) {
+	GASP2pop out;
+	GASP2struct a,b;
+	int size = structures.size();
+	int altsize = alt.size();
+	out.structures.reserve(size*altsize);
+
+	for(int i = 0; i < size; i++) {
+		for(int j = 0; j < altsize; j++) {
+			structures[i].crossStruct(alt[j],a,b, 0.5, mode);
+			out.structures.push_back(a);
+			out.structures.push_back(b);
+		}
+	}
+	return out;
+}
+
 GASP2pop GASP2pop::inplaceCross(Spacemode mode) {
 	GASP2pop out;
 	GASP2struct a,b;
@@ -230,6 +250,38 @@ GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 //then removes all except the best binsize structures
 //for each spacegroup, then combines them into a single
 //pop for reuse
+void GASP2pop::spacebinV(vector<GASP2pop> &bins, int binsize, int binsave) {
+	vector<GASP2pop> tempbin(230);
+	//reorder the bins in correct order
+	for(int i = 0; i < bins.size(); i++) {
+		if(bins[i].size() >= 1) {
+			int index = bins[i].indv(0)->getSpace() - 1;
+			tempbin[index] = bins[i];
+		}
+	}
+	bins = tempbin;
+	tempbin.clear();
+
+	for(int i = 0; i < size(); i++) {
+		int group = structures[i].getSpace();
+		bins[group-1].addIndv(structures[i]);
+	}
+
+	for(int i = 0; i < 230; i++) {
+		bins[i].energysort();
+		bins[i].dedup();
+	}
+
+	std::sort(bins.begin(), bins.end(), popcomp);
+
+	for(int i = 0; i < binsave; i++) {
+		if(bins[i].size() > binsize)
+			bins[i].remIndv(bins[i].size() - binsize);
+	}
+
+
+}
+
 GASP2pop GASP2pop::spacebin(int binsize, int binsave) {
 	vector<GASP2pop> bins(230);
 	GASP2pop out;

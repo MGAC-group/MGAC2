@@ -53,6 +53,7 @@ public:
 	//performs a full crossing of all members of
 	//the population and generates a new one
 	GASP2pop fullCross(Spacemode mode);
+	GASP2pop fullCross(Spacemode mode, GASP2pop alt);
 
 	//performs an inplace cross,
 	//where individuals in the population are mixed
@@ -86,7 +87,8 @@ public:
 	GASP2pop symmLimit(int limit) {GASP2pop t; return symmLimit(t, limit);};
 	GASP2pop volLimit(GASP2pop &bad);
 	GASP2pop symmLimit(GASP2pop &bad, int limit);
-	GASP2pop spacebin(int binsize, int binsaved = 230);
+	GASP2pop spacebin(int binsize, int binsave = 230);
+	void spacebinV(vector<GASP2pop> &bins, int binsize, int binsave = 230);
 
 
 	void scale(double con, double lin, double exp);

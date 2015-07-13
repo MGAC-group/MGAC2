@@ -26,13 +26,14 @@ struct Arg: public option::Arg
 	  }
 };
 
-enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS,CONVERT,COMBINE,SIZE };
+enum optIndex {INPUT,HELP,RESTART,STEP,SPACEGROUPS,CONVERT,COMBINE,SIZE };
 
 const option::Descriptor usage[] =
 {
 		{INPUT,0,"i","input",Arg::Required,"-i,--input  The XML input file for running"},
 		{HELP,0,"h","help",option::Arg::Optional,"-h,--help  Displays this help message"},
 		{RESTART,0,"r","restart",Arg::NonEmpty,"-r,--restart  Optional argument for a restart file"},
+		{STEP,0,"S","step",Arg::NonEmpty,"-S,--step Optional argument used to specify starting step"},
 		{SPACEGROUPS,0,"ls","spacegroups",Arg::Optional,"-ls,--spacegroups  List valid spacegroups"},
 		{CONVERT, 0, "c", "cif", Arg::NonEmpty, "-c, --cif  Name of output file for cif; takes the input (-i) and turns it into a cif"},
 		{COMBINE, 0, "m","merge",Arg::NonEmpty, "-m, --merge Combine multiple files to form a single population file (comma delimited)"},
@@ -182,8 +183,20 @@ int main( int argc, char* argv[] ) {
     	cout << "Using input file " << infile << endl << endl;
 
     	if( options[RESTART] && options[RESTART].arg != NULL) {
-    		GASP2control server(prog_start,size, infile, options[RESTART].arg);
-    		server.server_prog();
+    		if(options[STEP] && options[STEP].arg != NULL) {
+    			int steps;
+    			stringstream stepconvert;
+    			stepconvert << options[STEP].arg;
+    			stepconvert >> steps;
+
+    			GASP2control server(prog_start,size, infile, options[RESTART].arg, steps);
+    			server.server_prog();
+    		}
+    		//ignore if steps isn't correct
+    		else {
+    			GASP2control server(prog_start,size, infile, options[RESTART].arg);
+    			server.server_prog();
+    		}
     	}
     	else {
     		GASP2control server(prog_start,size, infile);
