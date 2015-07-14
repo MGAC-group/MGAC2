@@ -61,7 +61,8 @@ public:
 	Spacemode spacemode;
 	Index group;
 	int symmlimit;
-	int binlimit;
+	int binlimit; //number of bins to limit search on
+	int downlimit; //number of downed nodes
 
 
 	//qe params

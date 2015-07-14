@@ -151,7 +151,7 @@ GASP2pop GASP2pop::fullCross(Spacemode mode, GASP2pop alt) {
 
 	for(int i = 0; i < size; i++) {
 		for(int j = 0; j < altsize; j++) {
-			structures[i].crossStruct(alt[j],a,b, 0.5, mode);
+			structures[i].crossStruct(alt.structures[j],a,b, 0.5, mode);
 			out.structures.push_back(a);
 			out.structures.push_back(b);
 		}
@@ -203,9 +203,16 @@ void GASP2pop::mergeIndv(GASP2pop add, int ind) {
 
 }
 
-void GASP2pop::completeCheck() {
-	for(int i = 0; i < size(); i++)
-		structures[i].checkOpted();
+GASP2pop GASP2pop::completeCheck() {
+	GASP2pop output;
+	for(int i = 0; i < size(); i++) {
+		if( structures[i].opted() && !(structures[i].completed()) ) {
+			structures[i].setUnopted();
+			output.addIndv(structures[i]);
+		}
+	}
+
+	return output;
 
 }
 
@@ -251,6 +258,7 @@ GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 //for each spacegroup, then combines them into a single
 //pop for reuse
 void GASP2pop::spacebinV(vector<GASP2pop> &bins, int binsize, int binsave) {
+
 	vector<GASP2pop> tempbin(230);
 	//reorder the bins in correct order
 	for(int i = 0; i < bins.size(); i++) {
@@ -573,6 +581,7 @@ void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2mole
 
 }
 
+//VERY IMPORTANT! Before deduping population must be energy sorted.
 void GASP2pop::dedup() {
 	for(int i = 0; i < structures.size(); i++) {
 		for(int j = i; j < structures.size(); j++) {
@@ -583,6 +592,4 @@ void GASP2pop::dedup() {
 			}
 		}
 	}
-
-
 }

@@ -34,6 +34,7 @@ GASP2param::GASP2param() {
 	group = 1;
 	symmlimit = 12;
 	binlimit = 3;
+	downlimit = 2;
 
 	//qe params
 	QEcalculation = "vc-relax"; //vc-relax
@@ -330,7 +331,14 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 			}
 		}
 
-
+		//downlimit
+		if(!run->QueryIntAttribute("downlimit", &itemp)) {
+			downlimit = itemp;
+			if(downlimit <= 0) {
+				errorstring = "Downlimit must be greater than 0!\n";
+				return false;
+			}
+		}
 
 		//const_scale
 		if(!run->QueryDoubleAttribute("const_scale", &dtemp)) {

@@ -71,8 +71,10 @@ public:
 	void mergeIndv(GASP2pop add, int ind);
 
 	//checks to see if a structure is compelte
-	//sets opt to False if not complete
-	void completeCheck();
+	//if not, then it is added into the output pop
+	//and opt is to False for that structure
+
+	GASP2pop completeCheck();
 
 	//remove N worst members from the population (for elitism)
 	//returns the removed members

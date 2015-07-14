@@ -233,7 +233,7 @@ public:
 	bool checkMaxVol();
 	UUID getID() {return ID;};
 
-	void checkOpted() { if (didOpt && !complete) didOpt = false; };
+	void setUnopted() { didOpt = false; };
 
 	void forceOK() {finalstate = OKStruct;};
 private:

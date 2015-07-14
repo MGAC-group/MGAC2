@@ -187,7 +187,7 @@ void GASP2control::server_prog() {
 //	}
 
 
-	GASP2pop evalpop, lastpop, bestpop;
+	GASP2pop evalpop, lastpop, bestpop, partials;
 	vector<GASP2pop> bins(230);
 
 	vector<GASP2pop> split;
@@ -197,7 +197,8 @@ void GASP2control::server_prog() {
 		rootpop.clear();
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
 		if(params.spacemode != Spacemode::Single) {
-			bestpop = lastpop;
+			//bestpop = lastpop;
+			lastpop.spacebinV(bins, params.popsize);
 		}
 	}
 	else {
@@ -260,6 +261,7 @@ void GASP2control::server_prog() {
 
 
 			evalpop.clear();
+			partials.clear();
 			if(params.type == "elitism") {
 				evalpop = lastpop.newPop(replace, params.spacemode);
 				evalpop.addIndv(lastpop);
@@ -267,15 +269,26 @@ void GASP2control::server_prog() {
 
 			else if (params.type == "classic") {
 
-				if(params.spacemode != Spacemode::Single) {
-					lastpop = lastpop.spacebin(params.binlimit);
+				evalpop = rootpop;
+				evalpop.addIndv( rootpop.fullCross(params.spacemode) );
+
+				if(params.spacemode == Spacemode::Single || step == 0) {
+					evalpop.addIndv(lastpop.fullCross(params.spacemode));
+					evalpop.addIndv(lastpop.fullCross(params.spacemode, rootpop));
+					partials.addIndv(lastpop);
+				}
+				else {
+					for(int i = 0; i < params.binlimit; i++) {
+						evalpop.addIndv(bins[i].fullCross(params.spacemode));
+						evalpop.addIndv(bins[i].fullCross(params.spacemode, rootpop));
+						partials.addIndv(bins[i]);
+					}
 				}
 
-				rootpop.addIndv(lastpop);
-				evalpop = rootpop.fullCross(params.spacemode);
-				evalpop.addIndv(rootpop);
 
 			}
+
+			partials = partials.completeCheck();
 
 			cout << mark() << "Mutating..." << endl;
 			evalpop.mutate(params.mutation_prob, params.spacemode);
@@ -400,7 +413,11 @@ void GASP2control::server_prog() {
 			good.clear();
 			bad.clear();
 			good = evalpop.volLimit(bad);
-			cout << mark() << "Volume limited population size:" << good.size() << endl;
+			//add the incomplete structures to the partials to
+			//bypass the fitcell step
+			good.addIndv(partials);
+
+			cout << mark() << "Candidate popsize:" << good.size() << endl;
 
 			good.volumesort();
 			writePop(good, "vollimit", step);
@@ -798,12 +815,19 @@ void GASP2control::server_prog() {
 					writePop(lastpop, "final", step);
 				}
 				else {
-					cout << mark() << "Sorting bestpop..." << endl;
-					bestpop.addIndv(evalpop);
-					bestpop = bestpop.spacebin(params.popsize, 50);
-					lastpop = bestpop;
+					cout << mark() << "Sorting bins..." << endl;
+					bestpop.clear();
+					evalpop.spacebinV(bins, params.popsize);
+					//TODO: add bin stats collection
+					for(int n = 0; n < bins.size(); n++) {
+						bestpop.addIndv(bins[n]);
+					}
+					//bestpop.addIndv(evalpop);
+					//bestpop = bestpop.spacebin(params.popsize, 50);
+					//lastpop = bestpop;
 					bestpop.energysort();
 					writePop(bestpop, "final", step);
+					bestpop.clear();
 				}
 //				evalpop = bestpop;
 //				evalpop.energysort();
@@ -811,7 +835,6 @@ void GASP2control::server_prog() {
 
 			}
 
-			//save pops
 
 			//re - check the down nodes and re-idle them if they are okay
 			for(int i = 1; i < worldSize; i++) {
@@ -831,14 +854,14 @@ void GASP2control::server_prog() {
 				}
 			}
 //
-			int downlimit = 0;
+			int downcount = 0;
 			// if there are more than 3 down nodes at the end of the process, then we kill
 			for(int i = 0; i < worldSize; i++) {
 				if(ownerlist[i] == DOWN) {
-					downlimit++;
+					downcount++;
 				}
 			}
-			if(downlimit > 3) {
+			if(downcount >= params.downlimit) {
 				cout << mark() << "At the end of the QE evaluation, there were down nodes. Killing this job..." << endl;
 				MPI_Abort(MPI_COMM_WORLD, 1);
 				exit(1);
