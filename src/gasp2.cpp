@@ -157,7 +157,7 @@ void GASP2control::server_prog() {
 	vector<int> ownerlist(worldSize);
 	//this vector contains a ping test for each node
 
-	vector<bool> pinged(worldSize);
+	//vector<bool> pinged(worldSize);
 	//the polling time is 200 ms
 	chrono::milliseconds t(200);
 	chrono::milliseconds timeout(0);
@@ -233,6 +233,7 @@ void GASP2control::server_prog() {
 
 
 	MPI_Status m;
+
 
 	if(params.mode == "stepwise") {
 		for(int step = startstep; step < params.generations; step++) {
@@ -324,9 +325,18 @@ void GASP2control::server_prog() {
 
 			//distribute the structures evenly so
 			//that one host doesn't get too overloaded.
+			//now takes into account IDLE/DOWN state
+			int j = 0;
 			for(int i = 0; i < evalpop.size(); i++) {
-				split[i % worldSize].addIndv(*good.indv(i));
+				for( ; ; j=((j+1) % worldSize) ) {
+					if(ownerlist[j] == IDLE) {
+						split[j].addIndv(*good.indv(i));
+						j=((j+1) % worldSize);
+						break;
+					}
+				}
 			}
+
 			cout << mark() << "Pop sizes: ";
 			for(int i = 0; i < worldSize; i++)
 				cout << split[i].size() << " ";
@@ -344,7 +354,8 @@ void GASP2control::server_prog() {
 			//the master thread are out of order
 			for(int i = 1; i < worldSize; i++) {
 				sendIns(PopAvail, i);
-				sendPop(split[i], i);
+				if(sendPop(split[i], i) == false)
+					cout << mark() << "Could not send population "<< i << " during fitcell!";
 			}
 
 			cout << mark() << "Performing fitcell" << endl;
@@ -358,7 +369,7 @@ void GASP2control::server_prog() {
 			split[0].runFitcell(hostlist[0].threads);
 			cout << mark() << "Server fitcell finished" << endl;
 
-
+			//this region coudl results in a deadlock.....must be careful
 			//wait for completion of threads
 			bool complete = false;
 			while(!complete) {
@@ -385,7 +396,8 @@ void GASP2control::server_prog() {
 			cout << mark() << "Retrieving populations" << endl;
 			for(int i = 1; i < worldSize; i++) {
 				sendIns(SendPop, i);
-				recvPop(&split[i], i);
+				if(recvPop(&split[i], i) == false)
+					cout << mark() << "Could not receive population "<< i << " during fitcell!";;
 				//cout << "i:" << i << endl;
 			}
 
@@ -456,7 +468,7 @@ void GASP2control::server_prog() {
 					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 					while(recvd){
 						recvIns(recv, i);
-						if(recv != None) {
+						if(recv & Ackn) {
 							cout << mark() << "Client " << i << " ack'd" << endl;
 							ownerlist[i] = IDLE;
 							//break;
@@ -822,10 +834,22 @@ void GASP2control::server_prog() {
 					for(int n = 0; n < bins.size(); n++) {
 						bestpop.addIndv(bins[n]);
 					}
+
+					cout << mark() << "Best spacegroups: ";
+					for(int n = 0; n < params.binlimit; n++) {
+						if(bins[n].size() > 0) {
+							cout << spacegroupNames[bins[n].indv(0)->getSpace()] <<",";
+
+						}
+						else {
+							cout <<"null,";
+						}
+					}
+					cout << endl;
 					//bestpop.addIndv(evalpop);
 					//bestpop = bestpop.spacebin(params.popsize, 50);
 					//lastpop = bestpop;
-					bestpop.energysort();
+					//bestpop.energysort();
 					writePop(bestpop, "final", step);
 					bestpop.clear();
 				}
@@ -854,6 +878,14 @@ void GASP2control::server_prog() {
 				}
 			}
 //
+
+			cout << mark() << " ownerlist end: ";
+			for(int i = 0; i < worldSize; i++)
+				cout << ownerlist[i] << " ";
+			cout << endl;
+
+
+
 			int downcount = 0;
 			// if there are more than 3 down nodes at the end of the process, then we kill
 			for(int i = 0; i < worldSize; i++) {
