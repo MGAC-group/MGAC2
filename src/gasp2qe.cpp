@@ -32,7 +32,7 @@ namespace QE {
 		}
 
 		for(int k = 0; k < 2; k++) {
-			cout << " QE Starting loop " << k  << " runID " << name << endl;
+			cout << " QE starting loop " << k  << " runID " << name << endl;
 			//setup the temp files and scratch paths
 
 
