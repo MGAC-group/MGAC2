@@ -363,7 +363,7 @@ void GASP2control::server_prog() {
 			//send order to perform fitcell
 			for(int i = 1; i < worldSize; i++) {
 				sendIns(DoFitcell, i);
-				ownerlist[i] = i;
+				//ownerlist[i] = i;
 			}
 			//do the local fitcell
 			split[0].runFitcell(hostlist[0].threads);
@@ -407,6 +407,7 @@ void GASP2control::server_prog() {
 ////////////////////END FITCELL/////////////////////////
 
 			//combine, then save fitcell
+			cout << mark() << "Sorting" << endl;
 			lastpop = evalpop;
 			good.clear();
 			for(int i = 0; i < worldSize; i++)
@@ -488,6 +489,10 @@ void GASP2control::server_prog() {
 ////////////////////START QE DISPATCH/////////////////////////
 				if(params.calcmethod == "qe") {
 
+					int completed_structs;
+					int launched_structs;
+
+
 					auto restart_timer = chrono::steady_clock::now();
 
 					cout << mark() << "Beginning QE evaluation" << endl;
@@ -503,7 +508,21 @@ void GASP2control::server_prog() {
 					ownerlist[0] = IDLE;
 					eval_mut.unlock();
 
-					for(int launched=0,completesteps=0; ; ) {
+
+					vector<int> evallist(good.size());
+					cout << "evallist size " << evallist.size() << endl;
+
+
+					for(int i = 0; i < evallist.size(); i++)
+						evallist[i] = 0;
+
+					cout << mark() << " evallist: ";
+					for(int i = 0; i < evallist.size(); i++)
+						cout << evallist[i] << " ";
+					cout << endl;
+
+					//for(int launched=0,completesteps=0; ; ) {
+					while(true) {
 						//cout << mark() << "start of launch block" << endl;
 						bool queue_restart_write = false;
 						bool complete_flag = false;
@@ -535,8 +554,7 @@ void GASP2control::server_prog() {
 
 
 
-						//establish active/idle nodes, receive pops
-						//cout << mark() << "pinging" << endl;
+						//establish completion state
 						for(int i = 1; i < worldSize; i++) {
 							if(ownerlist[i] == i)
 								sendIns(Ping, i);
@@ -559,7 +577,6 @@ void GASP2control::server_prog() {
 											cout << mark() << "Client " << i << " finished eval" << endl;
 											ownerlist[i] = GETPOP;
 											complete_flag = true;
-											completesteps++;
 										}
 									MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 								}
@@ -576,8 +593,10 @@ void GASP2control::server_prog() {
 									if(recvPop(&localpops[i], i)) {
 										evald.mergeIndv(localpops[i],evaldind[i]);
 										queue_restart_write = true;
-										if(ownerlist[i] == GETPOP)
+										if(ownerlist[i] == GETPOP) {
 											ownerlist[i] = IDLE;
+											evallist[evaldind[i]] = 2;
+										}
 									}
 									else {
 										cout << mark() << "Server receive failed on client " << i << endl;
@@ -587,6 +606,7 @@ void GASP2control::server_prog() {
 										else {
 											cout << mark() << "An intermediate send failed on " << ID << "..." << endl;
 										}
+										evallist[evaldind[i]] = 0;
 										ownerlist[i] = DOWN;
 									}
 								}
@@ -611,9 +631,6 @@ void GASP2control::server_prog() {
 								}
 							}
 						}
-
-
-
 
 						//output temporary save file
 						if(queue_restart_write) {
@@ -640,8 +657,24 @@ void GASP2control::server_prog() {
 
 						//if there are clients available, try three times to launch a job
 						for(int n = 0; n < 3; n++) {
-							if(avail > 0 && launched < good.size()) {
-								cout << mark() << "structures avail block: " << avail << endl;
+							if(avail > 0) {
+
+								cout << mark() << " evallist: ";
+								for(int i = 0; i < evallist.size(); i++)
+									cout << evallist[i] << " ";
+								cout << endl;
+
+								int ind = -1;
+								for(int i = 0; i < evallist.size();i++) {
+									if(evallist[i] == 0)  {
+										ind = i;
+										break;
+									}
+								}
+								if(ind == -1) break;
+
+								cout << mark() << "Evaluating structure " << ind << endl;
+								cout << mark() << "structures avail: " << avail << endl;
 								cout << mark() << " ownerlist: ";
 								for(int i = 0; i < worldSize; i++)
 									cout << ownerlist[i] << " ";
@@ -654,17 +687,25 @@ void GASP2control::server_prog() {
 
 								//we need as many nodes as there are symmops
 								//if P1, we take two nodes to avoid serverthread
-								if(good.indv(launched)->getSymmcount() == 1)
+								if(good.indv(ind)->getSymmcount() == 1)
 									needed = 2;
 								else
-									needed = good.indv(launched)->getSymmcount();
+									needed = good.indv(ind)->getSymmcount();
 
 								//we see how many nodes the next structure needs
-								if(launched + 1 < good.size()) {
-									if(good.indv(launched + 1)->getSymmcount() == 1)
+								int next_ind = -1;
+								for(int i = ind+1; i < evallist.size();i++) {
+									if(evallist[i] == 0)  {
+										next_ind = i;
+										break;
+									}
+								}
+
+								if(next_ind >= 0) {
+									if(good.indv(next_ind)->getSymmcount() == 1)
 										next_needed = 2;
 									else
-										next_needed = good.indv(launched + 1)->getSymmcount();
+										next_needed = good.indv(next_ind)->getSymmcount();
 								}
 								else
 									next_needed = 0;
@@ -729,9 +770,9 @@ void GASP2control::server_prog() {
 									}
 								}
 
-								if(ownerlist[first] = first) {
-									evaldind[first] = launched;
-									localpops[first] = good.subpop(launched,1);
+								if(ownerlist[first] == first) { //prevents launch if first node goes DOWN
+									evaldind[first] = ind;
+									localpops[first] = good.subpop(ind,1);
 
 									if(first == 0) {
 //										if(eval_mut.try_lock()) {
@@ -759,21 +800,47 @@ void GASP2control::server_prog() {
 										if(!sendPop(localpops[first], first)) {
 											cout << mark() << "Server send failed" << endl;
 											ownerlist[first] = DOWN;
+											evallist[ind] = 0;
 										}
 										else {
 											sendIns(DoQE, first);
-											launched++;
+											//launched++;
+											evallist[ind] = 1;
 										}
 									}
 								}
-								cout << mark() << launched  << " structures launched" << endl;
+
+								launched_structs = 0;
+								completed_structs = 0;
+								for(int i = 0; i < evallist.size(); i++) {
+									if( evallist[i] == 1 ) launched_structs++;
+									if( evallist[i] == 2 ) completed_structs++;
+								}
+								launched_structs += completed_structs;
+
+								cout << mark() << launched_structs  << " launched" << endl;
+								cout << mark() << completed_structs  << " completed" << endl;
+
 								cout << mark() << " ownerlist: ";
 								for(int i = 0; i < worldSize; i++)
 									cout << ownerlist[i] << " ";
 								cout << endl;
 
 							} //if avail structures and not all structures launched
+
+
+
 						} //for three steps
+
+
+
+						launched_structs = 0;
+						completed_structs = 0;
+						for(int i = 0; i < evallist.size(); i++) {
+							if( evallist[i] == 1 ) launched_structs++;
+							if( evallist[i] == 2 ) completed_structs++;
+						}
+						launched_structs += completed_structs;
 
 
 						idle = true;
@@ -781,14 +848,16 @@ void GASP2control::server_prog() {
 							if(ownerlist[i] != IDLE && ownerlist[i] != DOWN)
 								idle = false;
 						}
-						if( (launched >= good.size()) && (completesteps >= good.size()) && idle)
-							break;
+
 
 						cout << flush;
+						if( ( completed_structs >= good.size() ) && idle)
+							break;
 						this_thread::sleep_for(chrono::seconds(3));
 
 					}
 
+					cout << mark() << "Sorting after QE" << endl;
 					evald.energysort();
 					writePop(evald, "evald", step);
 					good = evald;

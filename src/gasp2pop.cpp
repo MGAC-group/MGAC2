@@ -28,7 +28,7 @@ struct {
 
 struct {
 	bool operator() (GASP2pop a, GASP2pop b) {
-		double ae = 0.0, be = 0.0;
+		double ae = 1.0, be = 1.0;
 		if(a.size() >= 1)
 			ae = a.indv(0)->getEnergy();
 		if(b.size() >= 1)
