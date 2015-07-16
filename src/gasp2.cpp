@@ -276,20 +276,20 @@ void GASP2control::server_prog() {
 				if(params.spacemode == Spacemode::Single || step == 0) {
 					evalpop.addIndv(lastpop.fullCross(params.spacemode));
 					evalpop.addIndv(lastpop.fullCross(params.spacemode, rootpop));
-					partials.addIndv(lastpop);
+					//partials.addIndv(lastpop);
 				}
 				else {
 					for(int i = 0; i < params.binlimit; i++) {
 						evalpop.addIndv(bins[i].fullCross(params.spacemode));
 						evalpop.addIndv(bins[i].fullCross(params.spacemode, rootpop));
-						partials.addIndv(bins[i]);
+						//partials.addIndv(bins[i]);
 					}
 				}
 
 
 			}
 
-			partials = partials.completeCheck();
+			//partials = partials.completeCheck();
 
 			cout << mark() << "Mutating..." << endl;
 			evalpop.mutate(params.mutation_prob, params.spacemode);
@@ -316,6 +316,7 @@ void GASP2control::server_prog() {
 			good.clear();
 			bad.clear();
 			good = evalpop.symmLimit(bad, params.symmlimit);
+			//good.addIndv(partials);
 
 			split.clear();
 			split.resize(worldSize);
@@ -428,7 +429,7 @@ void GASP2control::server_prog() {
 			good = evalpop.volLimit(bad);
 			//add the incomplete structures to the partials to
 			//bypass the fitcell step
-			good.addIndv(partials);
+
 
 			cout << mark() << "Candidate popsize:" << good.size() << endl;
 
