@@ -276,7 +276,7 @@ void GASP2control::server_prog() {
 				if(params.spacemode == Spacemode::Single || step == 0) {
 					evalpop.addIndv(lastpop.fullCross(params.spacemode));
 					evalpop.addIndv(lastpop.fullCross(params.spacemode, rootpop));
-					//partials.addIndv(lastpop);
+					evalpop.addIndv(lastpop);
 				}
 				else {
 					for(int i = 0; i < params.binlimit; i++) {
