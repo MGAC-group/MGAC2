@@ -893,7 +893,9 @@ void GASP2control::server_prog() {
 				if(params.spacemode == Spacemode::Single) {
 					lastpop.addIndv(evalpop);
 					lastpop.energysort();
+					lastpop.dedup();
 					lastpop.remIndv(lastpop.size()-params.popsize);
+
 					writePop(lastpop, "final", step);
 				}
 				else {
