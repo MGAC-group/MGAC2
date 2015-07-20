@@ -206,10 +206,10 @@ void GASP2pop::mergeIndv(GASP2pop add, int ind) {
 GASP2pop GASP2pop::completeCheck() {
 	GASP2pop output;
 	for(int i = 0; i < size(); i++) {
-		if( structures[i].opted() && !(structures[i].completed()) ) {
+		//if( structures[i].opted() && !(structures[i].completed()) ) {
 			structures[i].setUnopted();
 			output.addIndv(structures[i]);
-		}
+		//}
 	}
 
 	return output;
@@ -277,7 +277,7 @@ void GASP2pop::spacebinV(vector<GASP2pop> &bins, int binsize, int binsave) {
 
 	for(int i = 0; i < 230; i++) {
 		bins[i].energysort();
-		bins[i].dedup();
+		bins[i].dedup(binsize);
 	}
 
 	std::sort(bins.begin(), bins.end(), popcomp);
@@ -302,7 +302,7 @@ GASP2pop GASP2pop::spacebin(int binsize, int binsave) {
 
 	for(int i = 0; i < 230; i++) {
 		bins[i].energysort();
-		bins[i].dedup();
+		bins[i].dedup(binsize);
 	}
 
 	std::sort(bins.begin(), bins.end(), popcomp);
@@ -539,6 +539,58 @@ void GASP2pop::runFitcell(int threads) {
 	//return out;
 }
 
+void GASP2pop::runSymmetrize(int threads) {
+	//GASP2pop out; out.structures = this->structures;
+
+	if (size() < threads)
+		threads = size();
+	//setup the futures
+	vector<future<bool>> futures(threads);
+	chrono::milliseconds timeout(0);
+	chrono::milliseconds thread_wait(20);
+
+	//cout << "size: " << size() << endl;
+
+	int thread_run = 0;
+	//for all the structures
+	for(int i = 0; i < size(); ) {
+
+		//launch
+		for(int j = 0; j < threads; j++) {
+			if(!futures[j].valid() && (i < size()) && thread_run < threads ) {
+				//cout << "instance i: " << i << endl;
+				futures[j] = async(launch::async, &GASP2struct::simplesymm, &structures[i]);
+				i++;
+				thread_run++;
+			}
+		}
+		//cleanup
+		for(int j = 0; j < threads; j++) {
+			if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
+				futures[j].get();
+				thread_run--;
+			}
+		}
+		//wait so we don't burn cycles
+		this_thread::sleep_for(thread_wait);
+
+	}
+
+	for(int j = 0; j < threads; j++) {
+		if(futures[j].valid()) {
+			//cout << "waiting on j: " << j << endl;
+			futures[j].wait();
+			futures[j].get();
+			//cout << "got j: " << j << endl;
+		}
+	}
+
+
+	//cout << structures[0].serializeXML() << endl;
+	//cout << mark() << "where am I?" << endl;
+	//return out;
+}
+
 
 
 
@@ -582,14 +634,25 @@ void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2mole
 }
 
 //VERY IMPORTANT! Before deduping population must be energy sorted.
-void GASP2pop::dedup() {
-	for(int i = 0; i < structures.size(); i++) {
-		for(int j = i; j < structures.size(); j++) {
-			if(i==j) continue;
-			if(structures[i].getID() == structures[j].getID()) {
-				structures.erase(structures.begin()+j);
-				j--;
+void GASP2pop::dedup(int max) {
+
+//this full loop thing is a Baaaaaaad idea
+//takes waaaaay too long
+	vector<GASP2struct> temp;
+
+	if(structures.size() > 0) {
+		temp.push_back(structures[0]);
+		for(int i = 1; i < structures.size(); i++) {
+			bool test = true;
+			for(int j = 0; j < temp.size(); j++) {
+				if(structures[i].getID() == temp[j].getID())
+					test = false;
 			}
+			if(test)
+				temp.push_back(structures[i]);
+			if(temp.size() >= max)
+				break;
 		}
 	}
+	structures = temp;
 }

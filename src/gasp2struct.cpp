@@ -491,6 +491,43 @@ void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
 
 }
 
+//this assumes that QE has done an optimization previously and
+//that fitcell does not need to be performed
+//instead, this fills in the symmetry for the system correctly
+//so that structures can be restarted
+bool GASP2struct::simplesymm() {
+	if(energy < 0.0) {
+		unfitcell();
+		//cout << mark() << "enter spacegroup" << endl;
+		Spgroup spg = spacegroups[unit.spacegroup];
+		//cout << mark() << "leave spacegroup" << endl;
+		int nops = spg.R.size();
+
+		//cout << mark() << "t1" << endl;
+
+		//symmetrize the molecules
+		vector<GASP2molecule> symmcell;
+		GASP2molecule temp;
+		for(Index j = 0; j < nops; j++) {
+			for(int i = 0; i < molecules.size(); i++) {
+				temp = molecules[i];
+				temp.symmR = spg.R[j];
+				temp.symmT = spg.T[j];
+				temp.symm = j;
+				symmcell.push_back(temp);
+			}
+		}
+		//cout << mark() << "t2" << endl;
+		//symmetrize the molecules
+		for(int i = 0; i < symmcell.size(); i++)
+			symmetrize(symmcell[i]);
+		molecules = symmcell;
+
+		isFitcell = true;
+	}
+	else
+		isFitcell = false;
+}
 
 
 bool GASP2struct::fitcell(double tlimit) {
@@ -2680,6 +2717,7 @@ bool GASP2struct::cifString(string &out, int rank) {
 	outf << "_atom_site_fract_x\n_atom_site_fract_y\n_atom_site_fract_z"
 			<< endl;
 	for (int i = 0; i < molecules.size(); i++) {
+		centerMol(molecules[i]);
 		for (int j = 0; j < molecules[i].atoms.size(); j++) {
 			outf << names[molecules[i].atoms[j].label] << " ";
 			outf << getElemName(molecules[i].atoms[j].type) << " ";

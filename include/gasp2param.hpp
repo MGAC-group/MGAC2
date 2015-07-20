@@ -42,8 +42,8 @@ public:
 
 	//run params
 	string calcmethod; //REQUIRED: fitcell, qe, custom
-	string mode; //steadystate or stepwise
-	string type; //elitism or classic
+	string mode; //steadystate or stepwise or final
+	string type; //elitism or classic or finaleval
 	string selector; //roulette or pattern
 	string scaling; //constant, linear, exponential
 	double cross_prob; //1.0
@@ -90,7 +90,7 @@ public:
 	string QEcell_dynamics; //bfgs
 	string QEk_points; //automatic
 	string QEk_point_spec; //2 2 2   1 1 1
-	int QErestart_limit; //3
+	int QErestart_limit; //2
 	int QEscftimeout; //time in seconds
 	vector<string> QEpseudos; //REQUIRED
 //	int QEscalemin;

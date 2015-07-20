@@ -55,7 +55,7 @@ GASP2param::GASP2param() {
 	QEcell_dynamics = "bfgs"; //bfgs
 	QEk_points = "automatic"; //automatic
 	QEk_point_spec = "2 2 2  1 1 1"; //2 2 2   1 1 1
-	QErestart_limit = 3; //3
+	QErestart_limit = 2; //3
 	QEscftimeout = 6000; //time in seconds\
 
 	QEpreamble = "";
@@ -189,7 +189,7 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 		if(stemp) {
 			type = "";
 			type.append(stemp);
-			if (type=="elitism" || type=="classic") { ; }
+			if (type=="elitism" || type=="classic" || type=="finaleval") { ; }
 			else {
 				errorstring = "The run type specified does not match a valid type!\n";
 				return false;

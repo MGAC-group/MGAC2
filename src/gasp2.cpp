@@ -285,30 +285,38 @@ void GASP2control::server_prog() {
 						//partials.addIndv(bins[i]);
 					}
 				}
-
-
+			}
+			else if(params.type == "finaleval") {
+				evalpop = lastpop.completeCheck();
+				evalpop.runSymmetrize(hostlist[0].threads);
 			}
 
 			//partials = partials.completeCheck();
+			if(params.type == "finaleval") {
+				cout << mark() << "Performing final evaluation" << endl;
+				good = evalpop;
+			}
+			else { //////START FINALEVAL SKIP BLOCK
+				cout << mark() << "Mutating..." << endl;
 
-			cout << mark() << "Mutating..." << endl;
-			evalpop.mutate(params.mutation_prob, params.spacemode);
+				evalpop.mutate(params.mutation_prob, params.spacemode);
 
-			cout << mark() << "Crossover size: " << evalpop.size() << endl;
+				cout << mark() << "Crossover size: " << evalpop.size() << endl;
 
-			stats.clear();
-			stats.resize(231);
-			for(int i = 0; i < stats.size(); i++)
-				stats[i] = 0;
-			for(int i = 0; i < evalpop.size(); i++)
-				stats[evalpop.indv(i)->getSpace()]+=1;
-			ofstream statfile;
-			stringstream statname;
-			statname << params.outputfile << "_stats_" << setw(3) << setfill('0') << step;
-			statfile.open(statname.str().c_str(), ofstream::out);
-			for(int i = 1; i < stats.size(); i++)
-				statfile << i << " " << stats[i] << endl;
-			statfile.close();
+				stats.clear();
+				stats.resize(231);
+				for(int i = 0; i < stats.size(); i++)
+					stats[i] = 0;
+				for(int i = 0; i < evalpop.size(); i++)
+					stats[evalpop.indv(i)->getSpace()]+=1;
+				ofstream statfile;
+				stringstream statname;
+				statname << params.outputfile << "_stats_" << setw(3) << setfill('0') << step;
+				statfile.open(statname.str().c_str(), ofstream::out);
+				for(int i = 1; i < stats.size(); i++)
+					statfile << i << " " << stats[i] << endl;
+				statfile.close();
+
 
 ////////////////////END POP BUILD/////////////////////////
 
@@ -416,6 +424,8 @@ void GASP2control::server_prog() {
 //			if (params.type == "classic")
 //				good.addIndv(bad);
 
+
+
 			evalpop = good;
 			//evalpop.volumesort();
 			//writePop(evalpop, "fitcell", step);
@@ -424,6 +434,10 @@ void GASP2control::server_prog() {
 			evalpop.symmsort();
 			//GASP2pop bad, good, restart;
 
+
+
+
+
 			good.clear();
 			bad.clear();
 			good = evalpop.volLimit(bad);
@@ -431,10 +445,15 @@ void GASP2control::server_prog() {
 			//bypass the fitcell step
 
 
+
+
+			}//////END FINALEVAL SKIP BLOCK
+
 			cout << mark() << "Candidate popsize:" << good.size() << endl;
 
 			good.volumesort();
 			writePop(good, "vollimit", step);
+
 
 
 			if(good.size() > 0) {
@@ -869,7 +888,9 @@ void GASP2control::server_prog() {
 
 				} //end QE eval block
 
-				good.addIndv(bad);
+				//this prevents runaway single core sorting
+				//at most we will see 230*popsize
+				good.addIndv(bad.spacebin(params.popsize));
 				evalpop = good;
 
 			} //if good size > 0
@@ -893,8 +914,8 @@ void GASP2control::server_prog() {
 				if(params.spacemode == Spacemode::Single) {
 					lastpop.addIndv(evalpop);
 					lastpop.energysort();
-					lastpop.dedup();
-					lastpop.remIndv(lastpop.size()-params.popsize);
+					lastpop.dedup(params.popsize);
+					//lastpop.remIndv(lastpop.size()-params.popsize);
 
 					writePop(lastpop, "final", step);
 				}
@@ -929,6 +950,11 @@ void GASP2control::server_prog() {
 //				evalpop.energysort();
 //				evalpop.remIndv(evalpop.size()-params.popsize);
 
+			}
+			else if(params.type == "finaleval") {
+				writePop(evalpop, "fulleval", step);
+				cout << mark() << "Final evaluation completed and written, exiting..." << endl;
+				break;
 			}
 
 

@@ -192,6 +192,7 @@ public:
 
 	//structure manipulators
 	bool fitcell(double tlimit); //puts the molecules in the built unit cell
+	bool simplesymm();
 	bool unfitcell(); //reduces the structure to only fundamental units
 	bool check(); //checks for violation of constraints (usually after opt)
 	void overrideSpacegroup(Index i) { unit.spacegroup = i; };

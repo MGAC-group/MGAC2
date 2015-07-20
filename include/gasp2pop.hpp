@@ -106,6 +106,7 @@ public:
 
 	//fitcell/eval functions
 	void runFitcell(int threads); //threaded
+	void runSymmetrize(int threads);
 	void runEval(string hosts, GASP2param params, bool (*eval)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&, string, GASP2param)); //serial parallel
 	//hosts is a string in the form of a machinefile in the /tmp dir
 	//using a UUID; so, /tmp/UUID.hosts
@@ -121,7 +122,7 @@ public:
 
 	//remove duplicate UUIDs
 	//since the chance of a collision is so low, is not problematic
-	void dedup();
+	void dedup(int max);
 
 
 };
