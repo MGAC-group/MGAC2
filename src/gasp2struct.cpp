@@ -498,6 +498,11 @@ void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
 bool GASP2struct::simplesymm() {
 	if(energy < 0.0) {
 		unfitcell();
+
+		//apply dihedrals and rotations to molecules
+		for(int i = 0; i < molecules.size(); i++)
+			applyRot(molecules[i]);
+
 		//cout << mark() << "enter spacegroup" << endl;
 		Spgroup spg = spacegroups[unit.spacegroup];
 		//cout << mark() << "leave spacegroup" << endl;
