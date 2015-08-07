@@ -240,7 +240,10 @@ void GASP2control::server_prog() {
 
 
 ////////////////////START GEN BUILD/////////////////////////
-			GASP2pop bad, restart, good;
+
+		GASP2pop bad, restart, good, tempstore;
+		tempstore.clear();
+		while(true) { // check for full initial population setup
 
 
 			cout << mark() << "Starting new generation " << step << endl;
@@ -296,6 +299,8 @@ void GASP2control::server_prog() {
 				cout << mark() << "Performing final evaluation" << endl;
 				good = evalpop;
 			}
+
+
 			else { //////START FINALEVAL SKIP BLOCK
 				cout << mark() << "Mutating..." << endl;
 
@@ -448,6 +453,21 @@ void GASP2control::server_prog() {
 
 
 			}//////END FINALEVAL SKIP BLOCK
+
+			if(step > 0)
+				break;
+			good.addIndv(tempstore);
+			if(good.size() < params.popsize) {
+				cout << mark() << "Not enough initial structures generated yet, only " << good.size() <<" out of " << params.popsize  << " generated" << endl;
+				tempstore = good;
+				lastpop.clear();
+				lastpop.init(root, params.popsize, params.spacemode, params.group);
+			}
+			else {
+				break;
+			}
+
+		}
 
 			cout << mark() << "Candidate popsize:" << good.size() << endl;
 

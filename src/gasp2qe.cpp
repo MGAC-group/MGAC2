@@ -16,6 +16,7 @@ namespace QE {
 	bool runQE(vector<GASP2molecule>& mols, GASP2cell& unit, double &energy, double &force, double&pressure, time_t&time, string hostfile, GASP2param params) {
 
 		bool outstat = true;
+		bool abandon = false;
 		auto start = chrono::steady_clock::now();
 
 		UUID runID;
@@ -300,15 +301,20 @@ namespace QE {
 					}
 
 					//unknown error - this is bad, we want to know
-					//when it happens and we want to exit as fast as possible
+					//when it happens and we want to abandon the structure
 					//this could leave stray processes, but it's not clear
 					pos = output.rfind(any_error);
 					if(pos!=string::npos) {
 						cout << mark() << "Unknown error detected in QE run! Output:\n";
 						cout << output.substr(pos, 2048) << endl << endl;
-						pclose2(t,out);
+						//this was a bad idea.....
+						//pclose2(t,out);
 						//send emergency shutdown signal instead of exit?
-						exit(1);
+						//exit(1);
+						outstat = false;
+						abandon = true;
+						longeval_mut.unlock();
+						break;
 					}
 
 					//early term
@@ -355,6 +361,9 @@ namespace QE {
 			pclose2(t,out);
 
 			//cleanup inputs
+
+			//exit in an unknown error condition
+			if(abandon) break;
 
 
 
