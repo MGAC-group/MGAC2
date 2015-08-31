@@ -34,7 +34,7 @@ const option::Descriptor usage[] =
 		{HELP,0,"h","help",option::Arg::Optional,"-h,--help  Displays this help message"},
 		{RESTART,0,"r","restart",Arg::NonEmpty,"-r,--restart  Optional argument for a restart file"},
 		{STEP,0,"S","step",Arg::NonEmpty,"-S,--step Optional argument used to specify starting step"},
-		{SPACEGROUPS,0,"ls","spacegroups",Arg::Optional,"-ls,--spacegroups  List valid spacegroups"},
+		{SPACEGROUPS,0,"l","spacegroups",Arg::Optional,"-l,--spacegroups  List valid spacegroups"},
 		{CONVERT, 0, "c", "cif", Arg::NonEmpty, "-c, --cif  Name of output file for cif; takes the input (-i) and turns it into a cif"},
 		{COMBINE, 0, "m","merge",Arg::NonEmpty, "-m, --merge Combine multiple files to form a single population file (comma delimited)"},
 		{SIZE, 0, "s","size", Arg::NonEmpty, "-s, --size Used in conjunction with merge to denote the size of merged population"},
@@ -85,35 +85,56 @@ int main( int argc, char* argv[] ) {
     }
 
     if(options[COMBINE]) {
+    	int size=300;
     	if(options[SIZE]) {
-
+    		//TODO: Need to put something here to set size
+    		size = std::stoi(string(options[SIZE].arg));
     	}
 
-    	if(options[INPUT] && options[CONVERT].arg != NULL) {
-
+    	if(options[INPUT] && options[COMBINE].arg != NULL) {
     		GASP2pop temppop, finalpop;
-
+    		ofstream outf;
+    		string files = options[INPUT].arg;
+    		vector<string> filelist=split(files,',');
     		string errorstring;
-    		tinyxml2::XMLDocument doc;
-    		doc.LoadFile(options[INPUT].arg);
-    		if(doc.ErrorID() == 0) {
-    			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
-    			if(!temppop.loadXMLrestart(pop, errorstring)) {
-    				cout << "There was an error in the restart file: " << errorstring << endl;
-    				exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
-    			}
-    		}
-    		else {
-    			cout << "!!! There was a problem with opening the input file!" << endl;
-    			cout << "Check to see if the file exists or if the XML file" << endl;
-    			cout << "is properly formed, with tags formatted correctly." << endl;
-    			cout << "Aborting... " << endl;
-    			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
+    		for(int i = 0; i < filelist.size(); i++) {
+    			temppop.clear();
+				tinyxml2::XMLDocument doc;
+				doc.LoadFile(filelist[i].c_str());
+				if(doc.ErrorID() == 0) {
+					tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
+					if(!temppop.loadXMLrestart(pop, errorstring)) {
+						cout << "There was an error in " << filelist[i] <<": " << errorstring << endl;
+						exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
+					}
+					finalpop.addIndv(temppop);
+				}
+				else {
+					cout << "!!! There was a problem with opening input file \"" << filelist[i] << "\"!" << endl;
+
+					cout << "Check to see if the file exists or if the XML file" << endl;
+					cout << "is properly formed, with tags formatted correctly." << endl;
+					cout << "Aborting... " << endl;
+					exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
+				}
     		}
     		//remove(options[CONVERT].arg);
-    		temppop.energysort();
-    		//temppop.writeCIF(string(options[CONVERT].arg));
-    		cout << mark() << "Files successfully merged" << endl;
+    		finalpop.energysort();
+    		finalpop.dedup(size);
+    		finalpop.runSymmetrize(2);
+
+    		outf.open(options[COMBINE].arg, ofstream::out);
+    		if(outf.fail()) {
+    			cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! exiting sadly..." << endl;
+    			exit(1);
+    		}
+    		else {
+    			outf << "<mgac>\n" << finalpop.saveXML() << endl << "</mgac>\n";
+    			outf.close();
+    		}
+
+    		//finalpop.writeCIF(string(options[COMBINE].arg));
+    		cout << mark() << "Files successfully merged and written" << endl;
 
     	}
 
