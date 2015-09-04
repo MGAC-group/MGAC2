@@ -189,6 +189,83 @@ Mat3 molecularPlane(const Vec3 at1, const Vec3 at2, const Vec3 at3)
 	return result;
 }
 
+//AML: Adapted from http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/
+void getAngleAxis(Mat3 m, Vec3 &v, double &theta ) {
+
+	double x,y,z;
+
+	//singularity test
+	if ((std::abs(m[0][1]-m[1][0])< 0.01)
+	  && (std::abs(m[0][2]-m[2][0])< 0.01)
+	  && (std::abs(m[1][2]-m[2][1])< 0.01)) {
+
+		if ((std::abs(m[0][1]+m[1][0]) < 0.1)
+		  && (std::abs(m[0][2]+m[2][0]) < 0.1)
+		  && (std::abs(m[1][2]+m[2][1]) < 0.1)
+		  && (std::abs(m[0][0]+m[1][1]+m[2][2]-3.0) < 0.1)) {
+			// this singularity is identity matrix so angle = 0
+			v=norm(Vec3(1.0,1.0,1.0));
+			theta = 0.0;
+			return; // zero angle, arbitrary axis
+		}
+		// otherwise this singularity is angle = 180
+
+		double xx = (m[0][0]+1)/2;
+		double yy = (m[1][1]+1)/2;
+		double zz = (m[2][2]+1)/2;
+		double xy = (m[0][1]+m[1][0])/4;
+		double xz = (m[0][2]+m[2][0])/4;
+		double yz = (m[1][2]+m[2][1])/4;
+		if ((xx > yy) && (xx > zz)) { // m[0][0] is the largest diagonal term
+			if (xx< 0.01) {
+				x = 0.0;
+				y = 0.7071;
+				z = 0.7071;
+			} else {
+				x = sqrt(xx);
+				y = xy/x;
+				z = xz/x;
+			}
+		} else if (yy > zz) { // m[1][1] is the largest diagonal term
+			if (yy< 0.01) {
+				x = 0.7071;
+				y = 0.0;
+				z = 0.7071;
+			} else {
+				y = sqrt(yy);
+				x = xy/y;
+				z = yz/y;
+			}
+		} else { // m[2][2] is the largest diagonal term so base result on this
+			if (zz< 0.01) {
+				x = 0.7071;
+				y = 0.7071;
+				z = 0.0;
+			} else {
+				z = sqrt(zz);
+				x = xz/z;
+				y = yz/z;
+			}
+		}
+		theta = PI;
+		v[0] = x; v[1] = y; v[2] = z;
+		return; // return 180 deg rotation
+	}
+
+	//no singularities, get mah angle
+	double preacos = (m[0][0] + m[1][1] + m[2][2] - 1.0) / 2.0;
+	double angle = acos(preacos);
+
+	x = ( m[2][1] - m[1][2] );
+	y = ( m[0][2] - m[2][0] );
+	z = ( m[1][0] - m[0][1] );
+	Vec3 n(x,y,z);
+	n = norm(n);
+
+	theta = angle;
+	v=n;
+	return;
+}
 
 
 /// Reference: Cambridge Crystallographic Data Centre

@@ -857,7 +857,7 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	//for each molecule
 	uniform_real_distribution<double> dpos(0.0,1.0);
 	uniform_real_distribution<double> drot(-1.0,1.0);
-	uniform_real_distribution<double> dtheta(0.0, 2.0*PI);
+	uniform_real_distribution<double> dtheta(0.0, 2*PI);
 	for(int i = 0; i < molecules.size(); i++) {
 		Vec3 tempvec; double temprot;
 		//randomize rotation matrix

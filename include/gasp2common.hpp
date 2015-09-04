@@ -118,6 +118,8 @@ double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C );
 
 double dihedral ( const Vec3 & A, const Vec3 & B, const Vec3 & C, const Vec3 & D );
 
+void getAngleAxis ( Mat3 m, Vec3 &v, double & theta );
+
 Mat3 stabilize(Mat3 m);
 
 inline double rcov( const Elem type ) {

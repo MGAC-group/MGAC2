@@ -45,7 +45,9 @@ gasp2
 	src/gasp2pop.cpp 
 	src/gasp2qe.cpp 
 	src/gasp2struct.cpp
+	src/gasp2db.cpp
 	src/tinyxml2.cpp
+	src/sqlite3.c
 )
 target_link_libraries( gasp2 ${MPI_LIBRARIES} )
 target_link_libraries( gasp2 svl )
