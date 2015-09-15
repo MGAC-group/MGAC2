@@ -35,6 +35,14 @@ GASP2param::GASP2param() {
 	symmlimit = 12;
 	binlimit = 3;
 	downlimit = 2;
+	clustersize = 1.0;
+	chebyshevlimit = 15.0;
+	dihstep = rad(10.0);
+	rotstep = rad(10.0);
+	ratiostep = 0.1;
+	posstep = 0.03;
+	angstep = rad(5.0);
+
 
 	//qe params
 	QEcalculation = "vc-relax"; //vc-relax
@@ -367,6 +375,74 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 			}
 		}
 
+		//clustersize
+		if(!run->QueryDoubleAttribute("clustersize", &dtemp)) {
+			clustersize = dtemp;
+			if(clustersize <= 0.0) {
+				errorstring = "clustersize must be greater than zero!\n";
+				return false;
+			}
+		}
+
+		//chebyshevlimit
+		if(!run->QueryDoubleAttribute("chebyshevlimit", &dtemp)) {
+			chebyshevlimit = dtemp;
+			if(chebyshevlimit <= 0.0) {
+				errorstring = "chebyshevlimit must be greater than zero!\n";
+				return false;
+			}
+		}
+
+		//dihstep
+		if(!run->QueryDoubleAttribute("dihstep", &dtemp)) {
+			dihstep = dtemp;
+			if(dihstep < 0.0) {
+				errorstring = "dihstep must be non-negative!\n";
+				return false;
+			}
+		}
+
+		//rotstep
+		if(!run->QueryDoubleAttribute("rotstep", &dtemp)) {
+			rotstep = dtemp;
+			if(rotstep < 0.0) {
+				errorstring = "rotstep must be non-negative!\n";
+				return false;
+			}
+		}
+
+
+		//ratiostep
+		if(!run->QueryDoubleAttribute("ratiostep", &dtemp)) {
+			ratiostep = dtemp;
+			if(ratiostep < 0.0) {
+				errorstring = "ratiostep must be non-negative!\n";
+				return false;
+			}
+		}
+
+
+		//posstep
+		if(!run->QueryDoubleAttribute("posstep", &dtemp)) {
+			posstep = dtemp;
+			if(posstep < 0.0) {
+				errorstring = "posstep must be non-negative!\n";
+				return false;
+			}
+		}
+
+		//angstep
+		if(!run->QueryDoubleAttribute("angstep", &dtemp)) {
+			angstep = rad(dtemp);
+			if(angstep < 0.0) {
+				errorstring = "posstep must be non-negative!\n";
+				return false;
+			}
+		}
+
+
+
+
 		//spacemode
 		stemp = run->Attribute("spacemode");
 		if(stemp) {
@@ -419,6 +495,9 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 		errorstring = "The 'run' tag is required but was not found!\n";
 		return false;
 	}
+
+
+
 
 
 //*************************

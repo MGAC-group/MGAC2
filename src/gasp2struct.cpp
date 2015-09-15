@@ -2,6 +2,15 @@
 
 using namespace std;
 
+const vector<Vec3> axissettings = {
+		Vec3(1.0,2.0,0.0),
+		Vec3(1.0,0.0,2.0),
+		Vec3(2.0,1.0,0.0),
+		Vec3(2.0,0.0,1.0),
+		Vec3(0.0,1.0,2.0),
+		Vec3(0.0,2.0,1.0),
+};
+
 vector<string> GASP2struct::names;
 
 GASP2struct::GASP2struct() {
@@ -25,6 +34,9 @@ GASP2struct::GASP2struct() {
 	ID.generate();
 	parentA.clear();
 	parentB.clear();
+
+	cluster=-1;
+	clustergroup=-1;
 
 
 }
@@ -599,7 +611,8 @@ bool GASP2struct::fitcell(double tlimit) {
 	//cout << mark() << "t3" <<" " <<ID.toStr()<< endl;
 
 	ratios = Vec3(unit.ratA, unit.ratB, unit.ratC);
-	order = getOrder(ratios);
+	//order = getOrder(axissettings[unit.axisorder]);
+	order = axissettings[unit.axisorder];
 
 	collapseCell(supercell, ratios);
 	last_vol = getVolume();
@@ -814,6 +827,8 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	unit.ratA = drat(rgen);
 	unit.ratB = drat(rgen);
 	unit.ratC = drat(rgen);
+	uniform_int_distribution<> axisset(0,5);
+	unit.axisorder=axisset(rgen);
 // the original ratios were kind of poorly picked
 //we realyl want to restrict these values to avoid long,
 //thin unit cells
@@ -974,12 +989,15 @@ bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
 
 	//randomize ratios & special cell angles
 	uniform_real_distribution<double> drat(0.5,4.0);
+	uniform_int_distribution<> axisset(0,5);
 	if(mut(rgen))
 		unit.ratA = drat(rgen);
 	if(mut(rgen))
 		unit.ratB = drat(rgen);
 	if(mut(rgen))
 		unit.ratC = drat(rgen);
+	if(mut(rgen))
+		unit.axisorder=axisset(rgen);
 	uniform_real_distribution<double> dtrimono(0.01,180.0);
 	uniform_real_distribution<double> drhom(0.01,120.0);
 	if(mut(rgen))
@@ -1148,7 +1166,9 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 	if(crx(rgen))
 		swap(childA.unit.ratB, childB.unit.ratB);
 	if(crx(rgen))
-		swap(childA.unit.ratB, childB.unit.ratC);
+		swap(childA.unit.ratC, childB.unit.ratC);
+	if(crx(rgen))
+		swap(childA.unit.axisorder, childB.unit.axisorder);
 
 
 	vector<GASP2molecule> temp, a, b;
@@ -1353,6 +1373,8 @@ string GASP2struct::serializeXML() {
 	pr.PushAttribute("maxvol",maxvol);
 	pr.PushAttribute("minvol",minvol);
 	pr.PushAttribute("name",names[crylabel].c_str());
+	pr.PushAttribute("cluster",cluster);
+	pr.PushAttribute("clustergroup",clustergroup);
 	pr.OpenElement("info");
 		pr.PushAttribute("id", ID.toStr().c_str());
 		pr.PushAttribute("parentA",parentA.toStr().c_str());
@@ -1385,6 +1407,7 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("rA",unit.ratA);
 		pr.PushAttribute("rB",unit.ratB);
 		pr.PushAttribute("rC",unit.ratC);
+		pr.PushAttribute("axisorder",unit.axisorder);
 		pr.PushAttribute("spacegroup",spacegroupNames[unit.spacegroup].c_str());
 		pr.PushAttribute("cen",unit.cen);
 		pr.PushAttribute("sub",unit.sub);
@@ -1585,6 +1608,16 @@ bool GASP2struct::parseXMLStruct(tinyxml2::XMLElement * crystal, string & errors
 		if(minvol > maxvol) {
 			errorstring = "minvol is out of bounds (minvol > maxvol).\n";
 			return false;
+		}
+
+		cluster=-1;
+		if(! crystal->QueryIntAttribute("cluster",&itemp) ) {
+			cluster = itemp;
+		}
+
+		clustergroup=-1;
+		if(! crystal->QueryIntAttribute("clustergroup",&itemp) ) {
+			clustergroup = itemp;
 		}
 
 		//parse the molecules
@@ -2252,6 +2285,16 @@ bool GASP2struct::readCell(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		return false;
 	}
 
+	//axisorder
+	cell.axisorder = 0;
+	if(!elem->QueryIntAttribute("axisorder", &itemp)) {
+		cell.axisorder=itemp;
+	}
+	if(cell.axisorder < 0 || cell.axisorder > 5) {
+		errorstring = "Axis order out of bounds (0 <= x <= 5)!\n";
+		return false;
+	}
+
 	//spacegroup
 	cell.spacegroup = 1;
 	stemp = elem->Attribute("spacegroup");
@@ -2788,4 +2831,248 @@ string getStructError(StructError finalstate) {
 		else if(finalstate == NoFitcell)
 			strtemp = "NoFitcell";
 		return strtemp;
+}
+
+
+//the simple comparison reports the Chebyshev distance between
+//two different structures. the distance is calculated by normalizing
+//each of the INDEPENDENT paramters of the GA schema, such that a value
+//of 1.0 is equivalent to the effective step size of the scheme parameter
+//(e.g., given a step size of 20 degrees, 30 degrees gives a value of 1.5)
+//FIXME:THIS CODE ASSUMES THAT EQUIVALENT STOICHIMETRIES ARE GIVEN AS INPUT
+//crystals that do not have the same stoichimetry will have PROBLEMS
+bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average, double & chebyshev, double & euclid) {
+	vector<double> scores;
+	scores.reserve(100);
+
+	chebyshev = -1.0;
+	average = -1.0;
+	euclid = -1.0;
+	//a negative distance is impossible, so these cannot be the same :P
+	if(unit.spacegroup != alt.unit.spacegroup)
+		return false;
+
+
+	scores.push_back(std::abs(unit.alpha - alt.unit.alpha) / p.angstep);
+	scores.push_back(std::abs(unit.beta - alt.unit.beta) / p.angstep);
+	scores.push_back(std::abs(unit.gamma - alt.unit.gamma) / p.angstep);
+
+	scores.push_back(std::abs(unit.ratA - alt.unit.ratA) / p.ratiostep);
+	scores.push_back(std::abs(unit.ratB - alt.unit.ratB) / p.ratiostep);
+	scores.push_back(std::abs(unit.ratC - alt.unit.ratC) / p.ratiostep);
+
+
+	//THIS CODE ASSUMES POSITIONAL EQUIVALENCE BETWEEN PAIRS OF MOLECULES
+	//probably should not be used for more than z'=1 until a clean solution
+	//can be implemented
+	for(int i = 0; i < molecules.size(); i++) {
+		if(molecules[i].symm == 0 && alt.molecules[i].symm == 0) {
+			//double tempscore = 0.0;
+			scores.push_back(std::abs(molecules[i].pos[0] - alt.molecules[i].pos[0]) / p.posstep);
+			scores.push_back(std::abs(molecules[i].pos[1] - alt.molecules[i].pos[1]) / p.posstep);
+			scores.push_back(std::abs(molecules[i].pos[2] - alt.molecules[i].pos[2]) / p.posstep);
+
+			//rotation matrix: because the output of the angle algorithm is unreliable,
+			//we generate two angle/axis pairs which are equivalent but inverse of each other
+			//then the pair with the smallest angle between the axis is taken as the distance
+			Vec3 axis[3]; double ang[3];
+			getAngleAxis(molecules[i].rot, axis[0], ang[0]);
+			getAngleAxis(alt.molecules[i].rot, axis[1],ang[1]);
+			axis[2] = -1.0 * axis[1]; ang[2] = -1.0 * ang[1];
+
+			for(int n=0; n<3;n++)
+				if(ang[n] < 0.0) ang[n] += (2.0*PI);
+
+
+			double diff = angle(axis[0], Vec3(0.0,0.0,0.0), axis[1]);
+			double diffB = angle(axis[0], Vec3(0.0,0.0,0.0), axis[3]);
+			double angdiff = std::abs(ang[0] - ang[1]);
+			double angdiffB = std::abs(ang[0] - ang[3]);
+
+			if(diffB < diff) {
+				diff = diffB;
+				angdiff = angdiffB;
+			}
+
+			scores.push_back(diff / p.rotstep / 2.0); //adjusted to always be twice as many as rotstep
+			if(angdiff > PI) angdiff -= PI;
+			scores.push_back(angdiff / p.rotstep);
+			//end rotation matrix calcs
+
+			for(int k = 0; k < molecules[i].dihedrals.size(); k++) {
+				angdiff = std::abs(molecules[i].dihedrals[k].ang - alt.molecules[i].dihedrals[k].ang);
+				if(angdiff > PI) angdiff = PI - (angdiff - PI);
+				scores.push_back(angdiff / p.dihstep);
+			}
+		}
+	}
+	chebyshev = 0.0;
+	average = 0.0;
+	euclid = 0.0;
+	for(int i = 0; i < scores.size(); i++) {
+		if (scores[i] > chebyshev) chebyshev = scores[i];
+		euclid += scores[i] * scores[i];
+		average += scores[i];
+	}
+	euclid = sqrt(euclid);
+	//THIS is important!
+	//the maximum is removed from the average;
+	//so, the score is the average minus the highest score. we ignore the highest value because
+	//if n-1/n paramters are within the average threshold, the likelihood of those being the
+	//same structure is very high, even though some paramters may be disparate.
+	//this will prevent oversampling of decent sized ranges; all that remains is tuning
+	average -= chebyshev;
+	average /= static_cast<double>(scores.size()-1);
+
+	if(average <= p.clustersize && chebyshev <= p.chebyshevlimit)
+		return true;
+	return false;
+
+
+}
+
+//FIXME:THESE FUNCTIONS DO NOT HANDLE VECTORS FOR DIFFERENT MOLECULE TYPES
+void GASP2struct::setVector(vector<double> in, int mol, int dih) {
+
+
+	Vec3 axis; double ang;
+
+	unit.alpha = in[0];
+	unit.beta = in[1];
+	unit.gamma = in[2];
+	unit.ratA = in[3];
+	unit.ratB = in[4];
+	unit.ratC = in[5];
+
+	int molstep = 7 + dih;
+
+	for(int i = 0; i < mol; i++) {
+		//pos
+		molecules[i].pos[0] = in[i*molstep + 6 + 0];
+		molecules[i].pos[1] = in[i*molstep + 6 + 1];
+		molecules[i].pos[2] = in[i*molstep + 6 + 2];
+		//rot & ang
+		axis[0] = in[i*molstep + 6 + 3];
+		axis[1] = in[i*molstep + 6 + 4];
+		axis[2] = in[i*molstep + 6 + 5];
+		ang = in[i*molstep + 6 + 6];
+		molecules[i].rot = Rot3(norm(axis), ang);
+
+		//dih
+		for(int j = 0; j < dih; j++) {
+			molecules[i].dihedrals[j].ang = in[i*molstep + 6 + 7 + j];
+		}
+	}
+
+	//backset the angle genes
+	unit.rhomC = unit.gamma;
+	unit.monoB = unit.beta;
+	unit.triA = unit.alpha;
+	unit.triB = unit.beta;
+	unit.triC = unit.gamma;
+
+}
+
+//FIXME:THESE FUNCTIONS DO NOT HANDLE VECTORS FOR DIFFERENT MOLECULE TYPES
+vector<double> GASP2struct::getVector(int &mol, int &dih) {
+	vector<double> out;
+	Vec3 axis, pos; double ang;
+	//al,bt,gm,rA,rB,rC are always first
+	out.push_back(unit.alpha);
+	out.push_back(unit.beta);
+	out.push_back(unit.gamma);
+	out.push_back(unit.ratA);
+	out.push_back(unit.ratB);
+	out.push_back(unit.ratC);
+
+	mol = molecules.size();
+	dih = molecules[0].dihedrals.size();
+
+	for(int i = 0; i < mol; i++) {
+		//pos
+		out.push_back(molecules[i].pos[0]);
+		out.push_back(molecules[i].pos[1]);
+		out.push_back(molecules[i].pos[2]);
+		//rot & ang
+		getAngleAxis(molecules[i].rot, axis, ang);
+		out.push_back(axis[0]);
+		out.push_back(axis[1]);
+		out.push_back(axis[2]);
+		out.push_back(ang);
+		//dih
+		for(int j = 0; j < dih; j++) {
+			out.push_back(molecules[i].dihedrals[j].ang);
+		}
+	}
+
+	return out;
+}
+
+bool vectoradd(vector<double> &sum, vector<double> add, int mol, int dih) {
+
+	double diff, revdiff;
+	//this sums a structure vector in such a way that
+	//modulus parameters are averaged appropriately
+
+	//alpha, beta, gamma, and rA,rB,rC are non-modulus
+
+	//axis, ang, and dihedrals are modulus and need to be treated thusly
+
+	if(sum.size() == add.size()) {
+		//a,b,c,ra,rb,rc
+		for(int i = 0; i < 6; i++)
+			sum[i] += add[i];
+
+		int molstep = dih + 7;
+
+		for(int i = 0; i < mol; i++) {
+			//pos
+			sum[i*molstep + 6 + 0] += add[i*molstep + 6 + 0];
+			sum[i*molstep + 6 + 1] += add[i*molstep + 6 + 1];
+			sum[i*molstep + 6 + 2] += add[i*molstep + 6 + 2];
+
+			//axis
+			Vec3 ref(sum[i*molstep + 6 + 3], sum[i*molstep + 6 + 4], sum[i*molstep + 6 + 5]);
+			Vec3 axis(add[i*molstep + 6 + 3], add[i*molstep + 6 + 4], add[i*molstep + 6 + 5]);
+			axis = norm(axis);
+			if(len(ref) == 0.0)
+				ref = axis;
+			else
+				ref = norm(ref);
+
+			Vec3 revaxis = -1.0 * axis;
+
+			//find the smallest difference axis with the current axis
+			//pick that axis and go with it, but make sure to add to it
+			diff = angle(axis, Vec3(0.0,0.0,0.0), ref);
+			revdiff = angle(revaxis, Vec3(0.0,0.0,0.0), ref);
+			if(revdiff < diff) {
+				axis = revaxis; add[i*molstep + 6 + 6] *= -1.0;
+			}
+			sum[i*molstep + 6 + 3] += axis[0];
+			sum[i*molstep + 6 + 4] += axis[1];
+			sum[i*molstep + 6 + 5] += axis[2];
+
+			//ang
+			if(add[i*molstep + 6 + 6] < 0.0)
+				add[i*molstep + 6 + 6] += 2.0*PI;
+			sum[i*molstep + 6 + 6] += add[i*molstep + 6 + 6] + 2.0*PI;
+
+			//dih
+			for(int j = 0; j < dih; j++) {
+				if(add[i*molstep + 6 + 7 + j] < 0.0)
+					add[i*molstep + 6 + 7 + j] += 2.0*PI;
+				sum[i*molstep + 6 + 7 + j] += add[i*molstep + 6 + 7 + j] + 2.0*PI;
+			}
+		}
+
+	}
+	else
+		return false;
+	return true;
+}
+
+void vectordiv(vector<double> &sum, double val) {
+	for(int i = 0; i < sum.size(); i++)
+		sum[i] /= val;
 }

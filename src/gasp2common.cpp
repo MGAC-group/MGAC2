@@ -111,8 +111,6 @@ double deg(double rad) {
 	return rad/PI*180.0;
 }
 
-
-
 double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C ) {
     double cos_angle = dot(A-B,C-B) / ( len(A-B) * len(C-B) );
 
@@ -346,6 +344,8 @@ Vec3 modVec3(Vec3 in) {
 	}
 	return in;
 }
+
+
 
 Elem getElemType(string in) {
 	Elem type;

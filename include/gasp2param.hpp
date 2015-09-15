@@ -3,7 +3,7 @@
 /*
  * The intention of gasp2param is to provide a place for
  * parameters to be collected in a sensible way. GASP2param
- * is declared as a friend of GASP2control to avoid having to write
+ * is declared as public to avoid having to write
  * a new handler for every new parameter, and because GASP2param
  * is more correctly placed at the same peer level as GASP2control.
  *
@@ -63,6 +63,14 @@ public:
 	int symmlimit;
 	int binlimit; //number of bins to limit search on
 	int downlimit; //number of downed nodes
+	double clustersize;
+	double chebyshevlimit;
+	double dihstep;
+	double rotstep;
+	double ratiostep;
+	double posstep;
+	double angstep;
+
 
 
 	//qe params

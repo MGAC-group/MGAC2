@@ -4,6 +4,10 @@
 
 using namespace std;
 
+class GASP2db;
+
+extern const vector<Vec3> axissettings;
+
 typedef enum StructError {
 	OKStruct=0,
 	OptBadBond,
@@ -144,6 +148,8 @@ struct GASP2cell {
 	Subtype sub;
 	Index spacegroup; //spacegroup number (same as in IUCR tables)
 
+	Index axisorder;
+
 	//AML: I don't think fractional values are important
 	//when considering that the new software does alignments
 	//between all unique, energy tested structures.
@@ -171,6 +177,7 @@ string getStructError(StructError finalstate);
 //AML: NO POINTERS. We are not writing copy constructors.
 
 class GASP2struct {
+	friend GASP2db;
 public:
 	GASP2struct();
 private:
@@ -220,7 +227,11 @@ public:
 	void crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate=0.5, Spacemode mode=Limited);
 	bool evaluate(string hostfile, GASP2param params);
 
-	//getters
+	//getters n stuff
+	void setCluster(int c) { cluster=c; };
+	void setClustergroup (int cg) { this->clustergroup=cg; };
+	int getCluster() { return cluster; };
+	int getClustergroup() { return this->clustergroup; };
 	bool completed() {return complete;};
 	bool opted() {return didOpt;};
 	bool fitcelled() {return isFitcell;};
@@ -237,6 +248,11 @@ public:
 	void setUnopted() { didOpt = false; };
 
 	void forceOK() {finalstate = OKStruct;};
+
+	bool simpleCompare(GASP2struct alt, GASP2param p, double &average, double &chebyshev, double & euclid);
+	void setVector(vector<double> values, int mol, int dih);
+	vector<double> getVector(int &mol, int &dih);
+
 private:
 	//values
 	double interdist;
@@ -264,11 +280,14 @@ private:
 	UUID parentA;
 	UUID parentB;
 
+	//clustering
+	int cluster;
+	int clustergroup;
 
 private:
 	//a vector of names shared by all GASP2structs
 	//it doesn't make much sense to copy strings all the time
-	//but only when necessary; these names are not shared with the
+	//but only when necessary; these names are not shared with the client
 	//and therefore names should only accessed when running on the
 	//server_program
 	static vector<string> names;
@@ -312,6 +331,8 @@ private:
 
 };
 
-
+//special functions for handling averages of struct vectors
+bool vectoradd(vector<double> &sum, vector<double> add, int mol, int dih);
+void vectordiv(vector<double> &sum, double val);
 
 

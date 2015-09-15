@@ -656,3 +656,124 @@ void GASP2pop::dedup(int max) {
 	}
 	structures = temp;
 }
+
+//extract all population members of a particular cluster
+GASP2pop GASP2pop::getCluster(int c) {
+	GASP2pop out;
+	for(int i = 0; i < size(); i++) {
+		if(structures[i].getCluster() == c)
+			out.addIndv(structures[i]);
+	}
+	return out;
+}
+
+//assigns structures in a pop clusters and adds to new clusters
+void GASP2pop::cluster(GASP2pop &clusters, GASP2param p) {
+	double average, chebyshev, euclid, localchebyshev, localavg;
+
+	//make two passes to make sure everything is updated nicely
+	for(int n = 0; n < 2; n++) {
+		//cout << "cluster pass n " << n << endl;
+		//update clusters
+		for(int i = 0; i < structures.size(); i++) {
+			//get the distance to the current centroid
+			int c = structures[i].getCluster();
+			if(c != -1) {
+				structures[i].simpleCompare(clusters.structures[c], p, localavg, localchebyshev, euclid);
+			}
+
+			for(int j = 0; j < clusters.size(); j++) {
+				if(structures[i].simpleCompare(clusters.structures[j], p, average, chebyshev, euclid)) {
+					//if a cluster is already assigned check
+					//to see if another cluster is closer
+					if( (average < localavg && chebyshev < localchebyshev) || (c == -1) ) {
+						structures[i].setCluster(j);
+						localavg = average;
+						localchebyshev = chebyshev;
+					}
+				}
+			}
+			//the cluster is unassigned, so we make a new cluster
+			if(structures[i].getCluster() == -1) {
+				structures[i].setCluster(clusters.size());
+				clusters.addIndv(structures[i]);
+			}
+		}
+		//cout << "post assign" << endl;
+		//update centroids
+		for(int i = 0; i < clusters.size(); i++)
+			clusters.structures[i] = cluster_center(i);
+		//cout << "post centroid" << endl;
+
+	}
+
+}
+
+//finds the centroid of a cluster
+//FIXME: this does not handle multiple types of molecules right!
+//fix needs to generalize all of the clustering algorithms
+GASP2struct GASP2pop::cluster_center(int c) {
+
+	//cout << "centering" << endl;
+	//set up the new centroid
+	GASP2struct center;
+	for(int i = 0; i < structures.size(); i++) {
+		if(structures[i].getCluster() == c) {
+			center = structures[i];
+			break;
+		}
+	}
+
+	//get the initial vector
+	vector<double> sum;
+	int mol, dih, tempmol, tempdih;
+	sum = center.getVector(mol, dih);
+	for(int i = 0; i < sum.size(); i++)
+		sum[i] = 0.0;
+	//cout << "post sum init" << endl;
+
+	int csize = 0;
+	for(int i = 0; i < structures.size(); i++) {
+		if(structures[i].getCluster() == c) {
+			csize++;
+			//need to fix silent error
+			if(! vectoradd(sum, structures[i].getVector(tempmol, tempdih), mol, dih)) {
+				cout << "WARNING: cluster centroid function haD a problem during sum! Centroid not adjusted" << endl;
+				return center;
+			}
+		}
+	}
+
+	//cout << "post summation" << endl;
+
+	vectordiv(sum, static_cast<double>(csize));
+	center.setVector(sum, mol, dih);
+	//center.fitcell(10.0);
+
+	//cout << "post fitcell" << endl;
+
+	return center;
+}
+
+//assigns all clusters to a cluster group
+//based on adjacency via inter-cluster distances
+void GASP2pop::assignClusterGroups(GASP2param p) {
+
+	double average, chebyshev, euclid;
+
+	//assign every group to its own group
+	for(int i = 0; i < structures.size(); i++)
+		structures[i].setClustergroup(i);
+	//cout << "str" << structures[0].getClustergroup() << endl;
+
+	//make two passes to make sure everything is updated nicely
+	for(int i = 0; i < structures.size(); i++) {
+		for(int j = i + 1; j < structures.size(); j++) {
+			structures[i].simpleCompare(structures[j], p, average, chebyshev, euclid);
+			if(average < 2.0*p.clustersize && chebyshev < 2.0*p.chebyshevlimit)
+				structures[j].setClustergroup(structures[i].getClustergroup());
+		}
+
+	}
+
+}

@@ -124,5 +124,10 @@ public:
 	//since the chance of a collision is so low, is not problematic
 	void dedup(int max);
 
+	GASP2pop getCluster(int c);
+	void cluster(GASP2pop &clusters, GASP2param p);
+	GASP2struct cluster_center(int c);
+	void assignClusterGroups(GASP2param p);
+
 
 };

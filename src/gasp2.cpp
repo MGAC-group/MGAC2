@@ -192,6 +192,8 @@ void GASP2control::server_prog() {
 
 	vector<GASP2pop> split;
 
+	GASP2pop clusters;
+
 	if(restart.length() > 0) {
 		lastpop = rootpop;
 		rootpop.clear();
@@ -204,6 +206,34 @@ void GASP2control::server_prog() {
 	else {
 		lastpop.init(root, params.popsize, params.spacemode, params.group);
 	}
+
+	double average, chebyshev, euclid;
+	for(int i = 0; i < lastpop.size(); i++) {
+		for(int j = i; j < lastpop.size(); j++) {
+			if(i==j) continue;
+			bool res = lastpop.indv(i)->simpleCompare(*lastpop.indv(j),params,average,chebyshev, euclid);
+			cout << "(" << i << "," << j << ") " << res << " " << average << " " << chebyshev << " "  << euclid << endl;
+
+		}
+	}
+
+	lastpop.cluster(clusters, params);
+	clusters.assignClusterGroups(params);
+
+	cout << "cluster assigns:" << endl;
+	for(int i = 0; i < lastpop.size(); i++) {
+		cout << i << " " << lastpop.indv(i)->getCluster() <<  endl;
+	}
+	cout << "cluster groups" << endl;
+	for(int i = 0; i < clusters.size(); i++) {
+		cout << i << " " << clusters.indv(i)->getClustergroup()<< endl;
+	}
+
+	clusters.runFitcell(hostlist[0].threads);
+
+	writePop(clusters, "clusters", 0);
+	writePop(lastpop, "testpop", 0);
+	return;
 
 	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
 
