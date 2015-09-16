@@ -814,7 +814,7 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p) {
 			clusters.structures[i] = cluster_center(i);
 
 		}
-		stripClusters(clusters.size(), 25);
+		//stripClusters(clusters.size(), 25);
 		//cout << "post centroid" << endl;
 
 	}
