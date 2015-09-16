@@ -329,8 +329,8 @@ void GASP2pop::spacebinCluster(vector<GASP2pop> &bins, vector<GASP2pop> &cluster
 		//bins[i].dedup(300); //FIXME: hardcoded value of 300 dedups, may not be safe
 		bins[i].cluster(clusterbins[i], p);
 		cout << "post-cluster " << i << endl;
-		bins[i].stripClusters(clusterbins[i].size(),25);
-		cout << "post-strip" << endl;
+		//bins[i].stripClusters(clusterbins[i].size(),25);
+		//cout << "post-strip" << endl;
 		//bins[i].remIndv(bins[i].size() - 50);
 		clusterbins[i].assignClusterGroups(p);
 		cout << "post-assign" << endl;
@@ -827,6 +827,7 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p) {
 //FIXME: THIS IS ROYALLY BROKEN; I had to cripple it
 //by picking the first structure in the list as the centroid
 //probably going to do weird stuff, whatever, fix later
+//problems is almost certainly an issue with multi-spacegroup
 GASP2struct GASP2pop::cluster_center(int c) {
 
 	//cout << "centering" << endl;

@@ -500,7 +500,7 @@ void GASP2control::server_prog() {
 			//writePop(evalpop, "fitcell", step);
 
 			//evaluate
-			evalpop.symmsort();
+			//evalpop.symmsort();
 			//GASP2pop bad, good, restart;
 
 			good.clear();
@@ -521,7 +521,7 @@ void GASP2control::server_prog() {
 				if(params.spacemode == Spacemode::Single) {
 					tempstore.addIndv(good);
 					tempstore.cluster(clusters, params);
-					tempstore.stripClusters(clusters.size(), 25);
+					//tempstore.stripClusters(clusters.size(), 25);
 					clusters.assignClusterGroups(params);
 					cout << mark() << "Cluster size " << clusters.size() << endl;
 					writePop(clusters, "precluster", pcstep);
