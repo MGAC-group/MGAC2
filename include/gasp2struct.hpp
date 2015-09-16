@@ -237,6 +237,7 @@ public:
 	bool fitcelled() {return isFitcell;};
 	bool rejected() {return (finalstate != OKStruct);};
 	double getEnergy() {return energy;};
+	void resetID() { ID.generate(); parentA.clear(); parentB.clear(); };
 	double getVolume(); //returns the unit cell volume
 	int getSymmcount() { Spgroup spg = spacegroups[unit.spacegroup]; return spg.R.size(); };
 	int getSpace() { return unit.spacegroup; };

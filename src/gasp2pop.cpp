@@ -100,7 +100,12 @@ void GASP2pop::init(GASP2struct s, int size, Spacemode mode, Index spcg) {
 GASP2pop GASP2pop::newPop(int size, Spacemode smode, GAselection mode) {
 	GASP2pop out;
 	GASP2struct a,b;
-	out.structures.reserve(size);
+	if(structures.size() < 2) {
+		return out;
+	}
+
+	cout << "newpop" << endl;
+	out.structures.reserve(size*2);
 	int selA, selB; //selection indices
 	if(mode == Roulette) {
 		if(scaling.size() != structures.size()) {
@@ -111,10 +116,56 @@ GASP2pop GASP2pop::newPop(int size, Spacemode smode, GAselection mode) {
 		for(int i = 0; i < size; i++) {
 			selA = d(rgen);
 			selB = d(rgen);
-			while(selA == selB)
+			if(selA == selB)
 				selB = d(rgen);
 			structures[selA].crossStruct(structures[selB], a,b, 0.5, smode);
 			out.structures.push_back(a);
+			out.structures.push_back(b);
+			//cout << "selA/selB: " << selA << "/" << selB << endl;
+		}
+	}
+	else { //pattern
+		cout << "Pattern mode not implemented!" << endl;
+	}
+	return out;
+}
+
+GASP2pop GASP2pop::newPop(GASP2pop alt, int size, Spacemode smode, GAselection mode) {
+	GASP2pop out;
+	GASP2struct a,b;
+	//cout << "alt newpop" << endl;
+	if(structures.size() < 2 || alt.structures.size() < 2) {
+		return out;
+	}
+
+	out.structures.reserve(2*size);
+	int selA, selB; //selection indices
+	if(mode == Roulette) {
+		if(scaling.size() != structures.size()) {
+			cout << mark() << "WARNING: Scaling automatically applied on population..." << endl;
+			scale(1.0,0.0,0.0);
+		}
+		if(alt.scaling.size() != alt.structures.size()) {
+			cout << mark() << "WARNING: Scaling automatically applied on population..." << endl;
+			alt.scale(1.0,0.0,0.0);
+		}
+//		scaling.reserve(structures.size());
+//		for(int n = 0; n < structures.size(); n++)
+//			scaling.push_back(1.0);
+//		alt.scaling.reserve(alt.structures.size());
+//		for(int n = 0; n < alt.structures.size(); n++)
+//			alt.scaling.push_back(1.0);
+
+		discrete_distribution<int> d(scaling.begin(), scaling.end());
+		discrete_distribution<int> c(alt.scaling.begin(), alt.scaling.end());
+		for(int i = 0; i < size; i++) {
+			selA = d(rgen);
+			selB = c(rgen);
+//			while(selA == selB)
+//				selB = d(rgen);
+			structures[selA].crossStruct(alt.structures[selB], a,b, 0.5, smode);
+			out.structures.push_back(a);
+			out.structures.push_back(b);
 			//cout << "selA/selB: " << selA << "/" << selB << endl;
 		}
 	}
@@ -251,6 +302,45 @@ GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 
 	return ok;
 }
+
+
+void GASP2pop::spacebinCluster(vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave) {
+
+	vector<GASP2pop> tempbin(230);
+	//reorder the bins in correct order
+	for(int i = 0; i < bins.size(); i++) {
+		if(bins[i].size() >= 1) {
+			int index = bins[i].indv(0)->getSpace() - 1;
+			tempbin[index] = bins[i];
+		}
+	}
+	bins = tempbin;
+	tempbin.clear();
+
+	cout << "post-sbcsort" << endl;
+	for(int i = 0; i < size(); i++) {
+		int group = structures[i].getSpace();
+		bins[group-1].addIndv(structures[i]);
+	}
+	cout << "post-add" << endl;
+
+	for(int i = 0; i < 230; i++) {
+		//bins[i].energysort();
+		//bins[i].dedup(300); //FIXME: hardcoded value of 300 dedups, may not be safe
+		bins[i].cluster(clusterbins[i], p);
+		cout << "post-cluster " << i << endl;
+		bins[i].stripClusters(clusterbins[i].size(),25);
+		cout << "post-strip" << endl;
+		//bins[i].remIndv(bins[i].size() - 50);
+		clusterbins[i].assignClusterGroups(p);
+		cout << "post-assign" << endl;
+	}
+	cout << "end-it" << endl;
+	//std::sort(bins.begin(), bins.end(), popcomp);
+
+
+}
+
 
 //semi complicated function
 //sorts all the structures by spacegroup,
@@ -667,6 +757,23 @@ GASP2pop GASP2pop::getCluster(int c) {
 	return out;
 }
 
+//removes all but the last n structures from the cluster
+void GASP2pop::stripClusters(int clusters, int n) {
+	if(clusters == 0)
+		return;
+	vector<GASP2pop> groups(clusters);
+	for(int i = 0; i < structures.size(); i++) {
+		groups[structures[i].getCluster()].addIndv(structures[i]);
+	}
+	structures.clear();
+	for(int i = 0; i < groups.size(); i++) {
+		if(groups[i].size() > n)
+			groups[i].structures.erase(groups[i].structures.begin(), groups[i].structures.end() - n);
+		this->addIndv(groups[i]);
+	}
+
+}
+
 //assigns structures in a pop clusters and adds to new clusters
 void GASP2pop::cluster(GASP2pop &clusters, GASP2param p) {
 	double average, chebyshev, euclid, localchebyshev, localavg;
@@ -701,8 +808,13 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p) {
 		}
 		//cout << "post assign" << endl;
 		//update centroids
-		for(int i = 0; i < clusters.size(); i++)
+
+
+		for(int i = 0; i < clusters.size(); i++) {
 			clusters.structures[i] = cluster_center(i);
+
+		}
+		stripClusters(clusters.size(), 25);
 		//cout << "post centroid" << endl;
 
 	}
@@ -712,6 +824,9 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p) {
 //finds the centroid of a cluster
 //FIXME: this does not handle multiple types of molecules right!
 //fix needs to generalize all of the clustering algorithms
+//FIXME: THIS IS ROYALLY BROKEN; I had to cripple it
+//by picking the first structure in the list as the centroid
+//probably going to do weird stuff, whatever, fix later
 GASP2struct GASP2pop::cluster_center(int c) {
 
 	//cout << "centering" << endl;
@@ -720,25 +835,33 @@ GASP2struct GASP2pop::cluster_center(int c) {
 	for(int i = 0; i < structures.size(); i++) {
 		if(structures[i].getCluster() == c) {
 			center = structures[i];
+			center.resetID();
+			return center;
 			break;
 		}
 	}
+	center.resetID();
 
 	//get the initial vector
-	vector<double> sum;
+	vector<double> sum, temp;
 	int mol, dih, tempmol, tempdih;
 	sum = center.getVector(mol, dih);
 	for(int i = 0; i < sum.size(); i++)
 		sum[i] = 0.0;
 	//cout << "post sum init" << endl;
 
+	//cout << "sumsize:"<<sum.size() << endl;
+
 	int csize = 0;
 	for(int i = 0; i < structures.size(); i++) {
 		if(structures[i].getCluster() == c) {
 			csize++;
+			temp.clear();
+			temp = structures[i].getVector(tempmol, tempdih);
+			//cout << i<<":"<<temp.size() << endl;
 			//need to fix silent error
-			if(! vectoradd(sum, structures[i].getVector(tempmol, tempdih), mol, dih)) {
-				cout << "WARNING: cluster centroid function haD a problem during sum! Centroid not adjusted" << endl;
+			if(! vectoradd(sum, temp, mol, dih)) {
+				cout << "WARNING: cluster centroid function had a problem during sum! Centroid not adjusted" << endl;
 				return center;
 			}
 		}

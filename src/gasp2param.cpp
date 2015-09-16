@@ -197,7 +197,7 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 		if(stemp) {
 			type = "";
 			type.append(stemp);
-			if (type=="elitism" || type=="classic" || type=="finaleval") { ; }
+			if (type=="elitism" || type=="classic" || type=="finaleval" || type=="clustered" ) { ; }
 			else {
 				errorstring = "The run type specified does not match a valid type!\n";
 				return false;
@@ -344,6 +344,15 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 			downlimit = itemp;
 			if(downlimit <= 0) {
 				errorstring = "Downlimit must be greater than 0!\n";
+				return false;
+			}
+		}
+
+		//precompute
+		if(!run->QueryIntAttribute("precompute", &itemp)) {
+			precompute = itemp;
+			if(downlimit <= 0) {
+				errorstring = "Precompute must be greater than 0!\n";
 				return false;
 			}
 		}

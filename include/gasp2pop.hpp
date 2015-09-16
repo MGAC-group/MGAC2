@@ -49,6 +49,7 @@ public:
 	//existing population (for classic)
 	//using whatever selection scheme is available.
 	GASP2pop newPop(int size, Spacemode smode, GAselection mode=Roulette);
+	GASP2pop newPop(GASP2pop alt, int size, Spacemode smode, GAselection mode=Roulette);
 
 	//performs a full crossing of all members of
 	//the population and generates a new one
@@ -91,6 +92,7 @@ public:
 	GASP2pop symmLimit(GASP2pop &bad, int limit);
 	GASP2pop spacebin(int binsize, int binsave = 230);
 	void spacebinV(vector<GASP2pop> &bins, int binsize, int binsave = 230);
+	void spacebinCluster(vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave = 230);
 
 
 	void scale(double con, double lin, double exp);
@@ -128,6 +130,7 @@ public:
 	void cluster(GASP2pop &clusters, GASP2param p);
 	GASP2struct cluster_center(int c);
 	void assignClusterGroups(GASP2param p);
+	void stripClusters(int clusters, int n);
 
 
 };

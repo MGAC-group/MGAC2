@@ -2955,12 +2955,14 @@ void GASP2struct::setVector(vector<double> in, int mol, int dih) {
 		axis[0] = in[i*molstep + 6 + 3];
 		axis[1] = in[i*molstep + 6 + 4];
 		axis[2] = in[i*molstep + 6 + 5];
-		ang = in[i*molstep + 6 + 6];
+		ang = std::fmod(in[i*molstep + 6 + 6], 2.0*PI);
 		molecules[i].rot = Rot3(norm(axis), ang);
 
 		//dih
 		for(int j = 0; j < dih; j++) {
-			molecules[i].dihedrals[j].ang = in[i*molstep + 6 + 7 + j];
+			molecules[i].dihedrals[j].ang = std::fmod(in[i*molstep + 6 + 7 + j], 2.0*PI);
+			if(molecules[i].dihedrals[j].ang > PI)
+				molecules[i].dihedrals[j].ang -= PI;
 		}
 	}
 

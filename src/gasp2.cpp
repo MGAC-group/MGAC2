@@ -188,7 +188,7 @@ void GASP2control::server_prog() {
 
 
 	GASP2pop evalpop, lastpop, bestpop, partials;
-	vector<GASP2pop> bins(230);
+	vector<GASP2pop> bins(230), clusterbins(230);
 
 	vector<GASP2pop> split;
 
@@ -197,43 +197,51 @@ void GASP2control::server_prog() {
 	if(restart.length() > 0) {
 		lastpop = rootpop;
 		rootpop.clear();
+		//lastpop.runSymmetrize(hostlist[0].threads);
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
-		if(params.spacemode != Spacemode::Single) {
-			//bestpop = lastpop;
-			lastpop.spacebinV(bins, params.popsize);
+		if (params.type == "clustered") {
+			if(params.spacemode != Spacemode::Single)
+				lastpop.spacebinCluster(bins, clusterbins, params);
+			else
+				lastpop.cluster(clusters, params);
+		}
+		else {
+			if(params.spacemode != Spacemode::Single)
+				lastpop.spacebinV(bins, params.popsize);
 		}
 	}
 	else {
 		lastpop.init(root, params.popsize, params.spacemode, params.group);
+		//lastpop.runFitcell(hostlist[0].threads);
 	}
 
-	double average, chebyshev, euclid;
-	for(int i = 0; i < lastpop.size(); i++) {
-		for(int j = i; j < lastpop.size(); j++) {
-			if(i==j) continue;
-			bool res = lastpop.indv(i)->simpleCompare(*lastpop.indv(j),params,average,chebyshev, euclid);
-			cout << "(" << i << "," << j << ") " << res << " " << average << " " << chebyshev << " "  << euclid << endl;
+//	double average, chebyshev, euclid;
+//	for(int i = 0; i < lastpop.size(); i++) {
+//		for(int j = i; j < lastpop.size(); j++) {
+//			if(i==j) continue;
+//			bool res = lastpop.indv(i)->simpleCompare(*lastpop.indv(j),params,average,chebyshev, euclid);
+//			cout << "(" << i << "," << j << ") " << res << " " << average << " " << chebyshev << " "  << euclid << endl;
+//
+//		}
+//	}
 
-		}
-	}
-
-	lastpop.cluster(clusters, params);
-	clusters.assignClusterGroups(params);
-
-	cout << "cluster assigns:" << endl;
-	for(int i = 0; i < lastpop.size(); i++) {
-		cout << i << " " << lastpop.indv(i)->getCluster() <<  endl;
-	}
-	cout << "cluster groups" << endl;
-	for(int i = 0; i < clusters.size(); i++) {
-		cout << i << " " << clusters.indv(i)->getClustergroup()<< endl;
-	}
-
-	clusters.runFitcell(hostlist[0].threads);
-
-	writePop(clusters, "clusters", 0);
-	writePop(lastpop, "testpop", 0);
-	return;
+//	lastpop.cluster(clusters, params);
+//	clusters.assignClusterGroups(params);
+//
+//	cout << "cluster assigns:" << endl;
+//	for(int i = 0; i < lastpop.size(); i++) {
+//		cout << i << " " << lastpop.indv(i)->getCluster() <<  endl;
+//	}
+//	cout << "cluster groups" << endl;
+//	for(int i = 0; i < clusters.size(); i++) {
+//		cout << i << " " << clusters.indv(i)->getClustergroup()<< endl;
+//	}
+//
+//	clusters.runFitcell(hostlist[0].threads);
+//
+//	writePop(clusters, "clusters", 0);
+//	writePop(lastpop, "testpop", 0);
+//	return;
 
 	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
 
@@ -264,7 +272,7 @@ void GASP2control::server_prog() {
 
 	MPI_Status m;
 
-
+	bool precompute = false;
 	if(params.mode == "stepwise") {
 		for(int step = startstep; step < params.generations; step++) {
 
@@ -273,7 +281,7 @@ void GASP2control::server_prog() {
 
 		GASP2pop bad, restart, good, tempstore;
 		tempstore.clear();
-		while(true) { // check for full initial population setup
+		for(int pcstep = 0; pcstep < params.precompute; pcstep++) { // check for full initial population setup
 
 
 			cout << mark() << "Starting new generation " << step << endl;
@@ -300,8 +308,8 @@ void GASP2control::server_prog() {
 				evalpop = lastpop.newPop(replace, params.spacemode);
 				evalpop.addIndv(lastpop);
 			}
-
-			else if (params.type == "classic") {
+			//use this mode for normal QE evaluation
+			else if (params.type == "classic" || (params.type == "clustered" && step > 0) ) {
 
 				evalpop = rootpop;
 				evalpop.addIndv( rootpop.fullCross(params.spacemode) );
@@ -318,6 +326,32 @@ void GASP2control::server_prog() {
 						//partials.addIndv(bins[i]);
 					}
 				}
+			}
+			//use this mode for cluster precompute
+			else if (params.type == "clustered" && step == 0) {
+
+				evalpop = rootpop;
+				evalpop.addIndv( rootpop.fullCross(params.spacemode) );
+
+				if(params.spacemode == Spacemode::Single) {
+					evalpop.addIndv(clusters.newPop(10000,params.spacemode));
+					evalpop.addIndv(clusters.newPop(rootpop,10000,params.spacemode));
+					//evalpop.addIndv(clusters);
+				}
+				else {
+					int repcount;
+					for(int i = 0; i < 230; i++) {
+						if(clusterbins[i].size() < 30)
+							repcount=clusterbins[i].size()*clusterbins[i].size();
+						else
+							repcount=1000;
+						evalpop.addIndv(clusterbins[i].newPop(1000,params.spacemode));
+						evalpop.addIndv(clusterbins[i].newPop(rootpop,1000,params.spacemode));
+
+						//partials.addIndv(bins[i]);
+					}
+				}
+				//clear out the lastpop on the first step since they
 			}
 			else if(params.type == "finaleval") {
 				evalpop = lastpop.completeCheck();
@@ -469,35 +503,83 @@ void GASP2control::server_prog() {
 			evalpop.symmsort();
 			//GASP2pop bad, good, restart;
 
-
-
-
-
 			good.clear();
 			bad.clear();
 			good = evalpop.volLimit(bad);
 			//add the incomplete structures to the partials to
 			//bypass the fitcell step
 
-
-
-
 			}//////END FINALEVAL SKIP BLOCK
 
 			if(step > 0)
 				break;
-			good.addIndv(tempstore);
-			if(good.size() < params.popsize) {
-				cout << mark() << "Not enough initial structures generated yet, only " << good.size() <<" out of " << params.popsize  << " generated" << endl;
-				tempstore = good;
-				lastpop.clear();
-				lastpop.init(root, params.popsize, params.spacemode, params.group);
+
+
+
+
+			if(params.type == "clustered" && precompute==false) {
+				if(params.spacemode == Spacemode::Single) {
+					tempstore.addIndv(good);
+					tempstore.cluster(clusters, params);
+					tempstore.stripClusters(clusters.size(), 25);
+					clusters.assignClusterGroups(params);
+					cout << mark() << "Cluster size " << clusters.size() << endl;
+					writePop(clusters, "precluster", pcstep);
+					cout << mark() << " good size: " << good.size() << endl;
+				}
+				else {
+					cout << "prebin" << endl;
+					good.spacebinCluster(bins, clusterbins, params);
+					bestpop.clear();
+					//TODO: add bin stats collection
+					cout << "postbin" << endl;
+					for(int n = 0; n < clusterbins.size(); n++) {
+						bestpop.addIndv(clusterbins[n]);
+					}
+					cout << mark() << "Cluster size " << bestpop.size() << endl;
+					writePop(bestpop, "precluster", pcstep);
+					bestpop.clear();
+
+				}
+			}
+			else
+				break;
+
+//			else {
+//				good.addIndv(tempstore);
+//				if(good.size() < params.popsize) {
+//					cout << mark() << "Not enough initial structures generated yet, only " << good.size() <<" out of " << params.popsize  << " generated" << endl;
+//					tempstore = good;
+//					lastpop.clear();
+//					lastpop.init(root, params.popsize, params.spacemode, params.group);
+//				}
+//				else {
+//					break;
+//				}
+//			}
+
+		}//FOR precompute steps
+
+		//finalize things for the next steps
+		if(params.type == "clustered" && precompute==false) {
+			if(params.spacemode == Spacemode::Single) {
+				good = clusters;
+				//lastpop.clear();
 			}
 			else {
-				break;
+				bestpop.clear();
+				//TODO: add bin stats collection
+				for(int n = 0; n < clusterbins.size(); n++) {
+					bestpop.addIndv(clusterbins[n]);
+				}
+				bins.clear();
+				clusterbins.clear();
+				lastpop.clear();
+				good = bestpop;
+				bestpop.clear();
 			}
-
 		}
+		precompute = true;
 
 			cout << mark() << "Candidate popsize:" << good.size() << endl;
 
@@ -510,49 +592,50 @@ void GASP2control::server_prog() {
 				future<bool> serverthread;
 
 
+				if(params.type != "clustered" && params.type != "fitcell") {
+					//establish who is paying attention initially
+					for(int i = 1; i < worldSize; i++) {
+						//ownerlist[i] = IDLE;
 
-				//establish who is paying attention initially
-				for(int i = 1; i < worldSize; i++) {
-					//ownerlist[i] = IDLE;
-
-					//clear the message queue for safety
-					int recvd;
-					recv = None;
-					int queuelength = 0;
-					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					while(recvd){
-						recvIns(recv, i);
-						queuelength++;
+						//clear the message queue for safety
+						int recvd;
+						recv = None;
+						int queuelength = 0;
 						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					}
-					cout << mark() << "ID " << ID << ": messages were in the queue: " << queuelength << endl;
-
-					//try to get a signal for ~5 seconds
-					sendIns(Ping, i);
-					cout << mark() << "Sent initial ping to client " << i << endl;
-				}
-				this_thread::sleep_for(chrono::seconds(5));
-				for(int i = 1; i < worldSize; i++) {
-					int recvd;
-					recv = None;
-					ownerlist[i] = DOWN;
-					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					while(recvd){
-						recvIns(recv, i);
-						if(recv & Ackn) {
-							cout << mark() << "Client " << i << " ack'd" << endl;
-							ownerlist[i] = IDLE;
-							//break;
+						while(recvd){
+							recvIns(recv, i);
+							queuelength++;
+							MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
 						}
+						cout << mark() << "ID " << ID << ": messages were in the queue: " << queuelength << endl;
+
+						//try to get a signal for ~5 seconds
+						sendIns(Ping, i);
+						cout << mark() << "Sent initial ping to client " << i << endl;
+					}
+					this_thread::sleep_for(chrono::seconds(5));
+					for(int i = 1; i < worldSize; i++) {
+						int recvd;
+						recv = None;
+						ownerlist[i] = DOWN;
 						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+						while(recvd){
+							recvIns(recv, i);
+							if(recv & Ackn) {
+								cout << mark() << "Client " << i << " ack'd" << endl;
+								ownerlist[i] = IDLE;
+								//break;
+							}
+							MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+						}
+
+
+						if(ownerlist[i] == DOWN) {
+							cout << mark() << "Client " << i << " is down!" << endl;
+
+						}
+
 					}
-
-
-					if(ownerlist[i] == DOWN) {
-						cout << mark() << "Client " << i << " is down!" << endl;
-
-					}
-
 				}
 
 
@@ -940,7 +1023,7 @@ void GASP2control::server_prog() {
 
 				//this prevents runaway single core sorting
 				//at most we will see 230*popsize
-				good.addIndv(bad.spacebin(params.popsize));
+				//good.addIndv(bad.spacebin(params.popsize));
 				evalpop = good;
 
 			} //if good size > 0
@@ -958,7 +1041,7 @@ void GASP2control::server_prog() {
 				lastpop = evalpop;
 				writePop(evalpop, "final", step);
 			}
-			else if (params.type == "classic") {
+			else if (params.type == "classic" || params.type == "clustered") {
 
 //				writePop(bestpop, "best", step);
 				if(params.spacemode == Spacemode::Single) {
