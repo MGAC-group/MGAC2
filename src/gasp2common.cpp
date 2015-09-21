@@ -546,7 +546,8 @@ vector<string> split(string in, char delim) {
 	vector<string> out;
 	istringstream ss(in);
 	while(getline(ss,in, delim))
-		out.push_back(in);
+		if(in.size() > 0)
+			out.push_back(in);
 	return out;
 }
 

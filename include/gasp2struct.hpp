@@ -217,6 +217,8 @@ public:
 	bool cifString(string &out, int rank);
 	void clear() { molecules.clear(); unit.clear(); };
 
+	bool readCifMol(string name, string outname, string plane="");
+
 
 	//genetic operators
 	//all of these operators enforce unfitcell except evaluate

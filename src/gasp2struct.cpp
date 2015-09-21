@@ -19,7 +19,7 @@ GASP2struct::GASP2struct() {
 	didOpt = false;
 	complete = false;
 	finalstate = OKStruct;
-	crylabel = 0;
+	crylabel = newName("CRY");
 	time = 0;
 	steps = 0;
 
@@ -685,6 +685,143 @@ bool GASP2struct::unfitcell() {
 	return true;
 }
 
+bool GASP2struct::readCifMol(string name, string outname, string plane) {
+
+	ifstream input;
+	input.open(name);
+
+
+	GASP2molecule tempmol;
+	GASP2atom tempatom;
+
+	int pos;
+	string line;
+	vector<string> fields;
+
+	while(!input.eof()) {
+		getline(input, line);
+
+		pos = line.find("_cell_length_a");
+		if(pos!=string::npos) {
+			fields = split(line,' ');
+			unit.a = std::stod(fields[1]);
+		}
+
+		pos = line.find("_cell_length_b");
+		if(pos!=string::npos) {
+			fields = split(line,' ');
+			unit.b = std::stod(fields[1]);
+		}
+
+		pos = line.find("_cell_length_c");
+		if(pos!=string::npos) {
+			fields = split(line,' ');
+			unit.c = std::stod(fields[1]);
+		}
+
+		pos = line.find("_cell_angle_alpha");
+		if(pos!=string::npos) {
+			fields = split(line,' ');
+			unit.alpha = rad(std::stod(fields[1]));
+		}
+
+		pos = line.find("_cell_angle_beta");
+		if(pos!=string::npos) {
+			fields = split(line,' ');
+			unit.beta = rad(std::stod(fields[1]));
+		}
+
+		pos = line.find("_cell_angle_gamma");
+		if(pos!=string::npos) {
+			fields = split(line,' ');
+			unit.gamma = rad(std::stod(fields[1]));
+		}
+
+		pos = line.find("_symmetry_Int_Tables_number");
+		if(pos!=string::npos) {
+			fields = split(line,' ');
+			unit.spacegroup = std::stoi(fields[1]);
+		}
+
+		//atom loop
+		pos = line.find("_atom_site_fract_z");
+		if(pos!=string::npos) {
+
+			Mat3 toCart = fracToCart(unit);
+
+			getline(input,line);
+			fields = split(line,' ');
+			while(!input.eof() && fields.size() == 5) {
+
+				tempatom.label = newName(fields[0]);
+				tempatom.type = getElemType(fields[1]);
+				tempatom.pos[0] = std::stod(fields[2]);
+				tempatom.pos[1] = std::stod(fields[3]);
+				tempatom.pos[2] = std::stod(fields[4]);
+				tempatom.pos = toCart*tempatom.pos;
+				tempmol.atoms.push_back(tempatom);
+				//cout << names[tempatom.label] << "," << getElemName(tempatom.type) << "," << tempatom.pos << endl;
+
+				getline(input,line);
+				fields = split(line,' ');
+			}
+		}
+
+		//only read the first .cif
+		pos = line.find("#END");
+		if(pos!=string::npos) {
+			break;
+		}
+
+
+	}
+
+	input.close();
+	//cout << "close done" << endl;
+
+	tempmol.label = newName("MOL");
+
+	if(plane.length() > 0) {
+		vector<string> vstemp = split(plane,',');
+		int size = vstemp.size();
+		if(size != 3) {
+			cout << "The plane specification for "+names[tempmol.label]+" does not have 3 elements!\n";
+			return false;
+		}
+		tempmol.p1 = atomLookup(newName(vstemp[0]), tempmol);
+		//cout << "atom" << endl;
+		tempmol.p2 = atomLookup(newName(vstemp[1]), tempmol);
+		tempmol.p3 = atomLookup(newName(vstemp[2]), tempmol);
+		if(tempmol.p1 < 0 || tempmol.p2 < 0 || tempmol.p3 < 0) {
+			cout << "An atom designation in plane for "+names[tempmol.label]+" did not match any atom in the molecule!\n";
+			return false;
+		}
+	}
+
+	//cout << tempmol.p1 << "," << tempmol.p2 << "," << tempmol.p3 << "," << endl;
+
+	molecules.push_back(tempmol);
+	//cout << "push" << endl;
+
+	if(plane.length() > 0) check();
+
+	//cout << "check" << endl;
+
+	ofstream outf;
+	outf.open(outname.c_str(), ofstream::out);
+	if(outf.fail()) {
+		cout << "opening the output file failed!" << endl;
+		return false;
+	}
+
+	outf << serializeXML();
+
+	//cout << "serialize" << endl;
+
+	outf.close();
+
+}
+
 bool GASP2struct::check() {
 	Index a,b,c,d;
 	double val;
@@ -727,10 +864,12 @@ bool GASP2struct::check() {
 
 		//plane rotations
 		molecules[i].rot = getPlaneRot(molecules[i]);
+		//cout << "rot" << endl;
 
 		//position and recenter
 		molecules[i].pos = toFrac*getMolCentroid(molecules[i]);
 		centerMol(molecules[i]);
+		//cout << "center" << endl;
 	}
 
 
@@ -1392,6 +1531,7 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("force",force);
 		pr.PushAttribute("pressure",pressure);
 	pr.CloseElement(); //info
+	//cout << "info close" << endl;
 	pr.OpenElement("cell");
 		pr.PushAttribute("a",unit.a);
 		pr.PushAttribute("b",unit.b);
@@ -1423,6 +1563,8 @@ string GASP2struct::serializeXML() {
 		}
 	pr.CloseElement(); //cell
 
+	//cout << "cellclose" << endl;
+
 	for(int i = 0; i < molecules.size(); i++) {
 		GASP2molecule mol = molecules[i];
 		pr.OpenElement("molecule");
@@ -1436,7 +1578,7 @@ string GASP2struct::serializeXML() {
 			pr.PushAttribute("plind",(int)mol.plindex);
 			pr.PushAttribute("symm",(int)mol.symm);
 			pr.PushAttribute("expectvol",mol.expectvol);
-
+			//cout << "first" << endl;
 			pln.clear();
 			pr.OpenElement("rot");
 			for(int j = 0; j < 9; j++)
@@ -1484,7 +1626,7 @@ string GASP2struct::serializeXML() {
 
 			pr.CloseElement(); //dih
 			}
-
+			//cout << "dih close" << endl;
 			for(int j = 0; j < mol.bonds.size(); j++) {
 			pr.OpenElement("bond");
 				pr.PushAttribute("title",names[mol.bonds[j].label].c_str());
@@ -1515,6 +1657,7 @@ string GASP2struct::serializeXML() {
 	}
 	pr.CloseElement(); //crystal
 
+	//cout << "cryclose" << endl;
 	//pr.PushAttribute("",);
 
 	string out;
@@ -1700,7 +1843,7 @@ bool GASP2struct::readAtom(tinyxml2::XMLElement *elem, string& errorstring, GASP
 			}
 		}
 
-		//x coord (fractional)
+		//x coord
 		if(!elem->QueryDoubleAttribute("x", &dtemp)) {
 			at.pos[0] = dtemp;
 		}
@@ -1708,7 +1851,7 @@ bool GASP2struct::readAtom(tinyxml2::XMLElement *elem, string& errorstring, GASP
 			errorstring = "No value was given for an X coordinate!\n";
 			return false;
 		}
-		//y coord (fractional)
+		//y coord
 		if(!elem->QueryDoubleAttribute("y", &dtemp)) {
 			at.pos[1] = dtemp;
 		}
@@ -1716,7 +1859,7 @@ bool GASP2struct::readAtom(tinyxml2::XMLElement *elem, string& errorstring, GASP
 			errorstring = "No value was given for a Y coordinate!\n";
 			return false;
 		}
-		//z coord (fractional)
+		//z coord
 		if(!elem->QueryDoubleAttribute("z", &dtemp)) {
 			at.pos[2] = dtemp;
 		}

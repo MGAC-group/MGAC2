@@ -26,7 +26,7 @@ struct Arg: public option::Arg
 	  }
 };
 
-enum optIndex {INPUT,HELP,RESTART,STEP,SPACEGROUPS,CONVERT,COMBINE,SIZE };
+enum optIndex {INPUT,HELP,RESTART,STEP,SPACEGROUPS,CONVERT,COMBINE,SIZE,TEMPLATE,PLANE };
 
 const option::Descriptor usage[] =
 {
@@ -38,6 +38,8 @@ const option::Descriptor usage[] =
 		{CONVERT, 0, "c", "cif", Arg::NonEmpty, "-c, --cif  Name of output file for cif; takes the input (-i) and turns it into a cif"},
 		{COMBINE, 0, "m","merge",Arg::NonEmpty, "-m, --merge Combine multiple files to form a single population file (comma delimited)"},
 		{SIZE, 0, "s","size", Arg::NonEmpty, "-s, --size Used in conjunction with merge to denote the size of merged population"},
+		{TEMPLATE, 0, "t","template",Arg::NonEmpty, "-t, --template An XML molecule template from a cif; if a plane is given then rotation and other values will be checked"},
+		{PLANE, 0, "p", "plane",Arg::NonEmpty, "-p, --plane Specifies the three atom plane to be used for a template (comma delimited)"},
 		{ 0, 0, 0, 0, 0, 0 }
 };
 
@@ -176,6 +178,25 @@ int main( int argc, char* argv[] ) {
     	}
 
 
+    	return 0;
+    }
+
+    if(options[TEMPLATE]) {
+    	if(options[INPUT] && options[TEMPLATE].arg != NULL) {
+    		GASP2struct st;
+    		cout << mark() << "converting" << endl;
+    		if(options[PLANE]) {
+    			st.readCifMol(options[INPUT].arg, options[TEMPLATE].arg, options[PLANE].arg);
+    		}
+    		else{
+    			st.readCifMol(options[INPUT].arg, options[TEMPLATE].arg);
+    		}
+
+
+    	}
+    	else {
+    		cout << "Requires -i for the input file!" << endl;
+    	}
     	return 0;
     }
 
