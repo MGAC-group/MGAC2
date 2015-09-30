@@ -303,7 +303,6 @@ GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 	return ok;
 }
 
-
 void GASP2pop::spacebinCluster(vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave) {
 
 	vector<GASP2pop> tempbin(230);
@@ -328,16 +327,14 @@ void GASP2pop::spacebinCluster(vector<GASP2pop> &bins, vector<GASP2pop> &cluster
 		//bins[i].energysort();
 		//bins[i].dedup(300); //FIXME: hardcoded value of 300 dedups, may not be safe
 		bins[i].cluster(clusterbins[i], p);
-		cout << "post-cluster " << i << endl;
+		cout  << mark() << "post-cluster " << i << endl;
 		//bins[i].stripClusters(clusterbins[i].size(),25);
 		//cout << "post-strip" << endl;
 		//bins[i].remIndv(bins[i].size() - 50);
 		clusterbins[i].assignClusterGroups(p);
-		cout << "post-assign" << endl;
 	}
-	cout << "end-it" << endl;
+	cout << mark() << "end-it" << endl;
 	//std::sort(bins.begin(), bins.end(), popcomp);
-
 
 }
 
@@ -774,50 +771,86 @@ void GASP2pop::stripClusters(int clusters, int n) {
 
 }
 
+bool
+
 //assigns structures in a pop clusters and adds to new clusters
-void GASP2pop::cluster(GASP2pop &clusters, GASP2param p) {
+void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 	double average, chebyshev, euclid, localchebyshev, localavg;
 
 	//make two passes to make sure everything is updated nicely
-	for(int n = 0; n < 2; n++) {
+//	for(int n = 0; n < 2; n++) {
 		//cout << "cluster pass n " << n << endl;
 		//update clusters
+		if (structures.size() < threads)
+			threads = structures.size();
+		//setup the futures
+		vector<future<bool>> futures(threads);
+		chrono::milliseconds timeout(0);
+		chrono::milliseconds thread_wait(20);
+
 		for(int i = 0; i < structures.size(); i++) {
 			//get the distance to the current centroid
 			int c = structures[i].getCluster();
 			if(c != -1) {
-				structures[i].simpleCompare(clusters.structures[c], p, localavg, localchebyshev, euclid);
+				continue;
+				//structures[i].simpleCompare(clusters.structures[c], p, localavg, localchebyshev, euclid);
 			}
 
-			for(int j = 0; j < clusters.size(); j++) {
-				if(structures[i].simpleCompare(clusters.structures[j], p, average, chebyshev, euclid)) {
-					//if a cluster is already assigned check
-					//to see if another cluster is closer
-					if( (average < localavg && chebyshev < localchebyshev) || (c == -1) ) {
+//			for(int j = 0; j < clusters.size(); j++) {
+//				if(structures[i].simpleCompare(clusters.structures[j], p, average, chebyshev, euclid)) {
+//				}
+//			}
+
+			//cleanup
+			for(int j = 0; j < threads; j++) {
+				if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
+					futures[j].get();
+					if(futures[j]) {
 						structures[i].setCluster(j);
-						localavg = average;
-						localchebyshev = chebyshev;
+						break;
 					}
+					thread_run--;
 				}
 			}
-			//the cluster is unassigned, so we make a new cluster
-			if(structures[i].getCluster() == -1) {
-				structures[i].setCluster(clusters.size());
-				clusters.addIndv(structures[i]);
+			//wait so we don't burn cycles
+			this_thread::sleep_for(thread_wait);
+
+		}
+		for(int j = 0; j < threads; j++) {
+			if(futures[j].valid()) {
+				//cout << "waiting on j: " << j << endl;
+				futures[j].wait();
+				futures[j].get();
+				//cout << "got j: " << j << endl;
 			}
 		}
+
 		//cout << "post assign" << endl;
 		//update centroids
 
 
-		for(int i = 0; i < clusters.size(); i++) {
-			clusters.structures[i] = cluster_center(i);
 
+		//the cluster is unassigned, so we make a new cluster
+		for(int i = 0; i < structures.size(); i++) {
+
+			if(structures[i].getCluster() == -1) {
+				GASP2struct newcenter = structures[i];
+				newcenter.resetID();
+				structures[i].setCluster(clusters.size());
+				clusters.addIndv(newcenter);
+			}
 		}
+
+
+//AML: FIXME this probably needs to be redone somehow
+//		for(int i = 0; i < clusters.size(); i++) {
+//			clusters.structures[i] = cluster_center(i);
+//
+//		}
 		//stripClusters(clusters.size(), 25);
 		//cout << "post centroid" << endl;
 
-	}
+//	}
 
 }
 

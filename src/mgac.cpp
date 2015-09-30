@@ -46,6 +46,8 @@ const option::Descriptor usage[] =
 
 int main( int argc, char* argv[] ) {
 
+	//cout << "test" << endl;
+
 	int mpithreading;
 	//MPI_Init(&argc,&argv);
 	MPI_Init_thread(&argc,&argv, MPI_THREAD_FUNNELED, &mpithreading);
@@ -169,6 +171,7 @@ int main( int argc, char* argv[] ) {
     		}
     		remove(options[CONVERT].arg);
     		temppop.energysort();
+    		temppop.runSymmetrize(2);
     		temppop.writeCIF(string(options[CONVERT].arg));
     		cout << mark() << "File successfully converted" << endl;
     	}

@@ -508,7 +508,7 @@ void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
 //instead, this fills in the symmetry for the system correctly
 //so that structures can be restarted
 bool GASP2struct::simplesymm() {
-	if(energy < 0.0) {
+	//if(energy < 0.0) {
 		unfitcell();
 
 		//apply dihedrals and rotations to molecules
@@ -520,7 +520,7 @@ bool GASP2struct::simplesymm() {
 		//cout << mark() << "leave spacegroup" << endl;
 		int nops = spg.R.size();
 
-		//cout << mark() << "t1" << endl;
+		//cout << mark() << "nops " << nops << endl;
 
 		//symmetrize the molecules
 		vector<GASP2molecule> symmcell;
@@ -541,9 +541,9 @@ bool GASP2struct::simplesymm() {
 		molecules = symmcell;
 
 		isFitcell = true;
-	}
-	else
-		isFitcell = false;
+	//}
+	//else
+		//isFitcell = false;
 }
 
 
@@ -612,47 +612,73 @@ bool GASP2struct::fitcell(double tlimit) {
 
 	ratios = Vec3(unit.ratA, unit.ratB, unit.ratC);
 	//order = getOrder(axissettings[unit.axisorder]);
-	order = axissettings[unit.axisorder];
+	//order = axissettings[unit.axisorder];
 
 	collapseCell(supercell, ratios);
-	last_vol = getVolume();
-	vol = last_vol;
 
-	//need to parameterize this later
-	auto start = std::chrono::steady_clock::now();
 
-	std:chrono::duration<double> diff;
+	//AML NOTES:
+	/*
+	 * There is basically a problem with bias by introducing ratio collapsing.
+	 * The reason is that, although it permits other shapes of unit cell,
+	 * which is less biased than the originaly fitcell, it still favors
+	 * unit cells which have a small initial dimension, meaning that the
+	 * axis that is initially collapsed will almost always be the smallest
+	 * dimension. This essentially means that every structure that is generated
+	 * initially will suffer from this, and that unit cells that have more or
+	 * less even ratios will only very rarely appear in the population.
+	 *
+	 * So, instead, what needs to happen is that the unit cell is collapsed
+	 * ONCE. and whatever the unit cell shape is, is what fitcell produces.
+	 * This guarantees that there are no biases resulting from adjusting unit
+	 * cells. The pitfall is that much more time needs to be spent to generate
+	 * unit cells that are valid for an initial population.
+	 *
+	 * As a sidenote, the advantage is that fitcell will take much less time to
+	 * complete in this context. Axisorder can also be technically ditched in the
+	 * schema.
+	 *
+	 *
+	 */
 
-	for(int n = 0; n < 3; n++) {
-		while (true) {
-			//cout << mark() << "tn1:"<< n <<" " <<ID.toStr()<< endl;
-			modCellRatio(ratios, order, n, -0.1f);
-			//cout << mark() << "tn2:"<< n <<" " <<ID.toStr()<< endl;
-			collapseCell(supercell, ratios);
-			//cout << mark() << "tn3:"<< n <<" " <<ID.toStr()<< endl;
-			vol = getVolume();
-			if(vol >= last_vol) {
-				modCellRatio(ratios, order, n, 0.1f);
-				collapseCell(supercell, ratios);
-				break;
-			}
-			else
-				last_vol = vol;
-			//protection against long running
-			auto end = std::chrono::steady_clock::now();
-			diff = end-start;
-			if(diff.count() > tlimit) {
-				cout << mark() << "Fitcell took too long on structure " << ID.toStr();
-				cout << ", structure may be valid but was not evaluated" << endl;
-				finalstate = NoFitcell;
-				return false;
-			}
-		}
-		//this->cifOut("fitcelldebug.cif");
-	}
-	//cout << mark() << "t4" <<" " <<ID.toStr()<< endl;
-	//final collapse, and explicit data clear
-	collapseCell(supercell, ratios);
+//	last_vol = getVolume();
+//	vol = last_vol;
+//
+//	//need to parameterize this later
+//	auto start = std::chrono::steady_clock::now();
+//
+//	std:chrono::duration<double> diff;
+//
+//	for(int n = 0; n < 3; n++) {
+//		while (true) {
+//			//cout << mark() << "tn1:"<< n <<" " <<ID.toStr()<< endl;
+//			modCellRatio(ratios, order, n, -0.1f);
+//			//cout << mark() << "tn2:"<< n <<" " <<ID.toStr()<< endl;
+//			collapseCell(supercell, ratios);
+//			//cout << mark() << "tn3:"<< n <<" " <<ID.toStr()<< endl;
+//			vol = getVolume();
+//			if(vol >= last_vol) {
+//				modCellRatio(ratios, order, n, 0.1f);
+//				collapseCell(supercell, ratios);
+//				break;
+//			}
+//			else
+//				last_vol = vol;
+//			//protection against long running
+//			auto end = std::chrono::steady_clock::now();
+//			diff = end-start;
+//			if(diff.count() > tlimit) {
+//				cout << mark() << "Fitcell took too long on structure " << ID.toStr();
+//				cout << ", structure may be valid but was not evaluated" << endl;
+//				finalstate = NoFitcell;
+//				return false;
+//			}
+//		}
+//		//this->cifOut("fitcelldebug.cif");
+//	}
+//	//cout << mark() << "t4" <<" " <<ID.toStr()<< endl;
+//	//final collapse, and explicit data clear
+//	collapseCell(supercell, ratios);
 	//molecules = supercell;
 	//supercell.clear();
 	//symmcell.clear();
@@ -660,7 +686,7 @@ bool GASP2struct::fitcell(double tlimit) {
 	isFitcell = true;
 
 	//cout << "finished fitcell!" << endl;
-	auto t2 = std::chrono::high_resolution_clock::now();
+//	auto t2 = std::chrono::high_resolution_clock::now();
 	//cout << "zzz, " << unit.spacegroup << ", " << nops << ", " << chrono::duration_cast<chrono::milliseconds>(t2-t).count() << endl;
 	//cout << "unit.a: " << unit.a << endl;
 	return true;

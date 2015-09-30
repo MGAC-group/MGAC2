@@ -280,7 +280,7 @@ void GASP2control::server_prog() {
 ////////////////////START GEN BUILD/////////////////////////
 
 		GASP2pop bad, restart, good, tempstore;
-		tempstore.clear();
+		//tempstore.clear();
 		for(int pcstep = 0; pcstep < params.precompute; pcstep++) { // check for full initial population setup
 
 
@@ -341,14 +341,16 @@ void GASP2control::server_prog() {
 				else {
 					int repcount;
 					for(int i = 0; i < 230; i++) {
-						if(clusterbins[i].size() < 30)
-							repcount=clusterbins[i].size()*clusterbins[i].size();
-						else
-							repcount=1000;
-						evalpop.addIndv(clusterbins[i].newPop(1000,params.spacemode));
-						evalpop.addIndv(clusterbins[i].newPop(rootpop,1000,params.spacemode));
+						if(clusterbins[i].size() > 1) {
+							if(clusterbins[i].size() < 30)
+								repcount=clusterbins[i].size()*clusterbins[i].size();
+							else
+								repcount=1000;
+							evalpop.addIndv(clusterbins[i].newPop(repcount,params.spacemode));
+							evalpop.addIndv(clusterbins[i].newPop(rootpop,repcount,params.spacemode));
 
-						//partials.addIndv(bins[i]);
+							//partials.addIndv(bins[i]);
+						}
 					}
 				}
 				//clear out the lastpop on the first step since they
@@ -519,8 +521,8 @@ void GASP2control::server_prog() {
 
 			if(params.type == "clustered" && precompute==false) {
 				if(params.spacemode == Spacemode::Single) {
-					tempstore.addIndv(good);
-					tempstore.cluster(clusters, params);
+					good.cluster(clusters, params);
+					//tempstore.addIndv(good);
 					//tempstore.stripClusters(clusters.size(), 25);
 					clusters.assignClusterGroups(params);
 					cout << mark() << "Cluster size " << clusters.size() << endl;
@@ -529,6 +531,8 @@ void GASP2control::server_prog() {
 				}
 				else {
 					cout << "prebin" << endl;
+					for(int s = 0; s < bins.size(); s++)
+						bins[s].clear();
 					good.spacebinCluster(bins, clusterbins, params);
 					bestpop.clear();
 					//TODO: add bin stats collection
