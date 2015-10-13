@@ -63,7 +63,8 @@ public:
 	int symmlimit;
 	int binlimit; //number of bins to limit search on
 	int downlimit; //number of downed nodes
-	int precompute = 500;
+	int precompute;
+	double clusterdiff; //number of differences between two structs
 	double clustersize;
 	double chebyshevlimit;
 	double dihstep;

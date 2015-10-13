@@ -127,10 +127,12 @@ extern std::atomic<bool> completed;
 
 class GASP2control {
 public:
+	GASP2control(string infile);
 	GASP2control(int ID, string infile);
 	GASP2control(time_t start, int size, string input, string restart="", int _startstep=0);
 	void server_prog();
 	void client_prog();
+	GASP2param getParams() {return params;};
 
 private:
 	//procedural variables

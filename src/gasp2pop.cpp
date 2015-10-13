@@ -303,7 +303,7 @@ GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 	return ok;
 }
 
-void GASP2pop::spacebinCluster(vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave) {
+void GASP2pop::spacebinCluster(int threads, vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave) {
 
 	vector<GASP2pop> tempbin(230);
 	//reorder the bins in correct order
@@ -326,12 +326,12 @@ void GASP2pop::spacebinCluster(vector<GASP2pop> &bins, vector<GASP2pop> &cluster
 	for(int i = 0; i < 230; i++) {
 		//bins[i].energysort();
 		//bins[i].dedup(300); //FIXME: hardcoded value of 300 dedups, may not be safe
-		bins[i].cluster(clusterbins[i], p);
-		cout  << mark() << "post-cluster " << i << endl;
+		bins[i].cluster(clusterbins[i], p, threads);
+		cout  << mark() << "post-cluster " << i  << ":" << clusterbins[i].size() << endl;
 		//bins[i].stripClusters(clusterbins[i].size(),25);
 		//cout << "post-strip" << endl;
 		//bins[i].remIndv(bins[i].size() - 50);
-		clusterbins[i].assignClusterGroups(p);
+		//clusterbins[i].assignClusterGroups(p);
 	}
 	cout << mark() << "end-it" << endl;
 	//std::sort(bins.begin(), bins.end(), popcomp);
@@ -626,41 +626,59 @@ void GASP2pop::runFitcell(int threads) {
 	//return out;
 }
 
+bool multiSymm(int start, int end, GASP2pop* self) {
+	for(int index = start; index < end; index ++) {
+		self->indv(index)->simplesymm();
+	}
+	return true;
+}
+
 void GASP2pop::runSymmetrize(int threads) {
 	//GASP2pop out; out.structures = this->structures;
 
-	if (size() < threads)
-		threads = size();
+	int thread_run = 0;
+	//for all the structures
+	if (structures.size() < threads)
+		threads = structures.size();
+	if(threads == 0) {
+		//cout << "zero thread" << endl;
+		return;
+	}
+
+	if(size() < 2)  {
+		structures[0].setClustergroup(0);
+		return;
+	}
+
+
+
 	//setup the futures
 	vector<future<bool>> futures(threads);
+	vector<int> finalindex(threads + 1);
 	chrono::milliseconds timeout(0);
 	chrono::milliseconds thread_wait(20);
 
-	//cout << "size: " << size() << endl;
+	//cout << "got there" << endl;
+//		for(int i = 0; i < structures.size(); ) {
+//			//get the distance to the current centroid
+	int s,e;
+	//cout << "size " << size() << endl;
+	int threadavg = (size() / threads);
+	//cout << "threadavg " << threadavg << endl;
 
-	int thread_run = 0;
-	//for all the structures
-	for(int i = 0; i < size(); ) {
+	for(int i = 0; i < threads; i++)
+		finalindex[i] = i*threadavg;
+	finalindex[threads] = size();
 
-		//launch
-		for(int j = 0; j < threads; j++) {
-			if(!futures[j].valid() && (i < size()) && thread_run < threads ) {
-				//cout << "instance i: " << i << endl;
-				futures[j] = async(launch::async, &GASP2struct::simplesymm, &structures[i]);
-				i++;
-				thread_run++;
-			}
+	//for(int k = 0; k < finalindex.size(); k++)
+	//	cout << "findex " << finalindex[k] << endl;
+
+	for(int j = 0; j < threads; j++) {
+		if(!futures[j].valid() ) {//&& (i < size()) && thread_run < threads ) {
+			s = finalindex[j];
+			e = finalindex[j+1];
+			futures[j] = async(launch::async, multiSymm, s,e, this);
 		}
-		//cleanup
-		for(int j = 0; j < threads; j++) {
-			if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
-				futures[j].get();
-				thread_run--;
-			}
-		}
-		//wait so we don't burn cycles
-		this_thread::sleep_for(thread_wait);
-
 	}
 
 	for(int j = 0; j < threads; j++) {
@@ -771,51 +789,128 @@ void GASP2pop::stripClusters(int clusters, int n) {
 
 }
 
-bool
+bool multiCompare(int start, int end, GASP2pop *self, GASP2pop *clusters, GASP2param p) {
+	double average, chebyshev, euclid;
+	double num;
+
+	for(int index = start; index < end; index++) {
+		//cout << "index " << index << endl;
+		if( self->indv(index)->getCluster() > -1) continue;
+
+		//GASP2struct s = *self.indv(index);
+		int cluster = -1;
+
+
+		//this pass is to find all structures that match an existing known cluster
+		for(int j = 0; j < clusters->size(); j++)
+			if(self->indv(index)->simpleCompare(*clusters->indv(j), p, average, chebyshev, euclid, num)) {
+				cluster = j;
+				break;
+			}
+
+		//cout << "cluster " << cluster << endl;
+
+		if(cluster > -1) {
+			self->indv(index)->setCluster(cluster);
+			continue;
+		}
+		//cout << "first step " << index << endl;
+
+		//this pass is to catch multiple simlar structures that are new
+		for(int j = 0; j < index; j++) {
+			//cout << "j" << endl;
+			if(j == index) continue;
+			if(self->indv(index)->simpleCompare(*self->indv(j), p, average, chebyshev, euclid, num)) {
+				//cout << "2styles j " << j << " ind " << index << endl;
+				self->indv(index)->setCluster(-2);
+			}
+			break;
+		}
+
+		//cout << "second step " << index << endl;
+
+
+	}
+
+	return true;
+}
 
 //assigns structures in a pop clusters and adds to new clusters
 void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 	double average, chebyshev, euclid, localchebyshev, localavg;
+	int res;
+
+
 
 	//make two passes to make sure everything is updated nicely
-//	for(int n = 0; n < 2; n++) {
+	for(int n = 0; n < 2; n++) {
 		//cout << "cluster pass n " << n << endl;
 		//update clusters
 		if (structures.size() < threads)
 			threads = structures.size();
+		if(threads == 0) {
+			//cout << "zero thread" << endl;
+			return;
+		}
+
 		//setup the futures
 		vector<future<bool>> futures(threads);
+		vector<int> finalindex(threads + 1);
 		chrono::milliseconds timeout(0);
 		chrono::milliseconds thread_wait(20);
 
-		for(int i = 0; i < structures.size(); i++) {
-			//get the distance to the current centroid
-			int c = structures[i].getCluster();
-			if(c != -1) {
-				continue;
-				//structures[i].simpleCompare(clusters.structures[c], p, localavg, localchebyshev, euclid);
-			}
+		int thread_run = 0;
+		//cout << "got there" << endl;
+//		for(int i = 0; i < structures.size(); ) {
+//			//get the distance to the current centroid
+		int s,e;
+		int totalload = ( size() * size() - size() ) / 2;
+		//cout << "size " << size() << endl;
+		int threadavg = (totalload / threads);
+		//cout << "threadavg " << threadavg << endl;
 
-//			for(int j = 0; j < clusters.size(); j++) {
-//				if(structures[i].simpleCompare(clusters.structures[j], p, average, chebyshev, euclid)) {
+		int val = 0;
+		finalindex[0] = 0;
+		int ind = 1;
+		for(int i = 0; i < size(); i++) {
+			val += (i+1);
+			if(val > threadavg) {
+				finalindex[ind] = i;
+				//cout << "findex " << finalindex[ind] << endl;
+				ind++;
+				val = 0;
+			}
+		}
+		finalindex[threads] = size();
+
+		//for(int k = 0; k < finalindex.size(); k++)
+		//	cout << "findex " << finalindex[k] << endl;
+
+		for(int j = 0; j < threads; j++) {
+			if(!futures[j].valid() ) {//&& (i < size()) && thread_run < threads ) {
+				//if(i % 100 == 0)
+				//	cout << "instance i: " << i << endl;
+				//saveindex[j] = i;
+				s = finalindex[j];
+				e = finalindex[j+1];
+				futures[j] = async(launch::async, multiCompare, s,e, this, &clusters, p);
+				//i++;
+				//thread_run++;
+			}
+		}
+
+
+//			//cleanup
+//			for(int j = 0; j < threads; j++) {
+//				if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
+//					futures[j].get();
+//					thread_run--;
 //				}
 //			}
+//			//wait so we don't burn cycles
+//			this_thread::sleep_for(thread_wait);
 
-			//cleanup
-			for(int j = 0; j < threads; j++) {
-				if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
-					futures[j].get();
-					if(futures[j]) {
-						structures[i].setCluster(j);
-						break;
-					}
-					thread_run--;
-				}
-			}
-			//wait so we don't burn cycles
-			this_thread::sleep_for(thread_wait);
-
-		}
+//		}
 		for(int j = 0; j < threads; j++) {
 			if(futures[j].valid()) {
 				//cout << "waiting on j: " << j << endl;
@@ -830,9 +925,10 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 
 
 
+
+
 		//the cluster is unassigned, so we make a new cluster
 		for(int i = 0; i < structures.size(); i++) {
-
 			if(structures[i].getCluster() == -1) {
 				GASP2struct newcenter = structures[i];
 				newcenter.resetID();
@@ -850,7 +946,7 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 		//stripClusters(clusters.size(), 25);
 		//cout << "post centroid" << endl;
 
-//	}
+	}
 
 }
 
@@ -912,25 +1008,221 @@ GASP2struct GASP2pop::cluster_center(int c) {
 	return center;
 }
 
+
+bool multiGroupCompare(int start, int end, GASP2pop *self, GASP2param p) {
+
+	double average, chebyshev, euclid;
+	double num;
+
+	for(int index = start; index < end; index++) {
+		self->indv(index)->setClustergroup(index);
+		for(int j = 0; j < index; j++) {
+			self->indv(index)->simpleCompare(*self->indv(j), p, average, chebyshev, euclid, num);
+			if( average >= 0.0 )
+				if(average < 2.0*p.clustersize && chebyshev < 2.0*p.chebyshevlimit) {
+					self->indv(index)->setClustergroup(j);
+					break;
+				}
+		}
+	}
+
+}
+
 //assigns all clusters to a cluster group
 //based on adjacency via inter-cluster distances
-void GASP2pop::assignClusterGroups(GASP2param p) {
+int GASP2pop::assignClusterGroups(GASP2param p, int threads) {
 
 	double average, chebyshev, euclid;
 
-	//assign every group to its own group
-	for(int i = 0; i < structures.size(); i++)
-		structures[i].setClustergroup(i);
-	//cout << "str" << structures[0].getClustergroup() << endl;
+	if (structures.size() < threads)
+		threads = structures.size();
+	if(threads == 0) {
+		//cout << "zero thread" << endl;
+		return -1;
+	}
 
-	//make two passes to make sure everything is updated nicely
-	for(int i = 0; i < structures.size(); i++) {
-		for(int j = i + 1; j < structures.size(); j++) {
-			structures[i].simpleCompare(structures[j], p, average, chebyshev, euclid);
-			if(average < 2.0*p.clustersize && chebyshev < 2.0*p.chebyshevlimit)
-				structures[j].setClustergroup(structures[i].getClustergroup());
+	if(size() < 2)  {
+		structures[0].setClustergroup(0);
+		return 1;
+	}
+
+
+
+	//setup the futures
+	vector<future<bool>> futures(threads);
+	vector<int> finalindex(threads + 1);
+	chrono::milliseconds timeout(0);
+	chrono::milliseconds thread_wait(20);
+
+	int thread_run = 0;
+	//cout << "got there" << endl;
+//		for(int i = 0; i < structures.size(); ) {
+//			//get the distance to the current centroid
+	int s,e;
+	int totalload = ( size() * size() - size() ) / 2;
+	//cout << "size " << size() << endl;
+	int threadavg = (totalload / threads);
+	//cout << "threadavg " << threadavg << endl;
+
+	int val = 0;
+	finalindex[0] = 0;
+	int ind = 1;
+	for(int i = 0; i < size(); i++) {
+		val += (i+1);
+		if(val > threadavg) {
+			finalindex[ind] = i;
+			//cout << "findex " << finalindex[ind] << endl;
+			ind++;
+			val = 0;
 		}
+	}
+	finalindex[threads] = size();
 
+	//for(int k = 0; k < finalindex.size(); k++)
+	//	cout << "findex " << finalindex[k] << endl;
+
+	for(int j = 0; j < threads; j++) {
+		if(!futures[j].valid() ) {//&& (i < size()) && thread_run < threads ) {
+			s = finalindex[j];
+			e = finalindex[j+1];
+			futures[j] = async(launch::async, multiGroupCompare, s,e, this, p);
+		}
+	}
+
+
+
+	for(int j = 0; j < threads; j++) {
+		if(futures[j].valid()) {
+			//cout << "waiting on j: " << j << endl;
+			futures[j].wait();
+			futures[j].get();
+			//cout << "got j: " << j << endl;
+		}
+	}
+
+	//finalize the groupings
+	int virt, actual;
+	for(int i = 0; i < size(); i++) {
+		virt = structures[i].getClustergroup();
+		//the clustergroup assignment is actual
+		if(structures[virt].getClustergroup() == virt) {
+			structures[i].setClustergroup(virt);
+			break;
+		}
+	}
+
+	//count it
+	int count = 0;
+	for(int i = 0; i < size(); i++) {
+		if(structures[i].getClustergroup() == i)
+			count++;
+
+	}
+	return count;
+
+}
+
+bool multiDistWrite(int start, int end, GASP2pop *self, GASP2param p, int num) {
+
+	double average, chebyshev, euclid;
+	double num2;
+
+	ofstream outf;
+	string name = "multidistout" + to_string(num);
+	outf.open(name, ofstream::out);
+	if(outf.fail()) {
+		cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! exiting sadly..." << endl;
+		exit(1);
+	}
+	for(int index = start; index < end; index++) {
+		//self->indv(index)->setClustergroup(index);
+		for(int j = 0; j < self->size(); j++) {
+			self->indv(index)->simpleCompare(*self->indv(j), p, average, chebyshev, euclid, num2);
+			if(average >=0.0)
+				outf << index << "," << j << "," << average << "," << chebyshev << "," << num2 << endl;
+		}
+	}
+	outf.close();
+
+}
+
+//assigns all clusters to a cluster group
+//based on adjacency via inter-cluster distances
+void GASP2pop::allDistances(GASP2param p, int threads) {
+
+	double average, chebyshev, euclid;
+
+	if (structures.size() < threads)
+		threads = structures.size();
+	if(threads == 0) {
+		//cout << "zero thread" << endl;
+		return;
+	}
+	if(size() < 2)
+		return;
+
+	//setup the futures
+	vector<future<bool>> futures(threads);
+	vector<int> finalindex(threads + 1);
+	chrono::milliseconds timeout(0);
+	chrono::milliseconds thread_wait(20);
+
+	int thread_run = 0;
+	//cout << "got there" << endl;
+//		for(int i = 0; i < structures.size(); ) {
+//			//get the distance to the current centroid
+	int s,e;
+	int totalload = ( size() * size() - size() ) / 2;
+	//cout << "size " << size() << endl;
+	int threadavg = (totalload / threads);
+	//cout << "threadavg " << threadavg << endl;
+
+	int val = 0;
+	finalindex[0] = 0;
+	int ind = 1;
+	for(int i = 0; i < size(); i++) {
+		val += (i+1);
+		if(val > threadavg) {
+			finalindex[ind] = i;
+			//cout << "findex " << finalindex[ind] << endl;
+			ind++;
+			val = 0;
+		}
+	}
+	finalindex[threads] = size();
+
+
+
+	//for(int k = 0; k < finalindex.size(); k++)
+	//	cout << "findex " << finalindex[k] << endl;
+
+	for(int j = 0; j < threads; j++) {
+		if(!futures[j].valid() ) {//&& (i < size()) && thread_run < threads ) {
+			s = finalindex[j];
+			e = finalindex[j+1];
+			futures[j] = async(launch::async, multiDistWrite, s,e, this, p, j);
+		}
+	}
+
+
+
+	for(int j = 0; j < threads; j++) {
+		if(futures[j].valid()) {
+			//cout << "waiting on j: " << j << endl;
+			futures[j].wait();
+			futures[j].get();
+			//cout << "got j: " << j << endl;
+		}
+	}
+
+
+}
+
+
+void GASP2pop::clusterReset() {
+	for(int i = 0 ; i < size(); i++) {
+		structures[i].setCluster(-1);
+		structures[i].setClustergroup(-1);
 	}
 
 }

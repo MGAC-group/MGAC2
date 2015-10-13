@@ -1000,7 +1000,7 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 
 //	uniform_real_distribution<double> dtrimono(0.01,180.0);
 //	uniform_real_distribution<double> drhom(0.01,120.0);
-	uniform_real_distribution<double> dtrimono(30.0,150.0);
+	uniform_real_distribution<double> dtrimono(40.0,140.0);
 	uniform_real_distribution<double> drhom(30.0,120.0);
 	unit.monoB = rad(dtrimono(rgen));
 	unit.triA = rad(dtrimono(rgen));
@@ -1163,8 +1163,8 @@ bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
 		unit.ratC = drat(rgen);
 	if(mut(rgen))
 		unit.axisorder=axisset(rgen);
-	uniform_real_distribution<double> dtrimono(0.01,180.0);
-	uniform_real_distribution<double> drhom(0.01,120.0);
+	uniform_real_distribution<double> dtrimono(40.0,140.0);
+	uniform_real_distribution<double> drhom(30.0,120.0);
 	if(mut(rgen))
 		unit.monoB = rad(dtrimono(rgen));
 	if(mut(rgen))
@@ -3010,13 +3010,14 @@ string getStructError(StructError finalstate) {
 //(e.g., given a step size of 20 degrees, 30 degrees gives a value of 1.5)
 //FIXME:THIS CODE ASSUMES THAT EQUIVALENT STOICHIMETRIES ARE GIVEN AS INPUT
 //crystals that do not have the same stoichimetry will have PROBLEMS
-bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average, double & chebyshev, double & euclid) {
+bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average, double & chebyshev, double & euclid, double & num) {
 	vector<double> scores;
 	scores.reserve(100);
 
 	chebyshev = -1.0;
 	average = -1.0;
 	euclid = -1.0;
+	num = -1.0;
 	//a negative distance is impossible, so these cannot be the same :P
 	if(unit.spacegroup != alt.unit.spacegroup)
 		return false;
@@ -3078,8 +3079,10 @@ bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average,
 	chebyshev = 0.0;
 	average = 0.0;
 	euclid = 0.0;
+	num = 0.0;
 	for(int i = 0; i < scores.size(); i++) {
 		if (scores[i] > chebyshev) chebyshev = scores[i];
+		if (scores[i] <= p.clustersize) num+=1.0;
 		euclid += scores[i] * scores[i];
 		average += scores[i];
 	}
@@ -3093,7 +3096,8 @@ bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average,
 	average -= chebyshev;
 	average /= static_cast<double>(scores.size()-1);
 
-	if(average <= p.clustersize && chebyshev <= p.chebyshevlimit)
+	//if(average <= p.clustersize && chebyshev <= p.chebyshevlimit)
+	if( ( num / static_cast<double>(scores.size()) ) > p.clusterdiff )
 		return true;
 	return false;
 

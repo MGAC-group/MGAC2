@@ -252,7 +252,7 @@ public:
 
 	void forceOK() {finalstate = OKStruct;};
 
-	bool simpleCompare(GASP2struct alt, GASP2param p, double &average, double &chebyshev, double & euclid);
+	bool simpleCompare(GASP2struct alt, GASP2param p, double &average, double &chebyshev, double & euclid, double & num);
 	void setVector(vector<double> values, int mol, int dih);
 	vector<double> getVector(int &mol, int &dih);
 

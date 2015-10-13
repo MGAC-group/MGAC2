@@ -92,12 +92,12 @@ public:
 	GASP2pop symmLimit(GASP2pop &bad, int limit);
 	GASP2pop spacebin(int binsize, int binsave = 230);
 	void spacebinV(vector<GASP2pop> &bins, int binsize, int binsave = 230);
-	void spacebinCluster(vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave = 230);
+	void spacebinCluster(int threads, vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave = 230);
 
 
 	void scale(double con, double lin, double exp);
 	//produces a new structure list which contains only
-	//the unique best structures of the list.
+//the unique best structures of the list.
 	//structures where the energy is known (completed)
 	//take precedence over fitcelled structures
 	//the lowest energy structure of a set takes precedence
@@ -127,10 +127,12 @@ public:
 	void dedup(int max);
 
 	GASP2pop getCluster(int c);
-	void cluster(GASP2pop &clusters, GASP2param p);
+	void cluster(GASP2pop &clusters, GASP2param p, int threads);
+	void allDistances(GASP2param p, int threads);
 	GASP2struct cluster_center(int c);
-	void assignClusterGroups(GASP2param p);
+	int assignClusterGroups(GASP2param p, int threads);
 	void stripClusters(int clusters, int n);
+	void clusterReset();
 
 
 };

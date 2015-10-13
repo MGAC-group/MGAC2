@@ -26,7 +26,7 @@ struct Arg: public option::Arg
 	  }
 };
 
-enum optIndex {INPUT,HELP,RESTART,STEP,SPACEGROUPS,CONVERT,COMBINE,SIZE,TEMPLATE,PLANE };
+enum optIndex {INPUT,HELP,RESTART,STEP,SPACEGROUPS,CONVERT,COMBINE,SIZE,TEMPLATE,PLANE,RECLUSTER,THREADS };
 
 const option::Descriptor usage[] =
 {
@@ -40,13 +40,13 @@ const option::Descriptor usage[] =
 		{SIZE, 0, "s","size", Arg::NonEmpty, "-s, --size Used in conjunction with merge to denote the size of merged population"},
 		{TEMPLATE, 0, "t","template",Arg::NonEmpty, "-t, --template An XML molecule template from a cif; if a plane is given then rotation and other values will be checked"},
 		{PLANE, 0, "p", "plane",Arg::NonEmpty, "-p, --plane Specifies the three atom plane to be used for a template (comma delimited)"},
+		{RECLUSTER, 0, "g", "recluster",Arg::NonEmpty, "-g, --recluster Reclusters a population using a standard input for input and the population to be reclustered as the g argument"},
+		{THREADS, 0, "j", "threads",Arg::NonEmpty, "-j, --threads Number of threads to use (ie, clustering)"},
 		{ 0, 0, 0, 0, 0, 0 }
 };
 
 
 int main( int argc, char* argv[] ) {
-
-	//cout << "test" << endl;
 
 	int mpithreading;
 	//MPI_Init(&argc,&argv);
@@ -79,6 +79,15 @@ int main( int argc, char* argv[] ) {
 		cout << "There was a problem loading the spacegroup file!\n";
 		exit(1);
 	}
+	int threads=1;
+	if(options[THREADS]) {
+		threads = std::stoi(string(options[THREADS].arg));
+		if(threads < 1) {
+			cout << "Less than 1 thread specified, exiting..." << endl;
+			exit(1);
+		}
+	}
+
     if(options[SPACEGROUPS]) {
     	cout << "Valid groups are the following (can use index or string names):" << endl << endl;
     	cout << " Index  Name" << endl;
@@ -155,6 +164,7 @@ int main( int argc, char* argv[] ) {
     		string errorstring;
     		tinyxml2::XMLDocument doc;
     		doc.LoadFile(options[INPUT].arg);
+    		cout << mark() << "xml loaded" << endl;
     		if(doc.ErrorID() == 0) {
     			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
     			if(!temppop.loadXMLrestart(pop, errorstring)) {
@@ -170,8 +180,12 @@ int main( int argc, char* argv[] ) {
     			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
     		}
     		remove(options[CONVERT].arg);
-    		temppop.energysort();
-    		temppop.runSymmetrize(2);
+    		doc.Clear();
+    		cout << mark() << "pop loaded" << endl;
+    		//temppop.energysort();
+    		//cout << mark() << "sorted" << endl;
+    		temppop.runSymmetrize(threads);
+    		cout << mark() << "symmed" << endl;
     		temppop.writeCIF(string(options[CONVERT].arg));
     		cout << mark() << "File successfully converted" << endl;
     	}
@@ -202,6 +216,68 @@ int main( int argc, char* argv[] ) {
     	}
     	return 0;
     }
+
+    if(options[RECLUSTER]) {
+    	if(options[RECLUSTER].arg == NULL) {
+    		return 0;
+    	}
+    	if(options[INPUT] && options[RESTART].arg != NULL && options[RECLUSTER].arg != NULL) {
+
+    		GASP2control client(string(options[INPUT].arg));
+    		GASP2param p = client.getParams();
+    		cout << "got one" << endl;
+    		GASP2pop temppop;
+    		string errorstring;
+    		tinyxml2::XMLDocument doc;
+    		doc.LoadFile(options[RESTART].arg);
+    		if(doc.ErrorID() == 0) {
+    			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
+    			if(!temppop.loadXMLrestart(pop, errorstring)) {
+    				cout << "There was an error in the restart file: " << errorstring << endl;
+    				exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
+    			}
+    		}
+    		else {
+    			cout << "!!! There was a problem with opening the input file!" << endl;
+    			cout << "Check to see if the file exists or if the XML file" << endl;
+    			cout << "is properly formed, with tags formatted correctly." << endl;
+    			cout << "Aborting... " << endl;
+    			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
+    		}
+
+    		cout << mark() << "precluster" << endl;
+    		GASP2pop clusters;
+    		temppop.clusterReset();
+    		temppop.cluster(clusters, p, threads);
+    		cout << mark() << "cluster done, size: " << clusters.size() << endl;
+    		//cout << mark() <<"group count: " << temppop.assignClusterGroups(p, threads) << endl;
+    		cout << mark() << "writing dists" << endl;
+    		temppop.allDistances(p, threads);
+    		cout << mark() <<"done"<< endl;
+
+
+    		ofstream outf;
+    		outf.open(options[RECLUSTER].arg, ofstream::out);
+    		if(outf.fail()) {
+    			cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! exiting sadly..." << endl;
+    			exit(1);
+    		}
+    		else {
+    			outf << "<mgac>\n" << temppop.saveXML() << endl << "</mgac>\n";
+    			outf.close();
+    		}
+
+    		//temppop.writeCIF(string(options[RECLUSTER].arg));
+    		cout << mark() << "File successfully converted" << endl;
+    	}
+    	else {
+    		cout << "Requires -i for the input file!" << endl;
+    	}
+
+
+    	return 0;
+    }
+
 
 
     if(!options[INPUT]) {

@@ -11,6 +11,29 @@ std::mutex longeval_mut;
 std::atomic<bool> save_state;
 std::atomic<bool> completed;
 
+GASP2control::GASP2control(string infile) {
+
+	//parse the infile with output handling!
+	tinyxml2::XMLDocument doc;
+	string errorstring;
+	doc.LoadFile(infile.c_str());
+	if(doc.ErrorID() == 0) {
+		if(parseInput(&doc, errorstring)==false) {
+			cout << "There was an error in the input file: " << errorstring << endl;
+			exit(1);
+		}
+
+	}
+	else {
+		cout << "!!! There was a problem with opening the input file!" << endl;
+		cout << "Check to see if the file exists or if the XML file" << endl;
+		cout << "is properly formed, with tags formatted correctly." << endl;
+		cout << "Aborting... " << endl;
+		exit(1);
+	}
+
+}
+
 GASP2control::GASP2control(int ID, string infile) {
 
 	this->ID = ID;
@@ -201,9 +224,9 @@ void GASP2control::server_prog() {
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
 		if (params.type == "clustered") {
 			if(params.spacemode != Spacemode::Single)
-				lastpop.spacebinCluster(bins, clusterbins, params);
+				lastpop.spacebinCluster(hostlist[0].threads, bins, clusterbins, params);
 			else
-				lastpop.cluster(clusters, params);
+				lastpop.cluster(clusters, params, hostlist[0].threads);
 		}
 		else {
 			if(params.spacemode != Spacemode::Single)
@@ -334,20 +357,28 @@ void GASP2control::server_prog() {
 				evalpop.addIndv( rootpop.fullCross(params.spacemode) );
 
 				if(params.spacemode == Spacemode::Single) {
-					evalpop.addIndv(clusters.newPop(10000,params.spacemode));
-					evalpop.addIndv(clusters.newPop(rootpop,10000,params.spacemode));
+					evalpop.addIndv(clusters.newPop(params.popsize * params.popsize,params.spacemode));
+					evalpop.addIndv(clusters.newPop(rootpop,params.popsize * params.popsize,params.spacemode));
 					//evalpop.addIndv(clusters);
 				}
 				else {
-					int repcount;
+					int selfself, selfroot;
 					for(int i = 0; i < 230; i++) {
-						if(clusterbins[i].size() > 1) {
-							if(clusterbins[i].size() < 30)
-								repcount=clusterbins[i].size()*clusterbins[i].size();
-							else
-								repcount=1000;
-							evalpop.addIndv(clusterbins[i].newPop(repcount,params.spacemode));
-							evalpop.addIndv(clusterbins[i].newPop(rootpop,repcount,params.spacemode));
+						if(clusterbins[i].size() < (params.popsize * 2)) {
+							if(clusterbins[i].size() < std::floor(std::sqrt( params.popsize * 2 ))) {
+								selfself=clusterbins[i].size()*clusterbins[i].size();
+								selfroot=clusterbins[i].size()*rootpop.size();
+							}
+							else {
+								selfself=(params.popsize * 2);
+								selfroot=(params.popsize * 2);
+							}
+							if(selfroot > (params.popsize * 2))
+								selfroot = (params.popsize * 2);
+
+							if(clusterbins[i].size() > 1)
+								evalpop.addIndv(clusterbins[i].newPop(selfself,params.spacemode));
+							evalpop.addIndv(clusterbins[i].newPop(rootpop,selfroot,params.spacemode));
 
 							//partials.addIndv(bins[i]);
 						}
@@ -521,19 +552,19 @@ void GASP2control::server_prog() {
 
 			if(params.type == "clustered" && precompute==false) {
 				if(params.spacemode == Spacemode::Single) {
-					good.cluster(clusters, params);
+					good.cluster(clusters, params, hostlist[0].threads);
 					//tempstore.addIndv(good);
 					//tempstore.stripClusters(clusters.size(), 25);
-					clusters.assignClusterGroups(params);
+					//clusters.assignClusterGroups(params);
 					cout << mark() << "Cluster size " << clusters.size() << endl;
-					writePop(clusters, "precluster", pcstep);
+					writePop(clusters, "precluster", 0);
 					cout << mark() << " good size: " << good.size() << endl;
 				}
 				else {
 					cout << "prebin" << endl;
 					for(int s = 0; s < bins.size(); s++)
 						bins[s].clear();
-					good.spacebinCluster(bins, clusterbins, params);
+					good.spacebinCluster(hostlist[0].threads, bins, clusterbins, params);
 					bestpop.clear();
 					//TODO: add bin stats collection
 					cout << "postbin" << endl;
@@ -541,7 +572,8 @@ void GASP2control::server_prog() {
 						bestpop.addIndv(clusterbins[n]);
 					}
 					cout << mark() << "Cluster size " << bestpop.size() << endl;
-					writePop(bestpop, "precluster", pcstep);
+					writePop(bestpop, "precluster", 0);
+					cout << mark() << " good size: " << good.size() << endl;
 					bestpop.clear();
 
 				}
@@ -1220,7 +1252,7 @@ void GASP2control::client_prog() {
 	Instruction i, ack, evalmode = (Instruction)(0u);
 	future<bool> popsend, eval;
 	chrono::milliseconds timeout(0);
-	chrono::milliseconds t(200);
+	chrono::milliseconds t(100);
 
 	bool queueSend = false;
 	bool queueEval = false;

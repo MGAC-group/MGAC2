@@ -35,6 +35,7 @@ GASP2param::GASP2param() {
 	symmlimit = 12;
 	binlimit = 3;
 	downlimit = 2;
+	clusterdiff = 0.5;
 	clustersize = 1.0;
 	chebyshevlimit = 15.0;
 	dihstep = rad(10.0);
@@ -42,6 +43,7 @@ GASP2param::GASP2param() {
 	ratiostep = 0.1;
 	posstep = 0.03;
 	angstep = rad(5.0);
+	precompute = 500;
 
 
 	//qe params
@@ -380,6 +382,15 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 			exp_scale = dtemp;
 			if(exp_scale < 0.0) {
 				errorstring = "exp_scale must be non-negative!\n";
+				return false;
+			}
+		}
+
+		//clusterdiff
+		if(!run->QueryDoubleAttribute("clusterdiff", &dtemp)) {
+			clusterdiff = dtemp;
+			if(clusterdiff < 0.0 || clusterdiff > 1.0) {
+				errorstring = "clusterdiff must be between 0.0 and 1.0!\n";
 				return false;
 			}
 		}
