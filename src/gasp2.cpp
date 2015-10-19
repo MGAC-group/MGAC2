@@ -147,603 +147,170 @@ void GASP2control::getHostInfo() {
 }
 
 
-//this function is awful and really needs to be cleaned up. badly
-void GASP2control::server_prog() {
-
-	getHostInfo();
-
-	//collect the info from all hosts
-	Host h; h.hostname = hostname;
-	h.threads = nodethreads;
-	hostlist.push_back(h);
-	for(int i = 1; i < worldSize; i++) {
-		recvHost(h.hostname, h.threads, i);
-		hostlist.push_back(h);
-	}
-
-	MPI_Barrier(MPI_COMM_WORLD);
-
-	//generate the local machinefile info
-	UUID u; u.generate();
-	string localmachinefile = "/tmp/machinefile-";
-	localmachinefile.append(u.toStr());
-
-
-	Instruction recv, send;
-	//this vector indicates the owner of all nodes
-	//so, if ownerlist[i] = 0, node i is owned by
-	//the server thread
-	//0-worldsize means the node is running
-	//IDLE (-1) means the node is idle
-	//DOWN (-2) means the node is in a bad state
-	//and is not responding to pings
-	vector<int> ownerlist(worldSize);
-	//this vector contains a ping test for each node
-
-	//vector<bool> pinged(worldSize);
-	//the polling time is 200 ms
-	chrono::milliseconds t(200);
-	chrono::milliseconds timeout(0);
-
-	//initialize ownerlist
-	for(int i = 0; i < worldSize; i++)
-		ownerlist[i] = IDLE;
-
-//	//establish who is paying attention initially
-//	for(int i = 1; i < worldSize; i++) {
-//		//try to get a signal for ~5 seconds
-//		sendIns(Ping, i);
-//		cout << mark() << "Sending initial ping to client " << i << endl;
-//	}
-//	this_thread::sleep_for(chrono::seconds(1));
-//	for(int i = 1; i < worldSize; i++) {
-//		recvIns(recv, i);
-//		if(recv & Ackn) {
-//			cout << mark() << "Client " << i << " ack'd" << endl;
-//			ownerlist[i] = IDLE;
-//		}
-//		else {
-//			cout << mark() << "Client " << i << " is down!" << endl;
-//			ownerlist[i] = DOWN;
-//		}
-//
-//	}
-
-
-	GASP2pop evalpop, lastpop, bestpop, partials;
-	vector<GASP2pop> bins(230), clusterbins(230);
-
-	vector<GASP2pop> split;
-
-	GASP2pop clusters;
+//handles the restart logic
+void GASP2control::setup_restart() {
 
 	if(restart.length() > 0) {
-		lastpop = rootpop;
-		rootpop.clear();
-		//lastpop.runSymmetrize(hostlist[0].threads);
+		//implicit: rootpop is the restart pop if a restart is specified
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
-		if (params.type == "clustered") {
-			if(params.spacemode != Spacemode::Single)
-				lastpop.spacebinCluster(hostlist[0].threads, bins, clusterbins, params);
-			else
-				lastpop.cluster(clusters, params, hostlist[0].threads);
-		}
-		else {
-			if(params.spacemode != Spacemode::Single)
-				lastpop.spacebinV(bins, params.popsize);
-		}
 	}
 	else {
-		lastpop.init(root, params.popsize, params.spacemode, params.group);
-		//lastpop.runFitcell(hostlist[0].threads);
+		//rootpop is not initialized
+		server_randbuild();
+		rootpop = randpop;
 	}
 
-//	double average, chebyshev, euclid;
-//	for(int i = 0; i < lastpop.size(); i++) {
-//		for(int j = i; j < lastpop.size(); j++) {
-//			if(i==j) continue;
-//			bool res = lastpop.indv(i)->simpleCompare(*lastpop.indv(j),params,average,chebyshev, euclid);
-//			cout << "(" << i << "," << j << ") " << res << " " << average << " " << chebyshev << " "  << euclid << endl;
-//
-//		}
-//	}
+	if (params.type == "clustered")
+		rootpop.spacebinCluster(hostlist[0].threads, bins, clusters, params);
+	else
+		rootpop.spacebinV(bins, params.popsize);
 
-//	lastpop.cluster(clusters, params);
-//	clusters.assignClusterGroups(params);
-//
-//	cout << "cluster assigns:" << endl;
-//	for(int i = 0; i < lastpop.size(); i++) {
-//		cout << i << " " << lastpop.indv(i)->getCluster() <<  endl;
-//	}
-//	cout << "cluster groups" << endl;
-//	for(int i = 0; i < clusters.size(); i++) {
-//		cout << i << " " << clusters.indv(i)->getClustergroup()<< endl;
-//	}
-//
-//	clusters.runFitcell(hostlist[0].threads);
-//
-//	writePop(clusters, "clusters", 0);
-//	writePop(lastpop, "testpop", 0);
-//	return;
-
-	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
-
-	//calc the total number of processing elements
-	int totalPE = 0;
-	for(int i = 0; i < worldSize; i++) {
-		totalPE += hostlist[i].threads;
-
-	}
+	writePop(rootpop, "root", 0);
+}
 
 
-	//pick the calculation mode
-	Instruction evalmode = None;
-	if(params.calcmethod == "qe")
-		evalmode = (Instruction) (evalmode | DoQE);
-//	else if(params.calcmethod == "fitcell")
-//		evalmode = (Instruction) (evalmode | DoFitcell);
-
-
-
-	vector<future<bool>> popsend(worldSize);
-	future<bool> eval;
-	future<bool> writer;
-	vector<int> stats;
-
-	//auto restart_timer;
-
-
+void GASP2control::server_fitcell(GASP2pop &pop) {
+	//distribute the structures evenly so
+	//that one host doesn't get too overloaded.
+	//now takes into account IDLE/DOWN state
+	chrono::milliseconds t(200);
+	chrono::milliseconds timeout(0);
 	MPI_Status m;
+	Instruction recv, send;
+	vector<GASP2pop> split(worldSize);
+	cout << mark() << "Fitcell starting" << endl;
 
-	bool precompute = false;
-	if(params.mode == "stepwise") {
-		for(int step = startstep; step < params.generations; step++) {
-
-
-////////////////////START GEN BUILD/////////////////////////
-
-		GASP2pop bad, restart, good, tempstore;
-		//tempstore.clear();
-		for(int pcstep = 0; pcstep < params.precompute; pcstep++) { // check for full initial population setup
-
-
-			cout << mark() << "Starting new generation " << step << endl;
-
-			//we always reinitialize the rootpop at each generation
-			//this is designed to precent
-			cout << mark() << "Generating new rootpop..." << endl;
-			rootpop.clear();
-			rootpop.init(root, params.popsize, params.spacemode, params.group);
-			writePop(rootpop, "root", step);
-
-			//scale, cross and mutate
-			cout << mark() << "Scaling..." << endl;
-			if(step > 0)
-				lastpop.scale(params.const_scale, params.lin_scale, params.exp_scale);
-
-			cout << mark() << "Crossing..." << endl;
-
-
-
-			evalpop.clear();
-			partials.clear();
-			if(params.type == "elitism") {
-				evalpop = lastpop.newPop(replace, params.spacemode);
-				evalpop.addIndv(lastpop);
-			}
-			//use this mode for normal QE evaluation
-			else if (params.type == "classic" ) {
-
-
-				evalpop = rootpop;
-				evalpop.addIndv( rootpop.fullCross(params.spacemode) );
-
-				if(params.spacemode == Spacemode::Single || step == 0) {
-					evalpop.addIndv(lastpop.fullCross(params.spacemode));
-					evalpop.addIndv(lastpop.fullCross(params.spacemode, rootpop));
-					evalpop.addIndv(lastpop);
-				}
-				else {
-					for(int i = 0; i < params.binlimit; i++) {
-
-						evalpop.addIndv(bins[i].fullCross(params.spacemode));
-						evalpop.addIndv(bins[i].fullCross(params.spacemode, rootpop));
-						//partials.addIndv(bins[i]);
-					}
-				}
-			}
-			//use this mode for cluster precompute
-			else if (params.type == "clustered" && step == 0) {
-
-				evalpop = rootpop;
-				evalpop.addIndv( rootpop.fullCross(params.spacemode) );
-
-				if(params.spacemode == Spacemode::Single) {
-					evalpop.addIndv(clusters.newPop(params.popsize * params.popsize,params.spacemode));
-					evalpop.addIndv(clusters.newPop(rootpop,params.popsize * params.popsize,params.spacemode));
-					//evalpop.addIndv(clusters);
-				}
-				else {
-					int selfself, selfroot;
-					for(int i = 0; i < 230; i++) {
-						if(clusterbins[i].size() < (params.popsize * 2)) {
-							if(clusterbins[i].size() < std::floor(std::sqrt( params.popsize * 2 ))) {
-								selfself=clusterbins[i].size()*clusterbins[i].size();
-								selfroot=clusterbins[i].size()*rootpop.size();
-							}
-							else {
-								selfself=(params.popsize * 2);
-								selfroot=(params.popsize * 2);
-							}
-							if(selfroot > (params.popsize * 2))
-								selfroot = (params.popsize * 2);
-
-							if(clusterbins[i].size() > 1)
-								evalpop.addIndv(clusterbins[i].newPop(selfself,params.spacemode));
-							evalpop.addIndv(clusterbins[i].newPop(rootpop,selfroot,params.spacemode));
-
-							//partials.addIndv(bins[i]);
-						}
-					}
-				}
-				//clear out the lastpop on the first step since they
-			}
-			//use this mode for general clustering
-			else if (params.type == "clustered" && step > 0) {
-
-				evalpop = rootpop;
-				evalpop.scale(1.0,0.0,0.0);
-				evalpop.addIndv( rootpop.fullCross(params.spacemode) );
-
-				if(params.spacemode == Spacemode::Single) {
-					evalpop.addIndv(lastpop.newPop(params.popsize,params.spacemode));
-					evalpop.addIndv(lastpop.newPop(rootpop,params.popsize,params.spacemode));
-					//evalpop.addIndv(clusters);
-				}
-				else {
-					for(int i = 0; i < params.binlimit; i++) {
-						bins[i].scale(params.const_scale, params.lin_scale, params.exp_scale);
-						evalpop.addIndv(bins[i].newPop(params.popsize*2,params.spacemode));
-						evalpop.addIndv(bins[i].newPop(rootpop,params.popsize*2,params.spacemode));
-					}
-				}
-
-				//clear out the lastpop on the first step since they
-			}
-			else if(params.type == "finaleval") {
-				evalpop = lastpop.completeCheck();
-				evalpop.runSymmetrize(hostlist[0].threads);
-			}
-
-			//partials = partials.completeCheck();
-			if(params.type == "finaleval") {
-				cout << mark() << "Performing final evaluation" << endl;
-				good = evalpop;
-			}
-
-
-			else { //////START FINALEVAL SKIP BLOCK
-				cout << mark() << "Mutating..." << endl;
-
-				evalpop.mutate(params.mutation_prob, params.spacemode);
-
-				cout << mark() << "Crossover size: " << evalpop.size() << endl;
-
-				stats.clear();
-				stats.resize(231);
-				for(int i = 0; i < stats.size(); i++)
-					stats[i] = 0;
-				for(int i = 0; i < evalpop.size(); i++)
-					stats[evalpop.indv(i)->getSpace()]+=1;
-				ofstream statfile;
-				stringstream statname;
-				statname << params.outputfile << "_stats_" << setw(3) << setfill('0') << step;
-				statfile.open(statname.str().c_str(), ofstream::out);
-				for(int i = 1; i < stats.size(); i++)
-					statfile << i << " " << stats[i] << endl;
-				statfile.close();
-
-
-////////////////////END POP BUILD/////////////////////////
-
-
-			good.clear();
-			bad.clear();
-			good = evalpop.symmLimit(bad, params.symmlimit);
-			//good.addIndv(partials);
-
-			split.clear();
-			split.resize(worldSize);
-			good.symmsort();
-
-////////////////////START FITCELL/////////////////////////
-
-			//distribute the structures evenly so
-			//that one host doesn't get too overloaded.
-			//now takes into account IDLE/DOWN state
-			int j = 0;
-			for(int i = 0; i < evalpop.size(); i++) {
-				for( ; ; j=((j+1) % worldSize) ) {
-					if(ownerlist[j] == IDLE) {
-						split[j].addIndv(*good.indv(i));
-						j=((j+1) % worldSize);
-						break;
-					}
-				}
-			}
-
-			cout << mark() << "Pop sizes: ";
-			for(int i = 0; i < worldSize; i++)
-				cout << split[i].size() << " ";
-			cout << endl;
-
-
-			cout << mark() << "Sending populations" << endl;
-			//--addendum-- this may not be true because of MPI_thread_init
-			//so it's still a safe assumption, probably
-			//because of how MPI handles order of messages
-			//blocking sends from the master thread must be issued
-			//in the thread and not-asynchronously. multiple sends
-			//issued in multiple threads creates potential for a
-			//race condition, because the messages dispatched from
-			//the master thread are out of order
-			for(int i = 1; i < worldSize; i++) {
-				sendIns(PopAvail, i);
-				if(sendPop(split[i], i) == false)
-					cout << mark() << "Could not send population "<< i << " during fitcell!";
-			}
-
-			cout << mark() << "Performing fitcell" << endl;
-
-			//send order to perform fitcell
-			for(int i = 1; i < worldSize; i++) {
-				sendIns(DoFitcell, i);
-				//ownerlist[i] = i;
-			}
-			//do the local fitcell
-			split[0].runFitcell(hostlist[0].threads);
-			cout << mark() << "Server fitcell finished" << endl;
-
-			//this region coudl results in a deadlock.....must be careful
-			//wait for completion of threads
-			bool complete = false;
-			while(!complete) {
-				int recvd;
-				//collect messages
-				complete = true;
-				for(int i = 1; i < worldSize; i++) {
-					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					while(recvd){
-						recvIns(recv, i);
-						if(recv & Busy)
-							complete = false;
-						//handle each message appropriately
-						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					}
-				}
-				for(int i = 1; i < worldSize; i++)
-					sendIns(Ping, i);
-
-				this_thread::sleep_for(t);
-			}
-
-			//receive final populations
-			cout << mark() << "Retrieving populations" << endl;
-			for(int i = 1; i < worldSize; i++) {
-				sendIns(SendPop, i);
-				if(recvPop(&split[i], i) == false)
-					cout << mark() << "Could not receive population "<< i << " during fitcell!";;
-				//cout << "i:" << i << endl;
-			}
-
-			cout << mark() << "Fitcell complete" << endl;
-
-
-////////////////////END FITCELL/////////////////////////
-
-			//combine, then save fitcell
-			cout << mark() << "Sorting" << endl;
-			lastpop = evalpop;
-			good.clear();
-			for(int i = 0; i < worldSize; i++)
-				good.addIndv(split[i]);
-//			if (params.type == "classic")
-//				good.addIndv(bad);
-
-
-
-			evalpop = good;
-			//evalpop.volumesort();
-			//writePop(evalpop, "fitcell", step);
-
-			//evaluate
-			//evalpop.symmsort();
-			//GASP2pop bad, good, restart;
-
-			good.clear();
-			bad.clear();
-			good = evalpop.volLimit(bad);
-			//add the incomplete structures to the partials to
-			//bypass the fitcell step
-
-			}//////END FINALEVAL SKIP BLOCK
-
-			if(step > 0)
+	int j = 0;
+	for(int i = 0; i < pop.size(); i++) {
+		for( ; ; j=((j+1) % worldSize) ) {
+			if(ownerlist[j] == IDLE) {
+				split[j].addIndv(*pop.indv(i));
+				j=((j+1) % worldSize);
 				break;
-
-
-
-
-			if(params.type == "clustered" && precompute==false) {
-				if(params.spacemode == Spacemode::Single) {
-					good.cluster(clusters, params, hostlist[0].threads);
-					//tempstore.addIndv(good);
-					//tempstore.stripClusters(clusters.size(), 25);
-					//clusters.assignClusterGroups(params);
-					cout << mark() << "Cluster size " << clusters.size() << endl;
-					writePop(clusters, "precluster", 0);
-					cout << mark() << " good size: " << good.size() << endl;
-				}
-				else {
-					cout << "prebin" << endl;
-					for(int s = 0; s < bins.size(); s++)
-						bins[s].clear();
-					good.spacebinCluster(hostlist[0].threads, bins, clusterbins, params);
-					bestpop.clear();
-					//TODO: add bin stats collection
-					cout << "postbin" << endl;
-					for(int n = 0; n < clusterbins.size(); n++) {
-						bestpop.addIndv(clusterbins[n]);
-					}
-					cout << mark() << "Cluster size " << bestpop.size() << endl;
-					writePop(bestpop, "precluster", 0);
-					cout << mark() << " good size: " << good.size() << endl;
-					bestpop.clear();
-
-				}
-			}
-			else
-				break;
-
-//			else {
-//				good.addIndv(tempstore);
-//				if(good.size() < params.popsize) {
-//					cout << mark() << "Not enough initial structures generated yet, only " << good.size() <<" out of " << params.popsize  << " generated" << endl;
-//					tempstore = good;
-//					lastpop.clear();
-//					lastpop.init(root, params.popsize, params.spacemode, params.group);
-//				}
-//				else {
-//					break;
-//				}
-//			}
-
-		}//FOR precompute steps
-
-		//finalize things for the next steps
-		if(params.type == "clustered" && precompute==false) {
-			if(params.spacemode == Spacemode::Single) {
-				good = clusters;
-				//lastpop.clear();
-			}
-			else {
-				bestpop.clear();
-				//TODO: add bin stats collection
-				for(int n = 0; n < clusterbins.size(); n++) {
-					bestpop.addIndv(clusterbins[n]);
-				}
-				bins.clear();
-				clusterbins.clear();
-				lastpop.clear();
-				good = bestpop;
-				bestpop.clear();
 			}
 		}
-		precompute = true;
+	}
 
-			cout << mark() << "Candidate popsize:" << good.size() << endl;
-
-			good.volumesort();
-			writePop(good, "vollimit", step);
-
-
-
-			if(good.size() > 0) {
-				future<bool> serverthread;
+	cout << mark() << "Pop sizes: ";
+	for(int i = 0; i < worldSize; i++)
+		cout << split[i].size() << " ";
+	cout << endl;
 
 
-				if(params.type != "clustered" && params.type != "fitcell") {
-					//establish who is paying attention initially
-					for(int i = 1; i < worldSize; i++) {
-						//ownerlist[i] = IDLE;
+	cout << mark() << "Sending populations" << endl;
+	//--addendum-- this may not be true because of MPI_thread_init
+	//so it's still a safe assumption, probably
+	//because of how MPI handles order of messages
+	//blocking sends from the master thread must be issued
+	//in the thread and not-asynchronously. multiple sends
+	//issued in multiple threads creates potential for a
+	//race condition, because the messages dispatched from
+	//the master thread are out of order
+	for(int i = 1; i < worldSize; i++) {
+		sendIns(PopAvail, i);
+		if(sendPop(split[i], i) == false)
+			cout << mark() << "Could not send population "<< i << " during fitcell!";
+	}
 
-						//clear the message queue for safety
-						int recvd;
-						recv = None;
-						int queuelength = 0;
-						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-						while(recvd){
-							recvIns(recv, i);
-							queuelength++;
-							MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-						}
-						cout << mark() << "ID " << ID << ": messages were in the queue: " << queuelength << endl;
+	cout << mark() << "Performing fitcell" << endl;
 
-						//try to get a signal for ~5 seconds
-						sendIns(Ping, i);
-						cout << mark() << "Sent initial ping to client " << i << endl;
-					}
-					this_thread::sleep_for(chrono::seconds(5));
-					for(int i = 1; i < worldSize; i++) {
-						int recvd;
-						recv = None;
-						ownerlist[i] = DOWN;
-						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-						while(recvd){
-							recvIns(recv, i);
-							if(recv & Ackn) {
-								cout << mark() << "Client " << i << " ack'd" << endl;
-								ownerlist[i] = IDLE;
-								//break;
-							}
-							MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-						}
+	//send order to perform fitcell
+	for(int i = 1; i < worldSize; i++) {
+		sendIns(DoFitcell, i);
+		//ownerlist[i] = i;
+	}
+	//do the local fitcell
+	split[0].runFitcell(hostlist[0].threads);
+	cout << mark() << "Server fitcell finished" << endl;
 
+	//this region coudl results in a deadlock.....must be careful
+	//wait for completion of threads
+	bool complete = false;
+	while(!complete) {
+		int recvd;
+		//collect messages
+		complete = true;
+		for(int i = 1; i < worldSize; i++) {
+			MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+			while(recvd){
+				recvIns(recv, i);
+				if(recv & Busy)
+					complete = false;
+				//handle each message appropriately
+				MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+			}
+		}
+		for(int i = 1; i < worldSize; i++)
+			sendIns(Ping, i);
 
-						if(ownerlist[i] == DOWN) {
-							cout << mark() << "Client " << i << " is down!" << endl;
+		this_thread::sleep_for(t);
+	}
 
-						}
+	//receive final populations
+	cout << mark() << "Retrieving populations" << endl;
+	for(int i = 1; i < worldSize; i++) {
+		sendIns(SendPop, i);
+		if(recvPop(&split[i], i) == false)
+			cout << mark() << "Could not receive population "<< i << " during fitcell!";;
+		//cout << "i:" << i << endl;
+	}
 
-					}
-				}
+	pop.clear();
+	for(int i = 0; i < worldSize; i++)
+		pop.addIndv(split[i]);
+	split.clear();
 
+	cout << mark() << "Fitcell complete" << endl;
 
-////////////////////START QE DISPATCH/////////////////////////
-				if(params.calcmethod == "qe") {
-
-					int completed_structs;
-					int launched_structs;
-
-
-					auto restart_timer = chrono::steady_clock::now();
-
-					cout << mark() << "Beginning QE evaluation" << endl;
-					good.symmsort();
-					int avail = 0;
-					//var to store reference index of sent structure
-					vector<GASP2pop> localpops(worldSize);
-					vector<int> evaldind(worldSize);
-					GASP2pop evald = good;
-					bool idle = false;
-					save_state=false;
-
-					ownerlist[0] = IDLE;
-					eval_mut.unlock();
+}
 
 
-					vector<int> evallist(good.size());
-					cout << "evallist size " << evallist.size() << endl;
+void GASP2control::server_qe(GASP2pop &pop, int step) {
+		int completed_structs;
+		int launched_structs;
+		MPI_Status m;
+		Instruction recv, send;
+		auto restart_timer = chrono::steady_clock::now();
+
+		cout << mark() << "Beginning QE evaluation" << endl;
+		pop.symmsort();
+		int avail = 0;
+		//var to store reference index of sent structure
+
+		future<bool> serverthread;
+
+		vector<GASP2pop> localpops(worldSize);
+		vector<int> evaldind(worldSize);
+		GASP2pop evald = pop;
+		bool idle = false;
+		save_state=false;
+
+		ownerlist[0] = IDLE;
+		eval_mut.unlock();
 
 
-					for(int i = 0; i < evallist.size(); i++)
-						evallist[i] = 0;
+		vector<int> evallist(good.size());
+		cout << "evallist size " << evallist.size() << endl;
 
-					cout << mark() << " evallist: ";
-					for(int i = 0; i < evallist.size(); i++)
-						cout << evallist[i] << " ";
-					cout << endl;
 
-					//for(int launched=0,completesteps=0; ; ) {
-					while(true) {
-						//cout << mark() << "start of launch block" << endl;
-						bool queue_restart_write = false;
-						bool complete_flag = false;
+		for(int i = 0; i < evallist.size(); i++)
+			evallist[i] = 0;
+
+		cout << mark() << " evallist: ";
+		for(int i = 0; i < evallist.size(); i++)
+			cout << evallist[i] << " ";
+		cout << endl;
+
+		//for(int launched=0,completesteps=0; ; ) {
+		while(true) {
+			//cout << mark() << "start of launch block" << endl;
+			bool queue_restart_write = false;
+			bool complete_flag = false;
 
 
 //AML: I am eliminating serverside threads for QE for the time being
 
-						//test node 0
+			//test node 0
 //						if(ownerlist[0] == 0) {
 //							if(serverthread.valid() && serverthread.wait_for(timeout)==future_status::ready) {
 //								//eval_mut.unlock();
@@ -767,227 +334,227 @@ void GASP2control::server_prog() {
 
 
 
-						//establish completion state
-						for(int i = 1; i < worldSize; i++) {
-							if(ownerlist[i] == i)
-								sendIns(Ping, i);
-						}
-						this_thread::sleep_for(chrono::seconds(1));
-						for(int i = 1; i < worldSize; i++) {
-							if(ownerlist[i] == i) {
-								int recvd;
-								MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-								while(recvd){
-									recv = None;
-									recvIns(recv, i);
+			//establish completion state
+			for(int i = 1; i < worldSize; i++) {
+				if(ownerlist[i] == i)
+					sendIns(Ping, i);
+			}
+			this_thread::sleep_for(chrono::seconds(1));
+			for(int i = 1; i < worldSize; i++) {
+				if(ownerlist[i] == i) {
+					int recvd;
+					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+					while(recvd){
+						recv = None;
+						recvIns(recv, i);
 
-									cout << mark() << "server QE received from " << i << ": " << recv << endl;
-										if(recv & Busy) {
-											//cout << "marking busy " << i << endl;
-											ownerlist[i] = i;
-										}
-										else if(recv & Complete) {
-											cout << mark() << "Client " << i << " finished eval" << endl;
-											ownerlist[i] = GETPOP;
-											complete_flag = true;
-										}
-									MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-								}
+						cout << mark() << "server QE received from " << i << ": " << recv << endl;
+							if(recv & Busy) {
+								//cout << "marking busy " << i << endl;
+								ownerlist[i] = i;
 							}
-						}
-
-
-						//receive block
-						if( chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - restart_timer).count() >= 180 || complete_flag) {
-							for(int i = 1; i < worldSize; i++) {
-								if(ownerlist[i] == GETPOP || ownerlist[i] == i) {
-									sendIns(SendPop, i);
-									this_thread::sleep_for(chrono::seconds(1)); //HACKHACK this is totally evil and I am an evil person for putting it here
-									if(recvPop(&localpops[i], i)) {
-										evald.mergeIndv(localpops[i],evaldind[i]);
-										queue_restart_write = true;
-										if(ownerlist[i] == GETPOP) {
-											ownerlist[i] = IDLE;
-											evallist[evaldind[i]] = 2;
-										}
-									}
-									else {
-										cout << mark() << "Server receive failed on client " << i << endl;
-										if(ownerlist[i] == GETPOP) {
-											cout << mark() << "A final structure was lost on " << ID << "..." << endl;
-										}
-										else {
-											cout << mark() << "An intermediate send failed on " << ID << "..." << endl;
-										}
-										evallist[evaldind[i]] = 0;
-										ownerlist[i] = DOWN;
-									}
-								}
+							else if(recv & Complete) {
+								cout << mark() << "Client " << i << " finished eval" << endl;
+								ownerlist[i] = GETPOP;
+								complete_flag = true;
 							}
-						}
-
-						//check the down nodes and re-idle them if they are okay
-						for(int i = 1; i < worldSize; i++) {
-							if(ownerlist[i] == DOWN) {
-								cout << mark() << "Testing " << i << "..." << endl;
-								sendIns(Ping, i);
-								int recvd;
-								MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-								while(recvd){
-									recv = None;
-									recvIns(recv, i);
-									if(recv & Ackn) {
-										ownerlist[i] = IDLE;
-										//break;
-									}
-									MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-								}
-							}
-						}
-
-						//output temporary save file
-						if(queue_restart_write) {
-							restart = evald;
-							restart.energysort();
-							writePop(restart, "restart", step);
-							restart_timer = chrono::steady_clock::now();
-							queue_restart_write = false;
-						}
+						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+					}
+				}
+			}
 
 
-						//cleanup node control lists
-						for(int i = 0; i < worldSize; i++) {
-							if(ownerlist[ownerlist[i]] == IDLE || ownerlist[ownerlist[i]] == DOWN)
+			//receive block
+			if( chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - restart_timer).count() >= 180 || complete_flag) {
+				for(int i = 1; i < worldSize; i++) {
+					if(ownerlist[i] == GETPOP || ownerlist[i] == i) {
+						sendIns(SendPop, i);
+						this_thread::sleep_for(chrono::seconds(1)); //HACKHACK this is totally evil and I am an evil person for putting it here
+						if(recvPop(&localpops[i], i)) {
+							evald.mergeIndv(localpops[i],evaldind[i]);
+							queue_restart_write = true;
+							if(ownerlist[i] == GETPOP) {
 								ownerlist[i] = IDLE;
+								evallist[evaldind[i]] = 2;
+							}
 						}
-						avail = 0;
-						for(int i = 0; i < worldSize; i++)
-							if(ownerlist[i] == IDLE)
-								avail++;
+						else {
+							cout << mark() << "Server receive failed on client " << i << endl;
+							if(ownerlist[i] == GETPOP) {
+								cout << mark() << "A final structure was lost on " << ID << "..." << endl;
+							}
+							else {
+								cout << mark() << "An intermediate send failed on " << ID << "..." << endl;
+							}
+							evallist[evaldind[i]] = 0;
+							ownerlist[i] = DOWN;
+						}
+					}
+				}
+			}
+
+			//check the down nodes and re-idle them if they are okay
+			for(int i = 1; i < worldSize; i++) {
+				if(ownerlist[i] == DOWN) {
+					cout << mark() << "Testing " << i << "..." << endl;
+					sendIns(Ping, i);
+					int recvd;
+					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+					while(recvd){
+						recv = None;
+						recvIns(recv, i);
+						if(recv & Ackn) {
+							ownerlist[i] = IDLE;
+							//break;
+						}
+						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+					}
+				}
+			}
+
+			//output temporary save file
+			if(queue_restart_write) {
+				restart = evald;
+				restart.energysort();
+				writePop(restart, "restart", step);
+				restart_timer = chrono::steady_clock::now();
+				queue_restart_write = false;
+			}
+
+
+			//cleanup node control lists
+			for(int i = 0; i < worldSize; i++) {
+				if(ownerlist[ownerlist[i]] == IDLE || ownerlist[ownerlist[i]] == DOWN)
+					ownerlist[i] = IDLE;
+			}
+			avail = 0;
+			for(int i = 0; i < worldSize; i++)
+				if(ownerlist[i] == IDLE)
+					avail++;
 
 
 
 
-						//if there are clients available, try three times to launch a job
-						for(int n = 0; n < 3; n++) {
-							if(avail > 0) {
+			//if there are clients available, try three times to launch a job
+			for(int n = 0; n < 3; n++) {
+				if(avail > 0) {
 
-								cout << mark() << " evallist: ";
-								for(int i = 0; i < evallist.size(); i++)
-									cout << evallist[i] << " ";
-								cout << endl;
+					cout << mark() << " evallist: ";
+					for(int i = 0; i < evallist.size(); i++)
+						cout << evallist[i] << " ";
+					cout << endl;
 
-								int ind = -1;
-								for(int i = 0; i < evallist.size();i++) {
-									if(evallist[i] == 0)  {
-										ind = i;
-										break;
-									}
-								}
-								if(ind == -1) break;
+					int ind = -1;
+					for(int i = 0; i < evallist.size();i++) {
+						if(evallist[i] == 0)  {
+							ind = i;
+							break;
+						}
+					}
+					if(ind == -1) break;
 
-								cout << mark() << "Evaluating structure " << ind << endl;
-								cout << mark() << "structures avail: " << avail << endl;
-								cout << mark() << " ownerlist: ";
-								for(int i = 0; i < worldSize; i++)
-									cout << ownerlist[i] << " ";
-								cout << endl;
+					cout << mark() << "Evaluating structure " << ind << endl;
+					cout << mark() << "structures avail: " << avail << endl;
+					cout << mark() << " ownerlist: ";
+					for(int i = 0; i < worldSize; i++)
+						cout << ownerlist[i] << " ";
+					cout << endl;
 
-								//see how many nodes are needed
-								int given;
-								int needed;
-								int next_needed;
+					//see how many nodes are needed
+					int given;
+					int needed;
+					int next_needed;
 
-								//we need as many nodes as there are symmops
-								//if P1, we take two nodes to avoid serverthread
-								if(good.indv(ind)->getSymmcount() == 1)
-									needed = 2;
-								else
-									needed = good.indv(ind)->getSymmcount();
+					//we need as many nodes as there are symmops
+					//if P1, we take two nodes to avoid serverthread
+					if(good.indv(ind)->getSymmcount() == 1)
+						needed = 2;
+					else
+						needed = good.indv(ind)->getSymmcount();
 
-								//we see how many nodes the next structure needs
-								int next_ind = -1;
-								for(int i = ind+1; i < evallist.size();i++) {
-									if(evallist[i] == 0)  {
-										next_ind = i;
-										break;
-									}
-								}
+					//we see how many nodes the next structure needs
+					int next_ind = -1;
+					for(int i = ind+1; i < evallist.size();i++) {
+						if(evallist[i] == 0)  {
+							next_ind = i;
+							break;
+						}
+					}
 
-								if(next_ind >= 0) {
-									if(good.indv(next_ind)->getSymmcount() == 1)
-										next_needed = 2;
-									else
-										next_needed = good.indv(next_ind)->getSymmcount();
-								}
-								else
-									next_needed = 0;
+					if(next_ind >= 0) {
+						if(good.indv(next_ind)->getSymmcount() == 1)
+							next_needed = 2;
+						else
+							next_needed = good.indv(next_ind)->getSymmcount();
+					}
+					else
+						next_needed = 0;
 
-								//in the event we do not have enough nodes
-								//to fulfill the symmetry needs
-								if(needed > worldSize)
-									given = avail;
+					//in the event we do not have enough nodes
+					//to fulfill the symmetry needs
+					if(needed > worldSize)
+						given = avail;
 
-								if(next_needed > (avail-needed))
-									given = avail;
-								else if (next_needed == 0)
-									given = avail;
-								else
-									given = needed;
+					if(next_needed > (avail-needed))
+						given = avail;
+					else if (next_needed == 0)
+						given = avail;
+					else
+						given = needed;
 
-								//limit the maximum number of nodes
-								//to 2x the symmlimit
-								if(given > (params.symmlimit * 2))
-									given = params.symmlimit * 2;
+					//limit the maximum number of nodes
+					//to 2x the symmlimit
+					if(given > (params.symmlimit * 2))
+						given = params.symmlimit * 2;
 
-								cout << mark() << "needed is " << needed << endl;
-								cout << mark() << "next_needed is " << next_needed << endl;
-								cout << mark() << "given is " << given << endl;
-
-
-								//get the slots
-								vector<int> slots;
-								slots.clear();
-								int first = IDLE;
-								for(int i = worldSize-1; i >= 0; i--) {
-									if(ownerlist[i] == IDLE) {
-										if(first == IDLE)
-											first = i;
-										slots.push_back(i);
-										ownerlist[i] = first;
-									}
-									if(slots.size() >= given)
-										break;
-								}
+					cout << mark() << "needed is " << needed << endl;
+					cout << mark() << "next_needed is " << next_needed << endl;
+					cout << mark() << "given is " << given << endl;
 
 
-								cout << mark() << "first is " << first << endl;
+					//get the slots
+					vector<int> slots;
+					slots.clear();
+					int first = IDLE;
+					for(int i = worldSize-1; i >= 0; i--) {
+						if(ownerlist[i] == IDLE) {
+							if(first == IDLE)
+								first = i;
+							slots.push_back(i);
+							ownerlist[i] = first;
+						}
+						if(slots.size() >= given)
+							break;
+					}
+
+
+					cout << mark() << "first is " << first << endl;
 //								if(first == IDLE)
 //									break;
 
-								avail -= given;
-								cout << mark() << "avail is " << avail << endl;
+					avail -= given;
+					cout << mark() << "avail is " << avail << endl;
 
-								string hostfile;
-								hostfile.clear();
-								hostfile = makeMachinefile(slots);
+					string hostfile;
+					hostfile.clear();
+					hostfile = makeMachinefile(slots);
 
-								if(first == 0) {
-									//writeHost(localmachinefile, hostfile);
-								}
-								else {
-									sendIns(GetHost, first);
-									if(!sendHost(hostfile, 0, first)) {
-										cout << mark() << "Sever host send failed" << endl;
-										ownerlist[first] = DOWN;
-									}
-								}
+					if(first == 0) {
+						//writeHost(localmachinefile, hostfile);
+					}
+					else {
+						sendIns(GetHost, first);
+						if(!sendHost(hostfile, 0, first)) {
+							cout << mark() << "Sever host send failed" << endl;
+							ownerlist[first] = DOWN;
+						}
+					}
 
-								if(ownerlist[first] == first) { //prevents launch if first node goes DOWN
-									evaldind[first] = ind;
-									localpops[first] = good.subpop(ind,1);
+					if(ownerlist[first] == first) { //prevents launch if first node goes DOWN
+						evaldind[first] = ind;
+						localpops[first] = good.subpop(ind,1);
 
-									if(first == 0) {
+						if(first == 0) {
 //										if(eval_mut.try_lock()) {
 //											eval_mut.unlock();
 //											if(!serverthread.valid()) {
@@ -1004,86 +571,488 @@ void GASP2control::server_prog() {
 //											cout << mark() << "server thread is locked! marking DOWN" << endl;
 //											ownerlist[0] = DOWN;
 //										}
-										cout << mark() << "first is 0! something went wrong..." << endl;
-										ownerlist[0] = IDLE;
-									}
-									else {
-										cout << mark() << "Launching QE on client " << first << "with "<< given << "nodes..." << endl;
-										sendIns(PopAvail, first);
-										if(!sendPop(localpops[first], first)) {
-											cout << mark() << "Server send failed" << endl;
-											ownerlist[first] = DOWN;
-											evallist[ind] = 0;
-										}
-										else {
-											sendIns(DoQE, first);
-											//launched++;
-											evallist[ind] = 1;
-										}
-									}
-								}
-
-								launched_structs = 0;
-								completed_structs = 0;
-								for(int i = 0; i < evallist.size(); i++) {
-									if( evallist[i] == 1 ) launched_structs++;
-									if( evallist[i] == 2 ) completed_structs++;
-								}
-								launched_structs += completed_structs;
-
-								cout << mark() << launched_structs  << " launched" << endl;
-								cout << mark() << completed_structs  << " completed" << endl;
-
-								cout << mark() << " ownerlist: ";
-								for(int i = 0; i < worldSize; i++)
-									cout << ownerlist[i] << " ";
-								cout << endl;
-
-							} //if avail structures and not all structures launched
-
-
-
-						} //for three steps
-
-
-
-						launched_structs = 0;
-						completed_structs = 0;
-						for(int i = 0; i < evallist.size(); i++) {
-							if( evallist[i] == 1 ) launched_structs++;
-							if( evallist[i] == 2 ) completed_structs++;
+							cout << mark() << "first is 0! something went wrong..." << endl;
+							ownerlist[0] = IDLE;
 						}
-						launched_structs += completed_structs;
-
-
-						idle = true;
-						for(int i = 0; i < worldSize; i++) {
-							if(ownerlist[i] != IDLE && ownerlist[i] != DOWN)
-								idle = false;
+						else {
+							cout << mark() << "Launching QE on client " << first << "with "<< given << "nodes..." << endl;
+							sendIns(PopAvail, first);
+							if(!sendPop(localpops[first], first)) {
+								cout << mark() << "Server send failed" << endl;
+								ownerlist[first] = DOWN;
+								evallist[ind] = 0;
+							}
+							else {
+								sendIns(DoQE, first);
+								//launched++;
+								evallist[ind] = 1;
+							}
 						}
-
-
-						cout << flush;
-						if( ( completed_structs >= good.size() ) && idle)
-							break;
-						this_thread::sleep_for(chrono::seconds(3));
-
 					}
 
-					cout << mark() << "Sorting after QE" << endl;
-					evald.energysort();
-					writePop(evald, "evald", step);
-					good = evald;
+					launched_structs = 0;
+					completed_structs = 0;
+					for(int i = 0; i < evallist.size(); i++) {
+						if( evallist[i] == 1 ) launched_structs++;
+						if( evallist[i] == 2 ) completed_structs++;
+					}
+					launched_structs += completed_structs;
+
+					cout << mark() << launched_structs  << " launched" << endl;
+					cout << mark() << completed_structs  << " completed" << endl;
+
+					cout << mark() << " ownerlist: ";
+					for(int i = 0; i < worldSize; i++)
+						cout << ownerlist[i] << " ";
+					cout << endl;
+
+				} //if avail structures and not all structures launched
 
 
 
-					cout << mark() << "End of QE evalution" << endl;
+			} //for three steps
 
-				} //end QE eval block
 
-				//this prevents runaway single core sorting
-				//at most we will see 230*popsize
-				//good.addIndv(bad.spacebin(params.popsize));
+
+			launched_structs = 0;
+			completed_structs = 0;
+			for(int i = 0; i < evallist.size(); i++) {
+				if( evallist[i] == 1 ) launched_structs++;
+				if( evallist[i] == 2 ) completed_structs++;
+			}
+			launched_structs += completed_structs;
+
+
+			idle = true;
+			for(int i = 0; i < worldSize; i++) {
+				if(ownerlist[i] != IDLE && ownerlist[i] != DOWN)
+					idle = false;
+			}
+
+
+			cout << flush;
+			if( ( completed_structs >= good.size() ) && idle)
+				break;
+			this_thread::sleep_for(chrono::seconds(3));
+
+		}
+
+		cout << mark() << "Sorting after QE" << endl;
+		evald.energysort();
+		writePop(evald, "evald", step);
+		pop = evald;
+
+
+
+		cout << mark() << "End of QE evalution" << endl;
+
+	//end QE eval block
+
+}
+
+
+void GASP2control::ownerlist_update() {
+
+	MPI_Status m;
+	Instruction recv, send;
+
+	for(int i = 1; i < worldSize; i++) {
+		//ownerlist[i] = IDLE;
+
+		//clear the message queue for safety
+		int recvd;
+		recv = None;
+		int queuelength = 0;
+		MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+		while(recvd){
+			recvIns(recv, i);
+			queuelength++;
+			MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+		}
+		cout << mark() << "ID " << ID << ": messages were in the queue: " << queuelength << endl;
+
+		//try to get a signal for ~5 seconds
+		sendIns(Ping, i);
+		cout << mark() << "Sent initial ping to client " << i << endl;
+	}
+	this_thread::sleep_for(chrono::seconds(5));
+	for(int i = 1; i < worldSize; i++) {
+		int recvd;
+		recv = None;
+		ownerlist[i] = DOWN;
+		MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+		while(recvd){
+			recvIns(recv, i);
+			if(recv & Ackn) {
+				cout << mark() << "Client " << i << " ack'd" << endl;
+				ownerlist[i] = IDLE;
+				//break;
+			}
+			MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+		}
+
+
+		if(ownerlist[i] == DOWN) {
+			cout << mark() << "Client " << i << " is down!" << endl;
+
+		}
+
+	}
+
+}
+
+
+void GASP2control::server_randbuild() {
+	cout << mark() << "Generating new randpop" << endl;
+	randpop.clear();
+	randpop.init(root, params.popsize, params.spacemode, params.group);
+}
+
+// STATS CODE
+//				//record statistics about spacegroup generation
+//				vector<int> stats;
+//				stats.resize(231);
+//				for(int i = 0; i < stats.size(); i++)
+//					stats[i] = 0;
+//				for(int i = 0; i < evalpop.size(); i++)
+//					stats[evalpop.indv(i)->getSpace()]+=1;
+//				ofstream statfile;
+//				stringstream statname;
+//				statname << params.outputfile << "_stats_" << setw(3) << setfill('0') << step;
+//				statfile.open(statname.str().c_str(), ofstream::out);
+//				for(int i = 1; i < stats.size(); i++)
+//					statfile << i << " " << stats[i] << endl;
+//				statfile.close();
+
+
+GASP2pop GASP2control::server_popbuild() {
+
+	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
+
+	GASP2pop outpop;
+
+	//used to remove duplicates in clustering
+	GASP2param specialp = params;
+	specialp.clusterdiff = 1.0;
+
+
+	//elitism, equivalent to MGAC1
+	if(params.type == "elitism") {
+		for(int i = 0; i < params.binlimit; i++) {
+			bins[i].scale(params.const_scale, params.lin_scale, params.exp_scale);
+			outpop.addIndv(bins[i].newPop(replace, params.spacemode));
+		}
+	}
+	//full cross with random pop insertion
+	else if (params.type == "fullcross" ) {
+
+		outpop = randpop;
+		outpop.addIndv( randpop.fullCross(params.spacemode) );
+
+		for(int i = 0; i < params.binlimit; i++) {
+			outpop.addIndv(bins[i].fullCross(params.spacemode));
+			outpop.addIndv(bins[i].fullCross(params.spacemode, rootpop));
+		}
+
+	}
+	//this algorithm is used in the precluster
+	//generally speaking, the idea is to obtain a set of volume limited structures
+	//that are SIGNIFICANTLY DIFFERENT from each other, such that every structure
+	//in the cluster set has less than some percentage difference with all other structures
+	else if (params.type == "precluster") {
+
+		outpop = randpop;
+		outpop.addIndv( randpop.fullCross(params.spacemode) );
+
+		//in single spacegroup mode, a crossing size of the population size squared is acceptable
+		//because the dimensionality is lower. no limits are set for the same reason
+		if(params.spacemode == Spacemode::Single) {
+			outpop.addIndv(clusters[0].newPop(params.popsize * params.popsize,params.spacemode));
+			outpop.addIndv(clusters[0].newPop(randpop,params.popsize * params.popsize,params.spacemode));
+		}
+		//in multispacegroup,the popsize for each cluster needs to be limited because the population
+		//expansion can be very large. once a cluster reached the limit, only new structures resulting
+		//randpop crossings will be added.
+		else {
+			int selfself, selfroot;
+			for(int i = 0; i < 230; i++) {
+				if(clusters[i].size() < (params.popsize * 2)) {
+					if(clusters[i].size() < std::floor(std::sqrt( params.popsize * 2 ))) {
+						selfself=clusters[i].size()*clusters[i].size();
+						selfroot=clusters[i].size()*rootpop.size();
+					}
+					else {
+						selfself=(params.popsize * 2);
+						selfroot=(params.popsize * 2);
+					}
+					if(selfroot > (params.popsize * 2))
+						selfroot = (params.popsize * 2);
+
+					if(clusters[i].size() > 1)
+						outpop.addIndv(clusters[i].newPop(selfself,params.spacemode));
+					outpop.addIndv(clusters[i].newPop(rootpop,selfroot,params.spacemode));
+
+					//partials.addIndv(bins[i]);
+				}
+			}
+		}
+
+		outpop = outpop.spacebinUniques(hostlist[0].threads, clusters, params);
+
+	}
+	//this mode is used for clustered structure generation.
+	else if (params.type == "clustered") {
+
+		outpop = randpop;
+		outpop.addIndv( randpop.fullCross(params.spacemode) );
+		outpop.scale(1.0,0.0,0.0);
+
+		for(int i = 0; i < params.binlimit; i++) {
+			bins[i].scale(params.const_scale, params.lin_scale, params.exp_scale);
+			outpop.addIndv(bins[i].newPop(params.popsize*2,params.spacemode));
+			outpop.addIndv(bins[i].newPop(randpop,params.popsize*2,params.spacemode));
+		}
+
+		outpop = outpop.spacebinUniques(hostlist[0].threads, bins, specialp);
+
+	}
+	else if(params.type == "finaleval") {
+		outpop = rootpop.completeCheck();
+		outpop.runSymmetrize(hostlist[0].threads);
+	}
+
+	return outpop;
+}
+
+
+void GASP2control::down_check() {
+
+	MPI_Status m;
+	Instruction recv, send;
+
+	//re - check the down nodes and re-idle them if they are okay
+	for(int i = 1; i < worldSize; i++) {
+		if(ownerlist[i] == DOWN) {
+			sendIns(Ping, i);
+			int recvd;
+			MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+			while(recvd){
+				recv = None;
+				recvIns(recv, i);
+				if(recv != None) {
+					ownerlist[i] = IDLE;
+					//break;
+				}
+				MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
+			}
+		}
+	}
+
+	cout << mark() << " ownerlist end: ";
+	for(int i = 0; i < worldSize; i++)
+		cout << ownerlist[i] << " ";
+	cout << endl;
+
+	int downcount = 0;
+	// if there are more than 3 down nodes at the end of the process, then we kill
+	for(int i = 0; i < worldSize; i++) {
+		if(ownerlist[i] == DOWN) {
+			downcount++;
+		}
+	}
+	if(downcount >= params.downlimit) {
+		cout << mark() << "At the end of the QE evaluation, there were down nodes. Killing this job..." << endl;
+		MPI_Abort(MPI_COMM_WORLD, 1);
+		exit(1);
+	}
+
+}
+
+void GASP2control::server_popcombine(GASP2pop pop) {
+
+	if(params.type == "elitism") {
+		//pop.remIndv(replace);
+		pop.spacebinV(bins, params.popsize);
+		//writePop(evalpop, "final", step);
+	}
+	else if (params.type == "fullcross" || params.type == "clustered") {
+		pop.spacebinV(bins, params.popsize);
+	}
+	else if (params.type == "precluster") {
+		pop.spacebinCluster(hostlist[0].threads, bins, clusters, params);
+	}
+
+	if(params.spacemode != Spacemode::Single) {
+		cout << mark() << "Best : ";
+		for(int n = 0; n < params.binlimit; n++) {
+			if(bins[n].size() > 0) {
+				cout << spacegroupNames[bins[n].indv(0)->getSpace()] <<",";
+			}
+			else {
+				cout <<"null,";
+			}
+		}
+		cout << endl;
+	}
+
+
+
+
+}
+//this function is awful and really needs to be cleaned up. badly
+void GASP2control::server_prog() {
+
+	getHostInfo();
+
+	//collect the info from all hosts
+	Host h; h.hostname = hostname;
+	h.threads = nodethreads;
+	hostlist.push_back(h);
+	for(int i = 1; i < worldSize; i++) {
+		recvHost(h.hostname, h.threads, i);
+		hostlist.push_back(h);
+	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	//generate the local machinefile info
+	UUID u; u.generate();
+	string localmachinefile = "/tmp/machinefile-";
+	localmachinefile.append(u.toStr());
+
+	//this vector indicates the owner of all nodes
+	//so, if ownerlist[i] = 0, node i is owned by
+	//the server thread
+	//0-worldsize means the node is running
+	//IDLE (-1) means the node is idle
+	//DOWN (-2) means the node is in a bad state
+	//and is not responding to pings
+	//vector<int> ownerlist(worldSize);
+	//this vector contains a ping test for each node
+
+	//vector<bool> pinged(worldSize);
+	//the polling time is 200 ms
+
+
+	//initialize ownerlist
+	ownerlist.resize(worldSize);
+	for(int i = 0; i < worldSize; i++)
+		ownerlist[i] = IDLE;
+
+
+	GASP2pop evalpop, lastpop, bestpop;
+	//vector<GASP2pop> bins(230), clusterbins(230);
+
+	if(params.spacemode != Spacemode::Single) {
+		bins.resize(230); clusters.resize(230);
+	}
+	else {
+		bins.resize(1);	clusters.resize(1);
+		//VERY IMPORTANT! if binlimit is not set right
+		//all of the binning algorithms will segfault
+		params.binlimit=1;
+	}
+
+	setup_restart();
+
+
+	//pick the calculation mode
+	evalmode = None;
+	if(params.calcmethod == "qe")
+		evalmode = (Instruction) (evalmode | DoQE);
+//	else if(params.calcmethod == "fitcell")
+//		evalmode = (Instruction) (evalmode | DoFitcell);
+
+
+
+	vector<future<bool>> popsend(worldSize);
+	future<bool> eval;
+	future<bool> writer;
+
+	if(params.precompute > 0)
+		cout << mark() << "Starting precluster" << endl;
+
+////////////////////START PRECLUSTER////////////////////////
+	bestpop.clear();
+	for(int pcstep = 0; pcstep < params.precompute; pcstep++) {
+		cout << mark() << "Precluster step " << pcstep << endl;
+		params.type = "precluster";
+		GASP2pop precompute;
+		server_randbuild();
+		precompute = server_popbuild();
+		server_fitcell(precompute);
+		precompute.volLimit();
+		server_popcombine(precompute);
+
+		//TODO: add bin stats collection
+		for(int n = 0; n < clusters.size(); n++) {
+			bestpop.addIndv(clusters[n]);
+		}
+		cout << mark() << "Cluster size " << bestpop.size() << endl;
+		writePop(bestpop, "precluster", 0);
+		bestpop.clear();
+		params.type = "clustered";
+	}
+	if(params.precompute > 0) {
+		bins = clusters;
+		for(int i = 0; i < clusters.size(); i++)
+			clusters[i].clear();
+	}
+////////////////////END PRECLUSTER////////////////////////
+
+
+////////////////////START GENERATION EVALS/////////////////////////
+	if(params.mode == "stepwise") {
+		for(int step = startstep; step < params.generations; step++) {
+
+			GASP2pop bad, restart, good, tempstore;
+
+			cout << mark() << "Starting new generation " << step << endl;
+
+			//we always reinitialize the rootpop at each generation
+			server_randbuild();
+			writePop(randpop, "rand", step);
+
+			//scale, cross and mutate
+			cout << mark() << "Scaling and Crossing..." << endl;
+			evalpop.clear();
+			evalpop = server_popbuild();
+
+			if(params.type == "finaleval") {
+				cout << mark() << "Performing final evaluation" << endl;
+				good = evalpop;
+			}
+			else {
+				cout << mark() << "Mutating..." << endl;
+				evalpop.mutate(params.mutation_prob, params.spacemode);
+
+				good.clear(); bad.clear();
+				good = evalpop.symmLimit(bad, params.symmlimit);
+				//good.addIndv(partials);
+				good.symmsort();
+
+				server_fitcell(good);
+
+				cout << mark() << "Sorting" << endl;
+				evalpop = good;
+
+				good.clear(); bad.clear();
+				good = evalpop.volLimit(bad);
+			}
+
+			cout << mark() << "Candidate popsize:" << good.size() << endl;
+
+			good.volumesort();
+			writePop(good, "vollimit", step);
+
+			if(good.size() > 0) {
+
+				if(params.type != "clustered" && params.type != "fitcell") {
+					ownerlist_update();
+				}
+				if(params.calcmethod == "qe") {
+					server_qe(good, step);
+				}
 				evalpop = good;
 
 			} //if good size > 0
@@ -1092,103 +1061,30 @@ void GASP2control::server_prog() {
 
 			}
 
-
-
 			//sort and reduce
+			cout << mark() << "Energy sort" << endl;
 			evalpop.energysort();
-			if(params.type == "elitism") {
-				evalpop.remIndv(replace);
-				lastpop = evalpop;
-				writePop(evalpop, "final", step);
-			}
-			else if (params.type == "classic" || params.type == "clustered") {
 
-//				writePop(bestpop, "best", step);
-				if(params.spacemode == Spacemode::Single) {
-					lastpop.addIndv(evalpop);
-					lastpop.energysort();
-					lastpop.dedup(params.popsize);
-					//lastpop.remIndv(lastpop.size()-params.popsize);
-
-					writePop(lastpop, "final", step);
-				}
-				else {
-					cout << mark() << "Sorting bins..." << endl;
-					bestpop.clear();
-					evalpop.spacebinV(bins, params.popsize);
-					//TODO: add bin stats collection
-					for(int n = 0; n < bins.size(); n++) {
-						bestpop.addIndv(bins[n]);
-					}
-
-					cout << mark() << "Best spacegroups: ";
-					for(int n = 0; n < params.binlimit; n++) {
-						if(bins[n].size() > 0) {
-							cout << spacegroupNames[bins[n].indv(0)->getSpace()] <<",";
-
-						}
-						else {
-							cout <<"null,";
-						}
-					}
-					cout << endl;
-					//bestpop.addIndv(evalpop);
-					//bestpop = bestpop.spacebin(params.popsize, 50);
-					//lastpop = bestpop;
-					//bestpop.energysort();
-					writePop(bestpop, "final", step);
-					bestpop.clear();
-				}
-//				evalpop = bestpop;
-//				evalpop.energysort();
-//				evalpop.remIndv(evalpop.size()-params.popsize);
-
-			}
-			else if(params.type == "finaleval") {
+			if(params.type == "finaleval") {
+				cout << mark() << "Writing final output" << endl;
 				writePop(evalpop, "fulleval", step);
 				cout << mark() << "Final evaluation completed and written, exiting..." << endl;
 				break;
 			}
-
-
-			//re - check the down nodes and re-idle them if they are okay
-			for(int i = 1; i < worldSize; i++) {
-				if(ownerlist[i] == DOWN) {
-					sendIns(Ping, i);
-					int recvd;
-					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					while(recvd){
-						recv = None;
-						recvIns(recv, i);
-						if(recv != None) {
-							ownerlist[i] = IDLE;
-							//break;
-						}
-						MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
-					}
+			else {
+				cout << mark() << "Recombining populations" << endl;
+				server_popcombine(evalpop);
+				bestpop.clear();
+				for(int n = 0; n < bins.size(); n++) {
+					bestpop.addIndv(bins[n]);
 				}
+				writePop(bestpop, "final", step);
+				bestpop.clear();
 			}
-//
-
-			cout << mark() << " ownerlist end: ";
-			for(int i = 0; i < worldSize; i++)
-				cout << ownerlist[i] << " ";
-			cout << endl;
 
 
-
-			int downcount = 0;
-			// if there are more than 3 down nodes at the end of the process, then we kill
-			for(int i = 0; i < worldSize; i++) {
-				if(ownerlist[i] == DOWN) {
-					downcount++;
-				}
-			}
-			if(downcount >= params.downlimit) {
-				cout << mark() << "At the end of the QE evaluation, there were down nodes. Killing this job..." << endl;
-				MPI_Abort(MPI_COMM_WORLD, 1);
-				exit(1);
-			}
+			//do a final check to see if the nodes are down
+			down_check();
 
 		}
 
@@ -1196,19 +1092,7 @@ void GASP2control::server_prog() {
 	else if(params.mode == "steadystate") {
 		cout << "Steadystate not yet implemented" << endl;
 	}
-
-
-//	ofstream outf;
-//	outf.open(localmachinefile.c_str(), ofstream::out);
-//	if(outf.fail()) {
-//		cout << "Could not write machinefile!\n";
-//		exit(1);
-//	}
-//	string name = makeMachinefile({0,1});
-//	outf << name <<endl;
-//	outf.close();
-//	rootpop.init(root, params.popsize);
-//	GASP2pop temp = rootpop.newPop(1);
+////////////////////END GENERATION EVALS/////////////////////////
 
 	//clean up files
 	remove(localmachinefile.c_str());

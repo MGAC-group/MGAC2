@@ -3082,7 +3082,7 @@ bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average,
 	num = 0.0;
 	for(int i = 0; i < scores.size(); i++) {
 		if (scores[i] > chebyshev) chebyshev = scores[i];
-		if (scores[i] <= p.clustersize) num+=1.0;
+		if (scores[i] <= p.clustersize) num += 1.0;
 		euclid += scores[i] * scores[i];
 		average += scores[i];
 	}

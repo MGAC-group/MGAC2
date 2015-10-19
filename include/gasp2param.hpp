@@ -43,7 +43,7 @@ public:
 	//run params
 	string calcmethod; //REQUIRED: fitcell, qe, custom
 	string mode; //steadystate or stepwise or final
-	string type; //elitism or classic or finaleval
+	string type; //elitism or fullcross or finaleval
 	string selector; //roulette or pattern
 	string scaling; //constant, linear, exponential
 	double cross_prob; //1.0

@@ -303,6 +303,42 @@ GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 	return ok;
 }
 
+
+GASP2pop GASP2pop::spacebinUniques(int threads, vector<GASP2pop> clusterbins, GASP2param p, int binsave) {
+
+	vector<GASP2pop> tempbin(230);
+	GASP2pop out;
+	//sort into bins
+
+	for(int i = 0; i < size(); i++) {
+		int group = structures[i].getSpace();
+		tempbin[group-1].addIndv(structures[i]);
+	}
+
+	cout << mark() << "spacebinUnique, sorting: " << size() << endl;
+	int total = 0;
+	for(int i = 0; i < 230; i++) {
+		//bins[i].energysort();
+		//bins[i].dedup(300); //FIXME: hardcoded value of 300 dedups, may not be safe
+		int s = tempbin[i].size();
+		int pre = out.size();
+		out.addindv(tempbin[i].getUniques(clusterbins[i], p, threads));
+		total += (out.size() - pre);
+		cout  << mark() << "spcg " << i << ", size " << s  << ", uniq " << (out.size() - pre) << endl;
+		//bins[i].stripClusters(clusterbins[i].size(),25);
+		//cout << "post-strip" << endl;
+		//bins[i].remIndv(bins[i].size() - 50);
+		//clusterbins[i].assignClusterGroups(p);
+	}
+
+	cout << mark() << "total uniques: " << total << endl;
+
+	return out;
+
+
+}
+
+
 void GASP2pop::spacebinCluster(int threads, vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave) {
 
 	vector<GASP2pop> tempbin(230);
@@ -835,12 +871,81 @@ bool multiCompare(int start, int end, GASP2pop *self, GASP2pop *clusters, GASP2p
 	return true;
 }
 
+GASP2pop GASP2pop::getUniques(GASP2pop clusters, GASP2param p, int threads) {
+	double average, chebyshev, euclid, localchebyshev, localavg;
+	int res;
+
+	for(int n = 0; n < 2; n++) {
+		if (structures.size() < threads)
+			threads = structures.size();
+		if(threads == 0) {
+			return;
+		}
+
+		vector<future<bool>> futures(threads);
+		vector<int> finalindex(threads + 1);
+		chrono::milliseconds timeout(0);
+		chrono::milliseconds thread_wait(20);
+
+		int thread_run = 0;
+
+		int s,e;
+		int totalload = ( size() * size() - size() ) / 2;
+		//cout << "size " << size() << endl;
+		int threadavg = (totalload / threads);
+		//cout << "threadavg " << threadavg << endl;
+
+		int val = 0;
+		finalindex[0] = 0;
+		int ind = 1;
+		for(int i = 0; i < size(); i++) {
+			val += (i+1);
+			if(val > threadavg) {
+				finalindex[ind] = i;
+				//cout << "findex " << finalindex[ind] << endl;
+				ind++;
+				val = 0;
+			}
+		}
+		finalindex[threads] = size();
+
+		for(int j = 0; j < threads; j++) {
+			if(!futures[j].valid() ) {//&& (i < size()) && thread_run < threads ) {
+				s = finalindex[j];
+				e = finalindex[j+1];
+				futures[j] = async(launch::async, multiCompare, s,e, this, &clusters, p);
+
+			}
+		}
+
+
+//		}
+		for(int j = 0; j < threads; j++) {
+			if(futures[j].valid()) {
+				//cout << "waiting on j: " << j << endl;
+				futures[j].wait();
+				futures[j].get();
+				//cout << "got j: " << j << endl;
+			}
+		}
+
+	}
+
+	GASP2pop out;
+	for(int i = 0; i < structures.size(); i++) {
+		if(structures[i].getCluster() == -1) {
+			out.addIndv(structures[i]);
+		}
+	}
+	return out;
+
+}
+
+
 //assigns structures in a pop clusters and adds to new clusters
 void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 	double average, chebyshev, euclid, localchebyshev, localavg;
 	int res;
-
-
 
 	//make two passes to make sure everything is updated nicely
 	for(int n = 0; n < 2; n++) {
@@ -883,32 +988,15 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 		}
 		finalindex[threads] = size();
 
-		//for(int k = 0; k < finalindex.size(); k++)
-		//	cout << "findex " << finalindex[k] << endl;
-
 		for(int j = 0; j < threads; j++) {
 			if(!futures[j].valid() ) {//&& (i < size()) && thread_run < threads ) {
-				//if(i % 100 == 0)
-				//	cout << "instance i: " << i << endl;
-				//saveindex[j] = i;
 				s = finalindex[j];
 				e = finalindex[j+1];
 				futures[j] = async(launch::async, multiCompare, s,e, this, &clusters, p);
-				//i++;
-				//thread_run++;
+
 			}
 		}
 
-
-//			//cleanup
-//			for(int j = 0; j < threads; j++) {
-//				if(futures[j].valid() && futures[j].wait_for(timeout)==future_status::ready){
-//					futures[j].get();
-//					thread_run--;
-//				}
-//			}
-//			//wait so we don't burn cycles
-//			this_thread::sleep_for(thread_wait);
 
 //		}
 		for(int j = 0; j < threads; j++) {
@@ -920,12 +1008,6 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 			}
 		}
 
-		//cout << "post assign" << endl;
-		//update centroids
-
-
-
-
 
 		//the cluster is unassigned, so we make a new cluster
 		for(int i = 0; i < structures.size(); i++) {
@@ -936,15 +1018,6 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 				clusters.addIndv(newcenter);
 			}
 		}
-
-
-//AML: FIXME this probably needs to be redone somehow
-//		for(int i = 0; i < clusters.size(); i++) {
-//			clusters.structures[i] = cluster_center(i);
-//
-//		}
-		//stripClusters(clusters.size(), 25);
-		//cout << "post centroid" << endl;
 
 	}
 

@@ -18,7 +18,7 @@ typedef enum GAmode {
 }GAmode;
 
 typedef enum GAtype {
-	Elite, Classic,
+	Elite, Fullcross,
 }GAtype;
 
 
@@ -93,7 +93,7 @@ public:
 	GASP2pop spacebin(int binsize, int binsave = 230);
 	void spacebinV(vector<GASP2pop> &bins, int binsize, int binsave = 230);
 	void spacebinCluster(int threads, vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave = 230);
-
+	GASP2pop spacebinUniques(int threads, vector<GASP2pop> clusterbins, GASP2param p, int binsave = 230);
 
 	void scale(double con, double lin, double exp);
 	//produces a new structure list which contains only
@@ -133,6 +133,7 @@ public:
 	int assignClusterGroups(GASP2param p, int threads);
 	void stripClusters(int clusters, int n);
 	void clusterReset();
+	GASP2pop getUniques(GASP2pop clusters, GASP2param p, int threads);
 
 
 };

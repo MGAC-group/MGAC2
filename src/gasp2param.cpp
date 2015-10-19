@@ -15,7 +15,7 @@ GASP2param::GASP2param() {
 	//run params
 	calcmethod = "fitcell"; //fitcell, qe, custom
 	mode = "generational"; //steadystate or generational
-	type = "elitism"; //elitism or classic
+	type = "elitism"; //elitism or fullcross or finaleval
 	selector = "roulette"; //roulette or pattern
 	scaling = "linear"; //constant, linear, exponential
 	cross_prob = 1.0; //1.0
@@ -199,7 +199,7 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 		if(stemp) {
 			type = "";
 			type.append(stemp);
-			if (type=="elitism" || type=="classic" || type=="finaleval" || type=="clustered" ) { ; }
+			if (type=="elitism" || type=="fullcross" || type=="finaleval" || type=="clustered" ) { ; }
 			else {
 				errorstring = "The run type specified does not match a valid type!\n";
 				return false;

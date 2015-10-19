@@ -148,10 +148,16 @@ private:
 
 	GASP2param params;
 	GASP2struct root; //base structure which all other structures are derived from
-	GASP2pop rootpop; //masterstructure list
-	vector<GASP2pop> popbuff;
+	GASP2pop rootpop; //pop constructed from a root (or possibly from a restart)
+	GASP2pop randpop; //random pop
+
+	Instruction evalmode;
+
+	vector<GASP2pop> clusters;
+	vector<GASP2pop> bins;
 
 	vector<Host> hostlist;
+	vector<int> ownerlist;
 
 	bool testReq(MPI_Request &m, int t);
 
@@ -176,9 +182,20 @@ private:
 	void writeHost(string name, string data);
 
 	bool writePop(GASP2pop pop, string tag, int step);
+	//bool writeBins(vector<GASP2pop> bins, string tag, int step);
 
 	bool parseInput(tinyxml2::XMLDocument *doc, string & errorstring);
 
 	//string mark();
+	void server_fitcell(GASP2pop &pop);
+	void server_qe(GASP2pop &pop, int step);
+	void ownerlist_update();
+	void server_randbuild();
+	GASP2pop server_popbuild();
+	void setup_restart();
+	void server_popcombine(GASP2pop pop);
+	void down_check();
+
+
 
 };
