@@ -332,7 +332,8 @@ void GASP2control::server_prog() {
 				evalpop.addIndv(lastpop);
 			}
 			//use this mode for normal QE evaluation
-			else if (params.type == "classic" || (params.type == "clustered" && step > 0) ) {
+			else if (params.type == "classic" ) {
+
 
 				evalpop = rootpop;
 				evalpop.addIndv( rootpop.fullCross(params.spacemode) );
@@ -344,6 +345,7 @@ void GASP2control::server_prog() {
 				}
 				else {
 					for(int i = 0; i < params.binlimit; i++) {
+
 						evalpop.addIndv(bins[i].fullCross(params.spacemode));
 						evalpop.addIndv(bins[i].fullCross(params.spacemode, rootpop));
 						//partials.addIndv(bins[i]);
@@ -384,6 +386,28 @@ void GASP2control::server_prog() {
 						}
 					}
 				}
+				//clear out the lastpop on the first step since they
+			}
+			//use this mode for general clustering
+			else if (params.type == "clustered" && step > 0) {
+
+				evalpop = rootpop;
+				evalpop.scale(1.0,0.0,0.0);
+				evalpop.addIndv( rootpop.fullCross(params.spacemode) );
+
+				if(params.spacemode == Spacemode::Single) {
+					evalpop.addIndv(lastpop.newPop(params.popsize,params.spacemode));
+					evalpop.addIndv(lastpop.newPop(rootpop,params.popsize,params.spacemode));
+					//evalpop.addIndv(clusters);
+				}
+				else {
+					for(int i = 0; i < params.binlimit; i++) {
+						bins[i].scale(params.const_scale, params.lin_scale, params.exp_scale);
+						evalpop.addIndv(bins[i].newPop(params.popsize*2,params.spacemode));
+						evalpop.addIndv(bins[i].newPop(rootpop,params.popsize*2,params.spacemode));
+					}
+				}
+
 				//clear out the lastpop on the first step since they
 			}
 			else if(params.type == "finaleval") {
@@ -1509,9 +1533,9 @@ bool GASP2control::testReq(MPI_Request &m, int t) {
 	int ok;
 
 	MPI_Test(&m, &ok, MPI_STATUS_IGNORE);
-	for(int i = 0; i < t; i++) {
+	for(int i = 0; i < t*10; i++) {
 		if(ok==true) break;
-		this_thread::sleep_for(chrono::seconds(1));
+		this_thread::sleep_for(chrono::milliseconds(100));
 		MPI_Test(&m, &ok, MPI_STATUS_IGNORE);
 	}
 	if(ok==false) {

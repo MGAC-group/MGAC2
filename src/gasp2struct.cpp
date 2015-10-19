@@ -1001,7 +1001,7 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 //	uniform_real_distribution<double> dtrimono(0.01,180.0);
 //	uniform_real_distribution<double> drhom(0.01,120.0);
 	uniform_real_distribution<double> dtrimono(40.0,140.0);
-	uniform_real_distribution<double> drhom(30.0,120.0);
+	uniform_real_distribution<double> drhom(30.0,89.0);
 	unit.monoB = rad(dtrimono(rgen));
 	unit.triA = rad(dtrimono(rgen));
 	unit.triB = rad(dtrimono(rgen));
@@ -1164,7 +1164,7 @@ bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
 	if(mut(rgen))
 		unit.axisorder=axisset(rgen);
 	uniform_real_distribution<double> dtrimono(40.0,140.0);
-	uniform_real_distribution<double> drhom(30.0,120.0);
+	uniform_real_distribution<double> drhom(30.0,89.0);
 	if(mut(rgen))
 		unit.monoB = rad(dtrimono(rgen));
 	if(mut(rgen))
