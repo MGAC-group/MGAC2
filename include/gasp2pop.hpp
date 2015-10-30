@@ -62,7 +62,8 @@ public:
 	//this is the actual crossing algorithm for a classic GA
 	GASP2pop inplaceCross(Spacemode mode);
 
-
+	//reserves the current population plus the given s
+	void reserve(int s) { structures.reserve(structures.size() + s); };
 	//add N members to the population (for elitism)
 	void addIndv(int add);
 	//adds individuals from another population

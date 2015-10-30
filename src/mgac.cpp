@@ -182,8 +182,8 @@ int main( int argc, char* argv[] ) {
     		remove(options[CONVERT].arg);
     		doc.Clear();
     		cout << mark() << "pop loaded" << endl;
-    		//temppop.energysort();
-    		//cout << mark() << "sorted" << endl;
+    		temppop.energysort();
+    		cout << mark() << "sorted" << endl;
     		temppop.runSymmetrize(threads);
     		cout << mark() << "symmed" << endl;
     		temppop.writeCIF(string(options[CONVERT].arg));

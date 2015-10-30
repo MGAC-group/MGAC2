@@ -1000,8 +1000,8 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 
 //	uniform_real_distribution<double> dtrimono(0.01,180.0);
 //	uniform_real_distribution<double> drhom(0.01,120.0);
-	uniform_real_distribution<double> dtrimono(40.0,140.0);
-	uniform_real_distribution<double> drhom(30.0,89.0);
+	uniform_real_distribution<double> dtrimono(60.0,120.0);
+	uniform_real_distribution<double> drhom(60.0,89.0);
 	unit.monoB = rad(dtrimono(rgen));
 	unit.triA = rad(dtrimono(rgen));
 	unit.triB = rad(dtrimono(rgen));
@@ -1163,8 +1163,8 @@ bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
 		unit.ratC = drat(rgen);
 	if(mut(rgen))
 		unit.axisorder=axisset(rgen);
-	uniform_real_distribution<double> dtrimono(40.0,140.0);
-	uniform_real_distribution<double> drhom(30.0,89.0);
+	uniform_real_distribution<double> dtrimono(60.0,120.0);
+	uniform_real_distribution<double> drhom(60.0,89.0);
 	if(mut(rgen))
 		unit.monoB = rad(dtrimono(rgen));
 	if(mut(rgen))
@@ -1451,7 +1451,7 @@ bool GASP2struct::setSpacegroup(bool frExclude) {
 
 	//check for invalid schoenflies
 	if( (unit.typ == Schoenflies::Dnd) && (unit.axn == Axisnum::Four || unit.axn == Axisnum::Six) ) {
-		cout << "D4d or D6d was generated; structure " << ID.toStr() << " rejected.\n";
+		//cout << "D4d or D6d was generated; structure " << ID.toStr() << " rejected.\n";
 		return false;
 	}
 

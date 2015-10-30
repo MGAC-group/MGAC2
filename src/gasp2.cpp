@@ -153,19 +153,21 @@ void GASP2control::setup_restart() {
 	if(restart.length() > 0) {
 		//implicit: rootpop is the restart pop if a restart is specified
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
+		if (params.type == "clustered")
+			rootpop.spacebinCluster(hostlist[0].threads, bins, clusters, params);
+		else
+			rootpop.spacebinV(bins, params.popsize);
+		writePop(rootpop, "root", 0);
 	}
-	else {
-		//rootpop is not initialized
-		server_randbuild();
-		rootpop = randpop;
-	}
+//	else {
+//		//rootpop is not initialized
+//		server_randbuild();
+//		rootpop = randpop;
+//	}
 
-	if (params.type == "clustered")
-		rootpop.spacebinCluster(hostlist[0].threads, bins, clusters, params);
-	else
-		rootpop.spacebinV(bins, params.popsize);
 
-	writePop(rootpop, "root", 0);
+
+
 }
 
 
@@ -178,7 +180,7 @@ void GASP2control::server_fitcell(GASP2pop &pop) {
 	MPI_Status m;
 	Instruction recv, send;
 	vector<GASP2pop> split(worldSize);
-	cout << mark() << "Fitcell starting" << endl;
+	cout << mark() << "Fitcell starting: " << pop.size() << endl;
 
 	int j = 0;
 	for(int i = 0; i < pop.size(); i++) {
@@ -289,7 +291,7 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 		eval_mut.unlock();
 
 
-		vector<int> evallist(good.size());
+		vector<int> evallist(pop.size());
 		cout << "evallist size " << evallist.size() << endl;
 
 
@@ -414,7 +416,7 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 
 			//output temporary save file
 			if(queue_restart_write) {
-				restart = evald;
+				GASP2pop restart = evald;
 				restart.energysort();
 				writePop(restart, "restart", step);
 				restart_timer = chrono::steady_clock::now();
@@ -467,10 +469,10 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 
 					//we need as many nodes as there are symmops
 					//if P1, we take two nodes to avoid serverthread
-					if(good.indv(ind)->getSymmcount() == 1)
+					if(pop.indv(ind)->getSymmcount() == 1)
 						needed = 2;
 					else
-						needed = good.indv(ind)->getSymmcount();
+						needed = pop.indv(ind)->getSymmcount();
 
 					//we see how many nodes the next structure needs
 					int next_ind = -1;
@@ -482,10 +484,10 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 					}
 
 					if(next_ind >= 0) {
-						if(good.indv(next_ind)->getSymmcount() == 1)
+						if(pop.indv(next_ind)->getSymmcount() == 1)
 							next_needed = 2;
 						else
-							next_needed = good.indv(next_ind)->getSymmcount();
+							next_needed = pop.indv(next_ind)->getSymmcount();
 					}
 					else
 						next_needed = 0;
@@ -552,7 +554,7 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 
 					if(ownerlist[first] == first) { //prevents launch if first node goes DOWN
 						evaldind[first] = ind;
-						localpops[first] = good.subpop(ind,1);
+						localpops[first] = pop.subpop(ind,1);
 
 						if(first == 0) {
 //										if(eval_mut.try_lock()) {
@@ -631,7 +633,7 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 
 
 			cout << flush;
-			if( ( completed_structs >= good.size() ) && idle)
+			if( ( completed_structs >= pop.size() ) && idle)
 				break;
 			this_thread::sleep_for(chrono::seconds(3));
 
@@ -762,6 +764,7 @@ GASP2pop GASP2control::server_popbuild() {
 	else if (params.type == "precluster") {
 
 		outpop = randpop;
+		randpop.scale(1.0,0.0,0.0);
 		outpop.addIndv( randpop.fullCross(params.spacemode) );
 
 		//in single spacegroup mode, a crossing size of the population size squared is acceptable
@@ -774,27 +777,45 @@ GASP2pop GASP2control::server_popbuild() {
 		//expansion can be very large. once a cluster reached the limit, only new structures resulting
 		//randpop crossings will be added.
 		else {
-			int selfself, selfroot;
+			GASP2pop indivs[460];
+			int selfself[230], selfrand[230], total = 0;
 			for(int i = 0; i < 230; i++) {
 				if(clusters[i].size() < (params.popsize * 2)) {
 					if(clusters[i].size() < std::floor(std::sqrt( params.popsize * 2 ))) {
-						selfself=clusters[i].size()*clusters[i].size();
-						selfroot=clusters[i].size()*rootpop.size();
+						selfself[i]=clusters[i].size()*clusters[i].size();
+						selfrand[i]=clusters[i].size()*randpop.size();
 					}
 					else {
-						selfself=(params.popsize * 2);
-						selfroot=(params.popsize * 2);
+						selfself[i]=(params.popsize * 2);
+						selfrand[i]=(params.popsize * 2);
 					}
-					if(selfroot > (params.popsize * 2))
-						selfroot = (params.popsize * 2);
-
-					if(clusters[i].size() > 1)
-						outpop.addIndv(clusters[i].newPop(selfself,params.spacemode));
-					outpop.addIndv(clusters[i].newPop(rootpop,selfroot,params.spacemode));
-
+					if(selfrand[i] > (params.popsize * 2))
+						selfrand[i] = (params.popsize * 2);
 					//partials.addIndv(bins[i]);
 				}
+				else {
+					selfself[i] = 0; selfrand[i] = 0;
+				}
+				total += (selfself[i] + selfrand[i]);
+
 			}
+
+			//cout << mark() << " a" << endl;
+			for(int i = 0; i < 230; i++) {
+				cout << mark() << "popbuild i: " << i << endl;
+				if(clusters[i].size() > 1)
+					indivs[i*2] = clusters[i].newPop(selfself[i],params.spacemode);
+				indivs[i*2+1] = clusters[i].newPop(randpop,selfrand[i],params.spacemode);
+			}
+			//cout << mark() << " b" << endl;
+			outpop.reserve(total);
+			//cout << mark() << " c" << endl;
+			for(int i = 0; i < 230; i++) {
+				outpop.addIndv(indivs[i*2]);
+				outpop.addIndv(indivs[i*2+1]);
+			}
+			//cout << mark() << " d" << endl;
+
 		}
 
 		outpop = outpop.spacebinUniques(hostlist[0].threads, clusters, params);
@@ -805,7 +826,7 @@ GASP2pop GASP2control::server_popbuild() {
 
 		outpop = randpop;
 		outpop.addIndv( randpop.fullCross(params.spacemode) );
-		outpop.scale(1.0,0.0,0.0);
+		randpop.scale(1.0,0.0,0.0);
 
 		for(int i = 0; i < params.binlimit; i++) {
 			bins[i].scale(params.const_scale, params.lin_scale, params.exp_scale);
@@ -994,10 +1015,29 @@ void GASP2control::server_prog() {
 		params.type = "clustered";
 	}
 	if(params.precompute > 0) {
-		bins = clusters;
-		for(int i = 0; i < clusters.size(); i++)
+		//bins = clusters;
+		GASP2pop pre;
+		for(int i = 0; i < bins.size(); i++) {
+			pre.addIndv(clusters[i]);
 			clusters[i].clear();
+		}
+		cout << mark() << "Precluster QE evaluation starting" << endl;
+		server_qe(pre, 0);
+
+		server_popcombine(pre);
+		bestpop.clear();
+		for(int n = 0; n < bins.size(); n++) {
+			bestpop.addIndv(bins[n]);
+		}
+		writePop(bestpop, "precluster-eval", 0);
+		bestpop.clear();
+
 	}
+
+
+
+
+
 ////////////////////END PRECLUSTER////////////////////////
 
 

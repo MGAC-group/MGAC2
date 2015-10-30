@@ -104,7 +104,7 @@ GASP2pop GASP2pop::newPop(int size, Spacemode smode, GAselection mode) {
 		return out;
 	}
 
-	cout << "newpop" << endl;
+	//cout << "newpop" << endl;
 	out.structures.reserve(size*2);
 	int selA, selB; //selection indices
 	if(mode == Roulette) {
@@ -156,6 +156,7 @@ GASP2pop GASP2pop::newPop(GASP2pop alt, int size, Spacemode smode, GAselection m
 //		for(int n = 0; n < alt.structures.size(); n++)
 //			alt.scaling.push_back(1.0);
 
+
 		discrete_distribution<int> d(scaling.begin(), scaling.end());
 		discrete_distribution<int> c(alt.scaling.begin(), alt.scaling.end());
 		for(int i = 0; i < size; i++) {
@@ -168,6 +169,7 @@ GASP2pop GASP2pop::newPop(GASP2pop alt, int size, Spacemode smode, GAselection m
 			out.structures.push_back(b);
 			//cout << "selA/selB: " << selA << "/" << selB << endl;
 		}
+
 	}
 	else { //pattern
 		cout << "Pattern mode not implemented!" << endl;
@@ -240,7 +242,7 @@ void GASP2pop::addIndv(int add) {
 }
 
 void GASP2pop::addIndv(GASP2pop add) {
-	structures.reserve(structures.size() + add.structures.size());
+	//structures.reserve(structures.size() + add.structures.size());
 	structures.insert(structures.end(), add.structures.begin(), add.structures.end());
 
 }
@@ -322,7 +324,7 @@ GASP2pop GASP2pop::spacebinUniques(int threads, vector<GASP2pop> clusterbins, GA
 		//bins[i].dedup(300); //FIXME: hardcoded value of 300 dedups, may not be safe
 		int s = tempbin[i].size();
 		int pre = out.size();
-		out.addindv(tempbin[i].getUniques(clusterbins[i], p, threads));
+		out.addIndv(tempbin[i].getUniques(clusterbins[i], p, threads));
 		total += (out.size() - pre);
 		cout  << mark() << "spcg " << i << ", size " << s  << ", uniq " << (out.size() - pre) << endl;
 		//bins[i].stripClusters(clusterbins[i].size(),25);
@@ -875,11 +877,13 @@ GASP2pop GASP2pop::getUniques(GASP2pop clusters, GASP2param p, int threads) {
 	double average, chebyshev, euclid, localchebyshev, localavg;
 	int res;
 
+	GASP2pop out;
+
 	for(int n = 0; n < 2; n++) {
 		if (structures.size() < threads)
 			threads = structures.size();
 		if(threads == 0) {
-			return;
+			return out;
 		}
 
 		vector<future<bool>> futures(threads);
@@ -931,7 +935,7 @@ GASP2pop GASP2pop::getUniques(GASP2pop clusters, GASP2param p, int threads) {
 
 	}
 
-	GASP2pop out;
+
 	for(int i = 0; i < structures.size(); i++) {
 		if(structures[i].getCluster() == -1) {
 			out.addIndv(structures[i]);
