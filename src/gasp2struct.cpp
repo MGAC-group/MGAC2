@@ -1429,6 +1429,7 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 bool GASP2struct::evaluate(string hostfile, GASP2param params) {
 
 	if(!isFitcell) {
+		cout << "was not fitcelled..." << endl;
 		finalstate = NoFitcell;
 		return false;
 	}

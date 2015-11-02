@@ -739,34 +739,42 @@ void GASP2pop::runSymmetrize(int threads) {
 
 void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&, string, GASP2param)) {
 
-	future<bool> thread;
-	bool result;
-
-	chrono::milliseconds timeout(0);
-	chrono::milliseconds thread_wait(100);
-
-	for(int i = 0; i < size(); ) {
-
-		//launch
-		if(!thread.valid()) {
-			if(!structures[i].completed()) {
-				structures[i].setEval(eval);
-				thread = async(launch::async, &GASP2struct::evaluate, &this->structures[i], hosts, p);
-				i++;
-			}
+//	future<bool> thread;
+//	bool result;
+//
+//	chrono::milliseconds timeout(0);
+//	chrono::milliseconds thread_wait(100);
+//
+	cout << "runeval inner size " << size() << endl;
+	for(int i = 0; i < size(); i++) {
+		if(!structures[i].completed()) {
+			structures[i].setEval(eval);
+			structures[i].evaluate(hosts, p);
 		}
-		//cleanup
-		if(thread.wait_for(timeout)==future_status::ready)
-			thread.get();
-
-		//wait so we don't burn cycles
-		this_thread::sleep_for(thread_wait);
-
 	}
-	if(thread.valid()) {
-		thread.wait();
-		thread.get();
-	}
+//
+//		//launch
+//		if(!thread.valid()) {
+//			if(!structures[i].completed()) {
+//				structures[i].setEval(eval);
+//				thread = async(launch::async, &GASP2struct::evaluate, &this->structures[i], hosts, p);
+//				i++;
+//			}
+//		}
+//		//cleanup
+//		if(thread.wait_for(timeout)==future_status::ready)
+//			thread.get();
+//
+//		//wait so we don't burn cycles
+//		this_thread::sleep_for(thread_wait);
+//
+//	}
+//	if(thread.valid()) {
+//		thread.wait();
+//		thread.get();
+//	}
+
+
 
 
 //	cout << mark() << "pop energies" << endl;

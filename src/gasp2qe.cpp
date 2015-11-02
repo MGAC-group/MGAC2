@@ -19,6 +19,8 @@ namespace QE {
 		bool abandon = false;
 		auto start = chrono::steady_clock::now();
 
+		cout << " Entering QE section " << endl;
+
 		UUID runID;
 		runID.generate();
 		string name = runID.toStr();

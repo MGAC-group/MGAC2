@@ -455,7 +455,7 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 					}
 					if(ind == -1) break;
 
-					cout << mark() << "Evaluating structure " << ind << endl;
+					cout << mark() << "Evaluating structure " << ind << ", ID " << pop.indv(ind)->getID().toStr() << endl;
 					cout << mark() << "structures avail: " << avail << endl;
 					cout << mark() << " ownerlist: ";
 					for(int i = 0; i < worldSize; i++)
@@ -505,9 +505,9 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 						given = needed;
 
 					//limit the maximum number of nodes
-					//to 2x the symmlimit
-					if(given > (params.symmlimit * 2))
-						given = params.symmlimit * 2;
+					//to eight, because of efficiency concerns
+					if(given > 8)
+						given = 8;
 
 					cout << mark() << "needed is " << needed << endl;
 					cout << mark() << "next_needed is " << next_needed << endl;
@@ -743,6 +743,7 @@ GASP2pop GASP2control::server_popbuild() {
 		for(int i = 0; i < params.binlimit; i++) {
 			bins[i].scale(params.const_scale, params.lin_scale, params.exp_scale);
 			outpop.addIndv(bins[i].newPop(replace, params.spacemode));
+			outpop = outpop.symmLimit(params.symmlimit);
 		}
 	}
 	//full cross with random pop insertion
@@ -754,6 +755,7 @@ GASP2pop GASP2control::server_popbuild() {
 		for(int i = 0; i < params.binlimit; i++) {
 			outpop.addIndv(bins[i].fullCross(params.spacemode));
 			outpop.addIndv(bins[i].fullCross(params.spacemode, rootpop));
+			outpop = outpop.symmLimit(params.symmlimit);
 		}
 
 	}
@@ -818,6 +820,7 @@ GASP2pop GASP2control::server_popbuild() {
 
 		}
 
+		outpop = outpop.symmLimit(params.symmlimit);
 		outpop = outpop.spacebinUniques(hostlist[0].threads, clusters, params);
 
 	}
@@ -834,14 +837,17 @@ GASP2pop GASP2control::server_popbuild() {
 			outpop.addIndv(bins[i].newPop(randpop,params.popsize*2,params.spacemode));
 		}
 
+		outpop = outpop.symmLimit(params.symmlimit);
 		outpop = outpop.spacebinUniques(hostlist[0].threads, bins, specialp);
 
 	}
 	else if(params.type == "finaleval") {
 		outpop = rootpop.completeCheck();
+		outpop = outpop.symmLimit(params.symmlimit);
 		outpop.runSymmetrize(hostlist[0].threads);
 	}
 
+	outpop = outpop.symmLimit(params.symmlimit);
 	return outpop;
 }
 
@@ -973,6 +979,10 @@ void GASP2control::server_prog() {
 		//all of the binning algorithms will segfault
 		params.binlimit=1;
 	}
+	for(int i = 0; i < clusters.size(); i++)
+		clusters[i].clear();
+	for(int i = 0; i < bins.size(); i++)
+		bins[i].clear();
 
 	setup_restart();
 
@@ -990,8 +1000,9 @@ void GASP2control::server_prog() {
 	future<bool> eval;
 	future<bool> writer;
 
-	if(params.precompute > 0)
+	if(params.precompute > 0) {
 		cout << mark() << "Starting precluster" << endl;
+	}
 
 ////////////////////START PRECLUSTER////////////////////////
 	bestpop.clear();
@@ -1022,6 +1033,7 @@ void GASP2control::server_prog() {
 			clusters[i].clear();
 		}
 		cout << mark() << "Precluster QE evaluation starting" << endl;
+		pre.runSymmetrize(hostlist[0].threads);
 		server_qe(pre, 0);
 
 		server_popcombine(pre);
@@ -1159,6 +1171,7 @@ bool GASP2control::runEvals(Instruction i, GASP2pop* p, string machinefilename) 
 //	outf << machinefile << endl;
 //	outf.close();
 	eval_mut.lock();
+	cout << "runeval evalmode " << (int) i << endl;
 	//only one of these will execute
 	if(i & DoFitcell) {
 		p->runFitcell(nodethreads);
@@ -1252,6 +1265,7 @@ void GASP2control::client_prog() {
 			//do not allow the evalmode to change
 			if(i & (DoFitcell | DoCharmm | DoQE | DoCustom) && !queueEval) {
 				evalmode = i;
+				cout << "evalmode " << (int) evalmode << endl;
 				queueEval = true;
 			}
 
@@ -1336,6 +1350,9 @@ void GASP2control::client_prog() {
 					eval = std::async(launch::async, &GASP2control::runEvals, this, evalmode, &evalpop, localmachinefile);
 					this_thread::sleep_for(t);
 					queueEval = false;
+				}
+				else {
+					cout << mark() << "thread " << ID << " is not valid?" << endl;
 				}
 			}
 			else {
