@@ -98,7 +98,7 @@ int main( int argc, char* argv[] ) {
     }
 
     if(options[COMBINE]) {
-    	int size=300;
+    	int size=230*300;
     	if(options[SIZE]) {
     		//TODO: Need to put something here to set size
     		size = std::stoi(string(options[SIZE].arg));
@@ -134,7 +134,7 @@ int main( int argc, char* argv[] ) {
     		//remove(options[CONVERT].arg);
     		finalpop.energysort();
     		finalpop.dedup(size);
-    		finalpop.runSymmetrize(2);
+    		finalpop.runSymmetrize(threads);
 
     		outf.open(options[COMBINE].arg, ofstream::out);
     		if(outf.fail()) {

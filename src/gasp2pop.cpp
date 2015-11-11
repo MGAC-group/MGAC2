@@ -278,6 +278,19 @@ GASP2pop GASP2pop::remIndv(int n) {
 	return bad;
 }
 
+GASP2pop GASP2pop::energysplit(GASP2pop &zero) {
+	GASP2pop ok;
+
+	for(int i = 0; i < size(); i++) {
+		if(structures[i].getEnergy() < 0.0 )
+			ok.structures.push_back(structures[i]);
+		else
+			zero.structures.push_back(structures[i]);
+	}
+
+	return ok;
+}
+
 
 GASP2pop GASP2pop::volLimit(GASP2pop &bad) {
 	GASP2pop ok;
@@ -326,7 +339,8 @@ GASP2pop GASP2pop::spacebinUniques(int threads, vector<GASP2pop> clusterbins, GA
 		int pre = out.size();
 		out.addIndv(tempbin[i].getUniques(clusterbins[i], p, threads));
 		total += (out.size() - pre);
-		cout  << mark() << "spcg " << i << ", size " << s  << ", uniq " << (out.size() - pre) << endl;
+		if( s > 0 )
+			cout  << mark() << "spcg " << i+1 << ", size " << s  << ", uniq " << (out.size() - pre) << endl;
 		//bins[i].stripClusters(clusterbins[i].size(),25);
 		//cout << "post-strip" << endl;
 		//bins[i].remIndv(bins[i].size() - 50);
@@ -365,7 +379,8 @@ void GASP2pop::spacebinCluster(int threads, vector<GASP2pop> &bins, vector<GASP2
 		//bins[i].energysort();
 		//bins[i].dedup(300); //FIXME: hardcoded value of 300 dedups, may not be safe
 		bins[i].cluster(clusterbins[i], p, threads);
-		cout  << mark() << "post-cluster " << i  << ":" << clusterbins[i].size() << endl;
+		if(clusterbins[i].size() > 0)
+			cout  << mark() << "post-cluster " << i+1  << ":" << clusterbins[i].size() << endl;
 		//bins[i].stripClusters(clusterbins[i].size(),25);
 		//cout << "post-strip" << endl;
 		//bins[i].remIndv(bins[i].size() - 50);

@@ -87,6 +87,7 @@ public:
 
 	//removes structures from the pop that exceed the
 	//volume limits (based on scaled scores);
+	GASP2pop energysplit(GASP2pop &zero);
 	GASP2pop volLimit() {GASP2pop t; return volLimit(t);};
 	GASP2pop symmLimit(int limit) {GASP2pop t; return symmLimit(t, limit);};
 	GASP2pop volLimit(GASP2pop &bad);

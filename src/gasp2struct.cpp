@@ -3024,14 +3024,49 @@ bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average,
 		return false;
 
 
-	scores.push_back(std::abs(unit.alpha - alt.unit.alpha) / p.angstep);
-	scores.push_back(std::abs(unit.beta - alt.unit.beta) / p.angstep);
-	scores.push_back(std::abs(unit.gamma - alt.unit.gamma) / p.angstep);
 
-	scores.push_back(std::abs(unit.ratA - alt.unit.ratA) / p.ratiostep);
-	scores.push_back(std::abs(unit.ratB - alt.unit.ratB) / p.ratiostep);
-	scores.push_back(std::abs(unit.ratC - alt.unit.ratC) / p.ratiostep);
+	//needed to revise this because different lattices
+	//have different fixed parameters
+	//if we add scores for certain genes, there will be
+	//artifically high similarity
+	Spgroup spg = spacegroups[unit.spacegroup];
 
+	//enforce angles and lengths
+	if (spg.L == Lattice::Cubic ) {
+		//a = b = c; alpha = beta = gamma = 90;
+	} else if (spg.L == Lattice::Tetragonal) {
+		//a = b; alpha = beta = gamma = 90;
+		scores.push_back(std::abs(unit.ratA - alt.unit.ratA) / p.ratiostep);
+		scores.push_back(std::abs(unit.ratC - alt.unit.ratC) / p.ratiostep);
+	} else if (spg.L == Lattice::Orthorhombic) {
+		//alpha = beta = gamma = 90;
+		scores.push_back(std::abs(unit.ratA - alt.unit.ratA) / p.ratiostep);
+		scores.push_back(std::abs(unit.ratB - alt.unit.ratB) / p.ratiostep);
+		scores.push_back(std::abs(unit.ratC - alt.unit.ratC) / p.ratiostep);
+	} else if (spg.L == Lattice::Hexagonal) {
+		//a = b; alpha = beta = 90; gamma = 120
+		scores.push_back(std::abs(unit.ratA - alt.unit.ratA) / p.ratiostep);
+		scores.push_back(std::abs(unit.ratC - alt.unit.ratC) / p.ratiostep);
+	} else if (spg.L == Lattice::Rhombohedral) {
+		//a = b = c; alpha = beta = gamma;
+		scores.push_back(std::abs(unit.rhomC - alt.unit.rhomC) / p.angstep);
+	} else if (spg.L == Lattice::Monoclinic) {
+		//alpha = gamma = 90;
+		scores.push_back(std::abs(unit.monoB - alt.unit.monoB) / p.angstep);
+
+		scores.push_back(std::abs(unit.ratA - alt.unit.ratA) / p.ratiostep);
+		scores.push_back(std::abs(unit.ratB - alt.unit.ratB) / p.ratiostep);
+		scores.push_back(std::abs(unit.ratC - alt.unit.ratC) / p.ratiostep);
+	} else if (spg.L == Lattice::Triclinic) {
+		//unconstrained
+		scores.push_back(std::abs(unit.triA - alt.unit.triA) / p.angstep);
+		scores.push_back(std::abs(unit.triB - alt.unit.triB) / p.angstep);
+		scores.push_back(std::abs(unit.triC - alt.unit.triC) / p.angstep);
+
+		scores.push_back(std::abs(unit.ratA - alt.unit.ratA) / p.ratiostep);
+		scores.push_back(std::abs(unit.ratB - alt.unit.ratB) / p.ratiostep);
+		scores.push_back(std::abs(unit.ratC - alt.unit.ratC) / p.ratiostep);
+	}
 
 	//THIS CODE ASSUMES POSITIONAL EQUIVALENCE BETWEEN PAIRS OF MOLECULES
 	//probably should not be used for more than z'=1 until a clean solution
