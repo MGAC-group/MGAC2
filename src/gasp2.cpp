@@ -160,6 +160,7 @@ void GASP2control::setup_restart() {
 		rootpop.runSymmetrize(hostlist[0].threads);
 		GASP2pop zeros;
 		GASP2pop evald = rootpop.energysplit(zeros);
+		zeros = zeros.volLimit();
 		writePop(zeros, "zeros", 0);
 		writePop(evald, "res-evald", 0);
 		if(zeros.size() > 0) {
@@ -726,7 +727,7 @@ void GASP2control::server_randbuild() {
 	randpop.clear();
 	int factor = 1;
 	if(params.spacemode != Spacemode::Single) {
-		factor = 10;
+		factor = 4;
 	}
 	randpop.init(root, params.popsize*factor, params.spacemode, params.group);
 }
@@ -1047,10 +1048,12 @@ void GASP2control::server_prog() {
 
 ////////////////////START PRECLUSTER////////////////////////
 	if(params.precompute > 0 && restart.length() <= 0) {
+		int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
 		cout << mark() << "Starting precluster" << endl;
 		string temp = params.type;
 
 		bestpop.clear();
+		GASP2pop prerand;
 		for(int pcstep = 0; pcstep < params.precompute; pcstep++) {
 			cout << mark() << "Precluster step " << pcstep << endl;
 			params.type = "precluster";
@@ -1061,6 +1064,8 @@ void GASP2control::server_prog() {
 			precompute = precompute.volLimit();
 			server_popcombine(precompute);
 
+			params.type = temp;
+
 			//TODO: add bin stats collection
 			for(int n = 0; n < clusters.size(); n++) {
 				bestpop.addIndv(clusters[n]);
@@ -1068,15 +1073,17 @@ void GASP2control::server_prog() {
 			cout << mark() << "Cluster size " << bestpop.size() << endl;
 			writePop(bestpop, "precluster", 0);
 			bestpop.clear();
-			params.type = temp;
+
+
 		}
 
 		//bins = clusters;
 		GASP2pop pre;
 		for(int i = 0; i < bins.size(); i++) {
 			//we trim to keep things under control
-			if(clusters[i].size() > 2*params.popsize)
-				clusters[i].remIndv(clusters[i].size() - 2*params.popsize);
+			//clusters[i].addIndv(bins[i]);
+			if(clusters[i].size() > replace)
+				clusters[i].remIndv(clusters[i].size() - replace);
 			pre.addIndv(clusters[i]);
 			clusters[i].clear();
 		}
@@ -1114,7 +1121,9 @@ void GASP2control::server_prog() {
 			//scale, cross and mutate
 			cout << mark() << "Scaling and Crossing..." << endl;
 			evalpop.clear();
-			evalpop = server_popbuild();
+
+
+			evalpop.addIndv(server_popbuild());
 
 			if(params.type == "finaleval") {
 				cout << mark() << "Performing final evaluation" << endl;
@@ -1127,7 +1136,7 @@ void GASP2control::server_prog() {
 				good.clear(); bad.clear();
 				good = evalpop.symmLimit(bad, params.symmlimit);
 				//good.addIndv(partials);
-				good.symmsort();
+				//good.symmsort();
 
 				server_fitcell(good);
 

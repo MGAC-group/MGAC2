@@ -286,7 +286,7 @@ bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
 				dist = len(mol.atoms[moved[j]].pos - mol.atoms[fixed[k]].pos);
 				if(dist < (intradist + rcov(mol.atoms[moved[j]].type) +
 						rcov(mol.atoms[fixed[k]].type) ) ) {
-					cout << "bad dih\n";
+					//cout << "bad dih\n";
 					return false;
 				}
 			}
@@ -1369,10 +1369,21 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 			//if there is a candidate for changing
 			//the rgen value, this is probably it
 			if(crx(rgen)) {
-				Mat3 t = temp[j].rot*temp[end-j].rot;
-				Mat3 n = temp[end-j].rot*temp[j].rot;
+			//an oversight: part of the time, instead of multiplying, we should just swap
+				Mat3 t = temp[end-j].rot;
+				temp[end-j].rot = temp[j].rot;
 				temp[j].rot = t;
-				temp[end-j].rot = n;
+			}
+			//otherwise, we should consider the multiplication
+			//this favors swapping of good matrices, but doesn't end the world
+			//if we multiply matrices, which allows for searching the rotation space
+			else {
+				if(crx(rgen)) {
+					Mat3 t = temp[j].rot*temp[end-j].rot;
+					Mat3 n = temp[end-j].rot*temp[j].rot;
+					temp[j].rot = t;
+					temp[end-j].rot = n;
+				}
 			}
 
 			for(int k = 0; k < temp[0].dihedrals.size(); k++) {

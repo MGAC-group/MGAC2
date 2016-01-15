@@ -118,7 +118,7 @@ GASP2pop GASP2pop::newPop(int size, Spacemode smode, GAselection mode) {
 			selB = d(rgen);
 			if(selA == selB)
 				selB = d(rgen);
-			structures[selA].crossStruct(structures[selB], a,b, 0.5, smode);
+			structures[selA].crossStruct(structures[selB], a,b, 0.6, smode);
 			out.structures.push_back(a);
 			out.structures.push_back(b);
 			//cout << "selA/selB: " << selA << "/" << selB << endl;
@@ -164,7 +164,7 @@ GASP2pop GASP2pop::newPop(GASP2pop alt, int size, Spacemode smode, GAselection m
 			selB = c(rgen);
 //			while(selA == selB)
 //				selB = d(rgen);
-			structures[selA].crossStruct(alt.structures[selB], a,b, 0.5, smode);
+			structures[selA].crossStruct(alt.structures[selB], a,b, 0.6, smode);
 			out.structures.push_back(a);
 			out.structures.push_back(b);
 			//cout << "selA/selB: " << selA << "/" << selB << endl;
