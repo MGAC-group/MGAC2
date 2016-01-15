@@ -1,16 +1,17 @@
 cmake_minimum_required (VERSION 2.8.12)
 
-
-set(MPI_ROOT "/uufs/chpc.utah.edu/sys/pkg/intel/ics/impi/5.0.1.035/intel64")
-set(MPI_C_COMPILER "${MPI_ROOT}/bin/mpiicc")
-set(MPI_C_INCLUDE_PATH "${MPI_ROOT}/include")
-set(MPI_C_LIBRARIES "${MPI_ROOT}/lib/debug/libmpi.so")
-set(MPI_CXX_INCLUDE_PATH "${MPI_ROOT}/include")
-set(MPI_CXX_LIBRARIES "${MPI_ROOT}/lib/debug/libmpi.so")
-set(MPI_Fortran_COMPILER "${MPI_ROOT}/bin/mpiifort")
-set(MPI_Fortran_INCLUDE_PATH "${MPI_ROOT}/include")
-set(MPI_Fortran_LIBRARIES "${MPI_ROOT}/lib/libmpifort.so" "${MPI_ROOT}/lib/libmpi.so")
-set(MPIEXEC "mpirun")
+#In order to get meaningful MPI debug info these vars need to be set
+#MPI_ROOT can be obtained by sourcing the intel compiler system
+#set(MPI_ROOT "/uufs/chpc.utah.edu/sys/pkg/intel/ics/impi/5.0.1.035/intel64")
+#set(MPI_C_COMPILER "${MPI_ROOT}/bin/mpiicc")
+#set(MPI_C_INCLUDE_PATH "${MPI_ROOT}/include")
+#set(MPI_C_LIBRARIES "${MPI_ROOT}/lib/debug/libmpi.so")
+#set(MPI_CXX_INCLUDE_PATH "${MPI_ROOT}/include")
+#set(MPI_CXX_LIBRARIES "${MPI_ROOT}/lib/debug/libmpi.so")
+#set(MPI_Fortran_COMPILER "${MPI_ROOT}/bin/mpiifort")
+#set(MPI_Fortran_INCLUDE_PATH "${MPI_ROOT}/include")
+#set(MPI_Fortran_LIBRARIES "${MPI_ROOT}/lib/libmpifort.so" "${MPI_ROOT}/lib/libmpi.so")
+#set(MPIEXEC "mpirun")
 
 project (mgac2)
 
