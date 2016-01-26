@@ -190,8 +190,8 @@ private:
 	void server_fitcell(GASP2pop &pop);
 	void server_qe(GASP2pop &pop, int step);
 	void ownerlist_update();
-	void server_randbuild();
-	GASP2pop server_popbuild();
+	void server_randbuild(int gen);
+	GASP2pop server_popbuild(int gen);
 	void setup_restart();
 	void server_popcombine(GASP2pop pop);
 	void down_check();

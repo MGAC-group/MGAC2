@@ -120,6 +120,7 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart,
 	rgen.seed(params.seed);
 
 
+
 }
 
 void GASP2control::getHostInfo() {
@@ -722,7 +723,7 @@ void GASP2control::ownerlist_update() {
 }
 
 
-void GASP2control::server_randbuild() {
+void GASP2control::server_randbuild(int gen) {
 	cout << mark() << "Generating new randpop" << endl;
 	randpop.clear();
 	int factor = 1;
@@ -730,6 +731,7 @@ void GASP2control::server_randbuild() {
 		factor = 4;
 	}
 	randpop.init(root, params.popsize*factor, params.spacemode, params.group);
+	randpop.setGen(gen);
 }
 
 // STATS CODE
@@ -749,7 +751,7 @@ void GASP2control::server_randbuild() {
 //				statfile.close();
 
 
-GASP2pop GASP2control::server_popbuild() {
+GASP2pop GASP2control::server_popbuild(int gen) {
 
 	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
 
@@ -891,6 +893,7 @@ GASP2pop GASP2control::server_popbuild() {
 	}
 
 	outpop = outpop.symmLimit(params.symmlimit);
+	outpop.setGen(gen);
 	return outpop;
 }
 
@@ -1058,8 +1061,8 @@ void GASP2control::server_prog() {
 			cout << mark() << "Precluster step " << pcstep << endl;
 			params.type = "precluster";
 			GASP2pop precompute;
-			server_randbuild();
-			precompute = server_popbuild();
+			server_randbuild(0);
+			precompute = server_popbuild(0);
 			server_fitcell(precompute);
 			precompute = precompute.volLimit();
 			server_popcombine(precompute);
@@ -1115,7 +1118,7 @@ void GASP2control::server_prog() {
 			cout << mark() << "Starting new generation " << step << endl;
 
 			//we always reinitialize the rootpop at each generation
-			server_randbuild();
+			server_randbuild(step);
 			writePop(randpop, "rand", step);
 
 			//scale, cross and mutate
@@ -1123,7 +1126,7 @@ void GASP2control::server_prog() {
 			evalpop.clear();
 
 
-			evalpop.addIndv(server_popbuild());
+			evalpop.addIndv(server_popbuild(step));
 
 			if(params.type == "finaleval") {
 				cout << mark() << "Performing final evaluation" << endl;

@@ -38,6 +38,8 @@ GASP2struct::GASP2struct() {
 	cluster=-1;
 	clustergroup=-1;
 
+	generation=0;
+
 
 }
 
@@ -3298,3 +3300,92 @@ void vectordiv(vector<double> &sum, double val) {
 	for(int i = 0; i < sum.size(); i++)
 		sum[i] /= val;
 }
+
+
+
+void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
+
+	string stemp = ID.toStr();
+	sqlite3_bind_text(stmt,0,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+	stemp = parentA.toStr();
+	sqlite3_bind_text(stmt,1,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+	stemp = parentB.toStr();
+	sqlite3_bind_text(stmt,2,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+	sqlite3_bind_int(stmt,3,generation);
+	sqlite3_bind_int(stmt,4,version);
+	sqlite3_bind_double(stmt, 5, energy);
+	sqlite3_bind_double(stmt, 6, force);
+	sqlite3_bind_double(stmt, 7, pressure);
+	sqlite3_bind_int(stmt, 8, unit.spacegroup);
+	sqlite3_bind_int(stmt, 9, cluster);
+	sqlite3_bind_int(stmt, 10, unit.axn); //FIXME
+	sqlite3_bind_int(stmt, 11, unit.typ); //FIXME
+	sqlite3_bind_double(stmt, 12, unit.cen);
+	sqlite3_bind_double(stmt, 13, unit.sub);
+	sqlite3_bind_int(stmt, 14, STATE); //FIXME
+	sqlite3_bind_int(stmt, 15, finalstate); //FIXME
+	sqlite3_bind_int(stmt, 16, time); //FIXME
+	sqlite3_bind_int(stmt, 17, steps);
+	sqlite3_bind_double(stmt, 18, unit.a);
+	sqlite3_bind_double(stmt, 19, unit.b);
+	sqlite3_bind_double(stmt, 20, unit.c);
+	sqlite3_bind_double(stmt, 21, unit.alpha);
+	sqlite3_bind_double(stmt, 22, unit.beta);
+	sqlite3_bind_double(stmt, 23, unit.gamma);
+	sqlite3_bind_double(stmt, 24, unit.ratA);
+	sqlite3_bind_double(stmt, 25, unit.ratB);
+	sqlite3_bind_double(stmt, 26, unit.ratC);
+	sqlite3_bind_double(stmt, 27, unit.triA);
+	sqlite3_bind_double(stmt, 28, unit.triB);
+	sqlite3_bind_double(stmt, 29, unit.triC);
+	sqlite3_bind_double(stmt, 30, unit.monoB);
+	sqlite3_bind_double(stmt, 31, unit.rhomC);
+
+	sqlite3_bind_int(stmt, 32, xmlformatnum);
+
+	//build a double blob
+	for(int i = 0; i < molecules.size(); i++) {
+		//figure out what mol type this is
+
+
+	}
+
+}
+
+//this should only be used on a ROOT structure
+//otherwise weird things might happen
+void GASP2struct::makexmlformats() {
+	GASP2format form;
+
+
+
+	for(int i = 0; i < molecules.size(); i++) {
+		form.name=names[molecules[i].label];
+
+		tinyxml2::XMLPrinter pr(NULL);
+		pr.OpenElement("mgacformat");
+		pr.PushAttribute("name", form.name.c_str());
+		string pln = "";
+		pln += (names[molecules[i].atoms[molecules[i].p1].label] +" ");
+		pln += (names[molecules[i].atoms[molecules[i].p2].label] +" ");
+		pln += (names[molecules[i].atoms[molecules[i].p3].label] +" ");
+		pr.PushAttribute("plane",pln.c_str());
+		pr.PushAttribute("expectvol", molecules[i].expectvol);
+			for(int j = 0; j < molecules[i].atoms.size(); j++) {
+			pr.OpenElement("record");
+				pr.PushAttribute("i", j);
+				pr.PushAttribute("type", "atom");
+				pr.PushAttribute("title", names[molecules[i].atoms[j].label].c_str() );
+				pr.PushAttribute("elem",getElemName(molecules[i].atoms[j].type).c_str());
+
+			pr.CloseElement();
+			}
+		pr.CloseElement();
+
+
+	}
+
+
+}
+
+

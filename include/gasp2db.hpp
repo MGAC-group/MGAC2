@@ -7,33 +7,90 @@
 
 using namespace std;
 
+
+/*
+ * A POTENTIAL PROBLEM:
+ * sqlite3 doesn't like NFS; there are corruption issues.
+ * so we write to a local file and then when we KNOW that
+ * the lock mode is in a safe state, we copy to the nfs
+ * destination so that data is not lost. this also
+ * supports the idea of being able to access output
+ * files in the middle of a run, so that two concurrent
+ * accesses doesn't ruin the day
+ *
+ * a reasonable copy mode is the following:
+ *  {
+ *    std::ifstream  src("from.ogv", std::ios::binary);
+ *    std::ofstream  dst("to.ogv",   std::ios::binary);
+ *
+ *    dst << src.rdbuf();
+ *  }
+ *
+ *
+ *  whether or not this is important depends pretty strongly
+ *  on how large the DB is, probably. also depends on commit
+ *  frequency. we can probably expect problems if the FS goes
+ *  south, but in that situation any r/w will fail.
+ *
+ *
+ *
+ * Table 1: Structures
+ * contains the main structure list in stored form w/blobs
+ * organized by UUID
+ *
+ * Table 2: Storage types
+ * contains an xml meta format for the coordinate blobs
+ * organized by storage form
+ *
+ * Table 3: Input files
+ * contains the input files; corresponds to input
+ * organized by input file number
+ *
+ *
+ *
+ */
+
 class GASP2db {
 public:
-	GASP2db(string name);
+	GASP2db(string name); //name of DB
 
-	int init(); //sets up initial tables
-	int init(string name);
-	int shutdown();
+	void init(); //sets up initial tables
+	int connect(); //opens the DB
+	int disconnect(); //closes the DB
+	int load(string name); //loads an existing table, not sure if needed, whatevs
 
 	//takes a population and updates the database table
 	//if a structure does not exist it is added
 	//if a structure does exist, it is updated
+	//in an update, the second entry of a structure DB is overwritten
+	//the first entry is reserved for initial commit after fitcell
+	//is completed, to track differences between fitcell and opt
 	//this necessarily overwrites structures with the same UID
 	//since UID collision is improbable, this will not contribute
 	//to a meaningful loss of structures
-	int update(GASP2pop pop);
+	bool create(GASP2pop pop); //creates main record
+	bool update(GASP2pop pop); //updates second record
+
+
 
 	GASP2pop getAll();
 
-	GASP2pop getGroup(int index);
-	GASP2pop getCluster(int index);
+	GASP2pop getGroup(int best, int index);
+	//GASP2pop getCluster(int index);
 	GASP2pop getIndv(UUID u);
+	GASP2pop getGen(int best, int gen);
+
+	//input tables
+	int addInput(string infile);
 
 private:
+	bool openState;
 	string path;
 	sqlite3 *dbconn;
 
 
+	//GASP2struct getItem(UUID id);
+	//void updateItem(UUID id, GASP2struct item); //can create or update
 
 };
 

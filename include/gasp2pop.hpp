@@ -137,5 +137,6 @@ public:
 	void clusterReset();
 	GASP2pop getUniques(GASP2pop clusters, GASP2param p, int threads);
 
+	void setGen(int gen);
 
 };

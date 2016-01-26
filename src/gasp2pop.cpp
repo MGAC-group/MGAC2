@@ -1326,3 +1326,12 @@ void GASP2pop::clusterReset() {
 	}
 
 }
+
+void GASP2pop::setGen(int gen) {
+
+	for(int i = 0; i < size(); i++) {
+		structures[i].setGen(gen);
+	}
+
+}
+

@@ -1,6 +1,8 @@
 #pragma once
-#include "gasp2common.hpp"
 #include "gasp2param.hpp"
+#include "gasp2db.hpp"
+#include "gasp2common.hpp"
+
 
 using namespace std;
 
@@ -21,7 +23,10 @@ typedef enum StructError {
 }StructError;
 
 
-
+struct GASP2format {
+	string name;
+	string xml;
+}
 
 struct GASP2atom {
 	Vec3 pos; //always stored as cartesian angstrom coord
@@ -177,7 +182,7 @@ string getStructError(StructError finalstate);
 //AML: NO POINTERS. We are not writing copy constructors.
 
 class GASP2struct {
-	friend GASP2db;
+	friend GASP2db; //this is HACKTOWN
 public:
 	GASP2struct();
 private:
@@ -253,8 +258,20 @@ public:
 	void forceOK() {finalstate = OKStruct;};
 
 	bool simpleCompare(GASP2struct alt, GASP2param p, double &average, double &chebyshev, double & euclid, double & num);
+
 	void setVector(vector<double> values, int mol, int dih);
 	vector<double> getVector(int &mol, int &dih);
+
+	void setGen(int gen) { generation = gen; };
+	int getGen() { return generation; };
+	void upVersion() { version +=1; };
+	int getVersion() { return version; };
+
+	void sqlbindCreate(sqlite3_stmt * stmt); //binds data and then steps/resets the sql statement
+	void sqlbindUpdate(sqlite3_stmt * stmt);
+
+	void makexmlformats();
+	void getformats(sqlite3_stmt * stmt);
 
 private:
 	//values
@@ -268,6 +285,7 @@ private:
 	bool isFitcell;
 	bool didOpt;
 	bool complete; //true if opt completed and no further opt is required;
+	bool updated;
 	StructError finalstate;
 	NIndex crylabel;
 	time_t time;
@@ -287,12 +305,19 @@ private:
 	int cluster;
 	int clustergroup;
 
+	//extra stuff for DB
+	int generation;
+	int version;
+
+
+
 private:
 	//a vector of names shared by all GASP2structs
 	//it doesn't make much sense to copy strings all the time
 	//but only when necessary; these names are not shared with the client
 	//and therefore names should only accessed when running on the
 	//server_program
+	static vector<GASP2format> formats;
 	static vector<string> names;
 	NIndex newName(const char* name);
 	NIndex newName(string name);
@@ -330,6 +355,7 @@ private:
 	void makeSuperCell(vector<GASP2molecule> &supercell, int shells);
 	void resetMols(double d, vector<GASP2molecule> &supercell, Vec3 ratios);
 	bool checkConnect(vector<GASP2molecule> supercell);
+
 
 
 };
