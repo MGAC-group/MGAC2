@@ -177,11 +177,15 @@ string getElemName(Elem in);
 
 Axisnum getAxis(string in);
 string getAxis(Axisnum in);
+Axisnum getAxisInt(int in);
+int getAxisInt(Axisnum in);
 
 Lattice getLattice(string in);
 
 Schoenflies getSchoenflies(string in);
 string getSchoenflies(Schoenflies in);
+Schoenflies getSchoenfliesInt(int in);
+int getSchoenfliesInt(Schoenflies in);
 
 Spacemode getSpacemode(string in);
 

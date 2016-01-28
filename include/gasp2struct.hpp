@@ -1,12 +1,12 @@
 #pragma once
 #include "gasp2param.hpp"
-#include "gasp2db.hpp"
+#include "sqlite3.h"
 #include "gasp2common.hpp"
 
 
 using namespace std;
 
-class GASP2db;
+//class GASP2db;
 
 extern const vector<Vec3> axissettings;
 
@@ -23,10 +23,16 @@ typedef enum StructError {
 }StructError;
 
 
-struct GASP2format {
-	string name;
-	string xml;
-}
+int structErrToInt(StructError err);
+
+
+
+
+
+//struct GASP2format {
+//	string name;
+//	string xml;
+//};
 
 struct GASP2atom {
 	Vec3 pos; //always stored as cartesian angstrom coord
@@ -182,7 +188,7 @@ string getStructError(StructError finalstate);
 //AML: NO POINTERS. We are not writing copy constructors.
 
 class GASP2struct {
-	friend GASP2db; //this is HACKTOWN
+	//friend GASP2db; //this is HACKTOWN
 public:
 	GASP2struct();
 private:
@@ -215,8 +221,6 @@ public:
 	string serializeXML(); //commits structure to XML element
 	bool parseXMLDoc(tinyxml2::XMLDocument *doc, string& errorstring ); //reads structure info from an XML file to molecules
 	bool parseXMLStruct(tinyxml2::XMLElement *elem, string& errorstring); //reads a structure that was transmitted
-	//bool readH5() {return true;};
-	//bool writeH5() {return true;};
 	void logStruct();
 	bool cifOut(string name);
 	bool cifString(string &out, int rank);
@@ -270,8 +274,8 @@ public:
 	void sqlbindCreate(sqlite3_stmt * stmt); //binds data and then steps/resets the sql statement
 	void sqlbindUpdate(sqlite3_stmt * stmt);
 
-	void makexmlformats();
-	void getformats(sqlite3_stmt * stmt);
+	//void makexmlformats();
+	//void getformats(sqlite3_stmt * stmt);
 
 private:
 	//values
@@ -317,7 +321,7 @@ private:
 	//but only when necessary; these names are not shared with the client
 	//and therefore names should only accessed when running on the
 	//server_program
-	static vector<GASP2format> formats;
+//	static vector<GASP2format> formats;
 	static vector<string> names;
 	NIndex newName(const char* name);
 	NIndex newName(string name);

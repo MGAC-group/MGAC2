@@ -80,10 +80,10 @@ void GASP2db::init() {
 				"Ia REAL, Ib REAL, Ic REAL, Ial REAL, Ibt REAL, Igm REAL, Ira REAL, Irb REAL, Irc REAL,"
 				"tA REAL, tB REAL, tC REAL, mB REAL, rhmC REAL,"
 				"ItA REAL, ItB REAL, ItC REAL, ImB REAL, IrhmC REAL,"
-				"coord BLOB, Icoord BLOB"
+				"xml TEXT, Ixml TEXT"
 				")", NULL, NULL, &err);
 
-		sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS types(id INT PRIMARY KEY, name TEXT, xml TEXT)", NULL, NULL, &err);
+		//sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS types(id INT PRIMARY KEY, name TEXT, xml TEXT)", NULL, NULL, &err);
 
 		sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS inputs(id INT PRIMARY KEY, xml TEXT)", NULL, NULL, &err);
 
@@ -110,7 +110,7 @@ bool GASP2db::create(GASP2pop pop) {
 				"state, error, time, steps,"
 				"Ia, Ib, Ic, Ial, Ibt, Igm, Ira, Irb, Irc,"
 				"ItA, ItB, ItC, ImB, IrhmC,"
-				"Icoord"
+				"Ixml"
 				") VALUES ("
 				"@id, @pa, @pb, @gen, @ver,"
 				"@en, @fr, @pr, @spcg, @cl,"
@@ -118,7 +118,7 @@ bool GASP2db::create(GASP2pop pop) {
 				"@st, @er, @tm, @steps,"
 				"@Ia, @Ib, @Ic, @Ial, @Ibt, @Igm, @Ira, @Irb, @Irc,"
 				"@ItA, @ItB, @ItC, @ImB, @IrhmC, "
-				"@Icoord"
+				"@Ixml"
 				")", 1, &stm, NULL);
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
@@ -139,8 +139,114 @@ bool GASP2db::create(GASP2pop pop) {
 
 }
 
+//sets the INITIAL RECORDS of the structs table
+bool GASP2db::update(GASP2pop pop) {
 
+	char * err = 0;
+	sqlite3_stmt * stm;
 
+	if(connect()) {
+
+		sqlite3_prepare_v2(dbconn, "UPDATE structs 
+				""
+				"energy = @en,"
+				"force = @fr,"
+				"pressure = @pr, "
+				"state = @st, "
+				"error = @er, "
+				"time = @tm, "
+				"steps = @steps,"
+				"a = @a, "
+				"b = @b, "
+				"c = @c, "
+				"al = @al, "
+				"bt = @bt, "
+				"gm = @gm, "
+				"ra = @ra, "
+				"rb = @rb, "
+				"rc = @rc,"
+				"tA = @tA, "
+				"tB = @tB, "
+				"tC = @tC, "
+				"mB = @mB, "
+				"rhmC = @rhmC,"
+				"xml = @xml "
+				"WHERE id = @id", 1, &stm, NULL);
+
+		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
+
+		for(int i = 0; i < pop.size(); i++)
+			pop.indv(i)->sqlbindCreate(stm);
+
+		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
+
+		disconnect();
+
+		return true;
+	}
+
+	return false;
+}
+
+//the sql format for this always begins with the following:
+//SELECT xml,Ixml FROM structs
+//WHERE statements are optional, but
+GASP2pop GASP2db::getxml(string sql) {
+
+	char * err = 0;
+	sqlite3_stmt * stm;
+	string xml = "<mgac>\n<pop>\n";
+	string stemp;
+	string xmlerr;
+	GASP2pop out;
+
+	if(connect()) {
+
+		string xml;
+
+		sqlite3_prepare_v2(dbconn, sql.c_str(), 1, &stm, NULL);
+
+		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
+
+		int result;
+		while(true) {
+			result = sqlite3_step(stm);
+
+			if(result == SQLITE_ROW) {
+				stemp = sqlite3_column_text(stm, 0);
+				if(stemp.size() < 1)
+					stemp = sqlite3_column_text(stm, 1);
+				xml += stemp;
+			}
+			else if(result == SQLITE_DONE) {
+				break;
+			}
+			else {
+				cout << mark() << "ERROR: problem reading the database, code: " << result << endl;
+				MPI_Abort(MPI_COMM_WORLD, 1);
+				exit(1);
+			}
+
+		}
+
+		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
+
+		disconnect();
+
+		//parse after the disconnect
+
+		xml += "\n</pop>\n</mgac>\n";
+		out.parseXML(xml,xmlerr);
+	}
+
+	return out;
+}
+
+GASP2pop GASP2db::getAll() {
+
+	return getxml("SELECT xml,Ixml from structs");
+
+}
 
 
 

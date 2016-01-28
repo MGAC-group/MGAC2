@@ -3305,6 +3305,8 @@ void vectordiv(vector<double> &sum, double val) {
 
 void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
 
+
+	//bind the data
 	string stemp = ID.toStr();
 	sqlite3_bind_text(stmt,0,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
 	stemp = parentA.toStr();
@@ -3318,13 +3320,16 @@ void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
 	sqlite3_bind_double(stmt, 7, pressure);
 	sqlite3_bind_int(stmt, 8, unit.spacegroup);
 	sqlite3_bind_int(stmt, 9, cluster);
-	sqlite3_bind_int(stmt, 10, unit.axn); //FIXME
-	sqlite3_bind_int(stmt, 11, unit.typ); //FIXME
+	sqlite3_bind_int(stmt, 10, getAxisInt(unit.axn));
+	sqlite3_bind_int(stmt, 11, getSchoenfliesInt(unit.typ)); //this might be a bad idea, consider text
 	sqlite3_bind_double(stmt, 12, unit.cen);
 	sqlite3_bind_double(stmt, 13, unit.sub);
-	sqlite3_bind_int(stmt, 14, STATE); //FIXME
-	sqlite3_bind_int(stmt, 15, finalstate); //FIXME
-	sqlite3_bind_int(stmt, 16, time); //FIXME
+
+	int state=0;
+	if(complete) state=1;
+	sqlite3_bind_int(stmt, 14, state);
+	sqlite3_bind_int(stmt, 15, structErrToInt(finalstate));
+	sqlite3_bind_int(stmt, 16, time);
 	sqlite3_bind_int(stmt, 17, steps);
 	sqlite3_bind_double(stmt, 18, unit.a);
 	sqlite3_bind_double(stmt, 19, unit.b);
@@ -3341,51 +3346,159 @@ void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
 	sqlite3_bind_double(stmt, 30, unit.monoB);
 	sqlite3_bind_double(stmt, 31, unit.rhomC);
 
-	sqlite3_bind_int(stmt, 32, xmlformatnum);
 
-	//build a double blob
-	for(int i = 0; i < molecules.size(); i++) {
-		//figure out what mol type this is
+	stemp = this->serializeXML();
+	sqlite3_bind_text(stmt,32,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
 
+	//step in time, step in time
+	sqlite3_step(stmt);
 
-	}
+	//reset the bindings
+	sqlite3_reset(stmt);
 
 }
+
+
+void GASP2struct::sqlbindUpdate(sqlite3_stmt * stmt) {
+
+	string stemp;
+	//bind the data
+	sqlite3_bind_double(stmt, 0, energy);
+	sqlite3_bind_double(stmt, 1, force);
+	sqlite3_bind_double(stmt, 2, pressure);
+
+	int state=0;
+	if(complete) state=1;
+	sqlite3_bind_int(stmt, 3, state);
+	sqlite3_bind_int(stmt, 4, structErrToInt(finalstate));
+	sqlite3_bind_int(stmt, 5, time);
+	sqlite3_bind_int(stmt, 6, steps);
+	sqlite3_bind_double(stmt, 7, unit.a);
+	sqlite3_bind_double(stmt, 8, unit.b);
+	sqlite3_bind_double(stmt, 9, unit.c);
+	sqlite3_bind_double(stmt, 10, unit.alpha);
+	sqlite3_bind_double(stmt, 11, unit.beta);
+	sqlite3_bind_double(stmt, 12, unit.gamma);
+	sqlite3_bind_double(stmt, 13, unit.ratA);
+	sqlite3_bind_double(stmt, 14, unit.ratB);
+	sqlite3_bind_double(stmt, 15, unit.ratC);
+	sqlite3_bind_double(stmt, 16, unit.triA);
+	sqlite3_bind_double(stmt, 17, unit.triB);
+	sqlite3_bind_double(stmt, 18, unit.triC);
+	sqlite3_bind_double(stmt, 19, unit.monoB);
+	sqlite3_bind_double(stmt, 20, unit.rhomC);
+
+	stemp = this->serializeXML();
+	sqlite3_bind_text(stmt,21,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+
+	stemp = ID.toStr();
+	sqlite3_bind_text(stmt,22,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+
+	//step in time, step in time
+	sqlite3_step(stmt);
+
+	//reset the bindings
+	sqlite3_reset(stmt);
+
+}
+
+
+int structErrToInt(StructError err) {
+	switch(err) {
+	case OKStruct:
+		return 0;
+	case OptBadBond:
+		return 1;
+	case OptBadAng:
+		return 2;
+	case OptBadDih:
+		return 3;
+	case FitcellBadDih:
+		return 4;
+	case FitcellBadCell:
+		return 5;
+	case NoFitcell:
+		return 6;
+	}
+	return 0;
+}
+
+
+//AML: This whole binary format things is WAY too complicated.
+//if I ever decide to send proper binary format data via MPI
+//hen maybe it will be relevent
 
 //this should only be used on a ROOT structure
 //otherwise weird things might happen
-void GASP2struct::makexmlformats() {
-	GASP2format form;
-
-
-
-	for(int i = 0; i < molecules.size(); i++) {
-		form.name=names[molecules[i].label];
-
-		tinyxml2::XMLPrinter pr(NULL);
-		pr.OpenElement("mgacformat");
-		pr.PushAttribute("name", form.name.c_str());
-		string pln = "";
-		pln += (names[molecules[i].atoms[molecules[i].p1].label] +" ");
-		pln += (names[molecules[i].atoms[molecules[i].p2].label] +" ");
-		pln += (names[molecules[i].atoms[molecules[i].p3].label] +" ");
-		pr.PushAttribute("plane",pln.c_str());
-		pr.PushAttribute("expectvol", molecules[i].expectvol);
-			for(int j = 0; j < molecules[i].atoms.size(); j++) {
-			pr.OpenElement("record");
-				pr.PushAttribute("i", j);
-				pr.PushAttribute("type", "atom");
-				pr.PushAttribute("title", names[molecules[i].atoms[j].label].c_str() );
-				pr.PushAttribute("elem",getElemName(molecules[i].atoms[j].type).c_str());
-
-			pr.CloseElement();
-			}
-		pr.CloseElement();
-
-
-	}
-
-
-}
+//void GASP2struct::makexmlformats() {
+//	GASP2format form;
+//
+//
+//
+//	for(int i = 0; i < molecules.size(); i++) {
+//		form.name=names[molecules[i].label];
+//
+//		tinyxml2::XMLPrinter pr(NULL);
+//		pr.OpenElement("mgacformat");
+//		pr.PushAttribute("name", form.name.c_str());
+//		string pln = "";
+//		pln += (names[molecules[i].atoms[molecules[i].p1].label] +" ");
+//		pln += (names[molecules[i].atoms[molecules[i].p2].label] +" ");
+//		pln += (names[molecules[i].atoms[molecules[i].p3].label] +" ");
+//		pr.PushAttribute("plane",pln.c_str());
+//		pr.PushAttribute("expectvol", molecules[i].expectvol);
+//			for(int j = 0; j < molecules[i].atoms.size(); j++) {
+//			pr.OpenElement("record");
+//
+//				pr.PushAttribute("i", j);
+//
+//				pr.PushAttribute("type", "atom");
+//				pr.PushAttribute("title", names[molecules[i].atoms[j].label].c_str() );
+//				pr.PushAttribute("elem",getElemName(molecules[i].atoms[j].type).c_str());
+//			pr.CloseElement();
+//			}
+//			for(int j = 0; j < molecules[i].dihedrals.size(); j++) {
+//			pr.OpenElement("record");
+//
+//				pr.PushAttribute("i", j);
+//
+//				pr.PushAttribute("title",names[molecules[i].dihedrals[j].label].c_str());
+//				pln.clear();
+//				pln += (names[molecules[i].atoms[molecules[i].dihedrals[j].a].label] +" ");
+//				pln += (names[molecules[i].atoms[molecules[i].dihedrals[j].b].label] +" ");
+//				pln += (names[molecules[i].atoms[molecules[i].dihedrals[j].c].label] +" ");
+//				pln += (names[molecules[i].atoms[molecules[i].dihedrals[j].d].label] +" ");
+//
+//				pr.PushAttribute("angle",pln.c_str());
+//
+//				pln.clear();
+//				for(int k = 0; k < molecules[i].dihedrals[j].update.size(); k++)
+//					pln += (names[molecules[i].atoms[molecules[i].dihedrals[j].update[k]].label] +" ");
+//
+//				pr.PushAttribute("update",pln.c_str());
+//				pr.PushAttribute("min",deg(molecules[i].dihedrals[j].minAng));
+//				pr.PushAttribute("max",deg(molecules[i].dihedrals[j].maxAng));
+//
+//
+//			pr.CloseElement();
+//			}
+//			for(int j = 0; j < molecules[i].bonds.size(); j++) {
+//			pr.OpenElement("record");
+//
+//			pr.CloseElement();
+//			}
+//			for(int j = 0; j < molecules[i].angles.size(); j++) {
+//			pr.OpenElement("record");
+//
+//			pr.CloseElement();
+//			}
+//
+//		pr.CloseElement();
+//
+//
+//	}
+//
+//
+//}
 
 

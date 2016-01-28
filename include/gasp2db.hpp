@@ -38,6 +38,8 @@ using namespace std;
  * contains the main structure list in stored form w/blobs
  * organized by UUID
  *
+ * NOPE NOPE NOPE
+ * TABLE 2 NOT INCLUDED IN ACTUAL SOFTWARE, XML IS JUST STORED INSTEAD
  * Table 2: Storage types
  * contains an xml meta format for the coordinate blobs
  * organized by storage form
@@ -71,14 +73,13 @@ public:
 	bool create(GASP2pop pop); //creates main record
 	bool update(GASP2pop pop); //updates second record
 
-
-
 	GASP2pop getAll();
 
 	GASP2pop getGroup(int best, int index);
 	//GASP2pop getCluster(int index);
-	GASP2pop getIndv(UUID u);
+	//GASP2pop getIndv(UUID u);
 	GASP2pop getGen(int best, int gen);
+	GASP2pop getBest(int best);
 
 	//input tables
 	int addInput(string infile);
@@ -88,6 +89,7 @@ private:
 	string path;
 	sqlite3 *dbconn;
 
+	GASP2pop getxml(string sql);
 
 	//GASP2struct getItem(UUID id);
 	//void updateItem(UUID id, GASP2struct item); //can create or update

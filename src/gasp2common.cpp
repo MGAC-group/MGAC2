@@ -438,6 +438,42 @@ string getAxis(Axisnum in) {
 	return type;
 }
 
+Axisnum getAxisInt(int in) {
+	Axisnum type;
+	if(in == 1)
+		type = Axisnum::One;
+	else if(in == 2)
+		type = Axisnum::Two;
+	else if(in == 3)
+		type = Axisnum::Three;
+	else if(in == 4)
+		type = Axisnum::Four;
+	else if(in == 6)
+		type = Axisnum::Six;
+	else
+		type = Axisnum::UNK;
+	return type;
+}
+
+int getAxisInt(Axisnum in) {
+	int type;
+	if(in == Axisnum::One)
+		type = 1;
+	else if(in == Axisnum::Two)
+		type = 2;
+	else if(in == Axisnum::Three)
+		type = 3;
+	else if(in == Axisnum::Four)
+		type = 4;
+	else if(in == Axisnum::Six)
+		type = 6;
+	else
+		type = 0;
+
+	return type;
+}
+
+
 Schoenflies getSchoenflies(string in) {
 	Schoenflies type;
 	if(in == "Cn")
@@ -498,6 +534,69 @@ string getSchoenflies(Schoenflies in) {
 		type = "Oh";
 	else
 		type = "UNK";
+	return type;
+}
+
+Schoenflies getSchoenfliesInt(int in) {
+	Schoenflies type;
+	if(in == 1)
+		type = Schoenflies::Cn;
+	else if(in == 2)
+		type = Schoenflies::Cnv;
+	else if(in == 3)
+		type = Schoenflies::Cnh;
+	else if(in == 4)
+		type = Schoenflies::Sn;
+	else if(in == 5)
+		type = Schoenflies::Dn;
+	else if(in == 6)
+		type = Schoenflies::Dnd;
+	else if(in == 7)
+		type = Schoenflies::Dnh;
+	else if(in == 8)
+		type = Schoenflies::T;
+	else if(in == 9)
+		type = Schoenflies::Th;
+	else if(in == 10)
+		type = Schoenflies::O;
+	else if(in == 11)
+		type = Schoenflies::Td;
+	else if(in == 12)
+		type = Schoenflies::Oh;
+	else
+		type = Schoenflies::UNK;
+
+	return type;
+}
+
+int getSchoenfliesInt(Schoenflies in) {
+	int type;
+	if(in == Schoenflies::Cn)
+		type = 1;
+	else if(in == Schoenflies::Cnv)
+		type = 2;
+	else if(in == Schoenflies::Cnh)
+		type = 3;
+	else if(in == Schoenflies::Sn)
+		type = 4;
+	else if(in == Schoenflies::Dn)
+		type = 5;
+	else if(in == Schoenflies::Dnd)
+		type = 6;
+	else if(in == Schoenflies::Dnh)
+		type = 7;
+	else if(in == Schoenflies::T)
+		type = 8;
+	else if(in == Schoenflies::Th)
+		type = 9;
+	else if(in == Schoenflies::O)
+		type = 10;
+	else if(in == Schoenflies::Td)
+		type = 11;
+	else if(in == Schoenflies::Oh)
+		type = 12;
+	else
+		type = 0;
 	return type;
 }
 
