@@ -14,6 +14,7 @@ GASP2db::GASP2db(string name) {
 
 int GASP2db::connect() {
 	int state;
+	cout << "open state cn " << openState << endl;
 	if(!openState) {
 		state = sqlite3_open(path.c_str(), &dbconn);
 		if(state) {
@@ -33,6 +34,7 @@ int GASP2db::connect() {
 
 int GASP2db::disconnect() {
 
+	cout << "open state dc " << openState << endl;
 	if(openState) {
 		//if close returns as SQLITE_BUSY, it's okay
 		//we just try to close later
@@ -63,13 +65,14 @@ int GASP2db::load(string name) {
 void GASP2db::init() {
 
 	char * err = 0;
+	int ierr;
 
 	if(connect()) {
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
 		//the I prefix indicates initial, otherwise the value is current
-		sqlite3_exec(dbconn,
+		ierr = sqlite3_exec(dbconn,
 				"CREATE TABLE IF NOT EXISTS structs( "
 				"id TEXT PRIMARY KEY,"
 				"parentA TEXT, parentB TEXT, generation INT, version INT,"
@@ -82,6 +85,8 @@ void GASP2db::init() {
 				"ItA REAL, ItB REAL, ItC REAL, ImB REAL, IrhmC REAL,"
 				"xml TEXT, Ixml TEXT"
 				")", NULL, NULL, &err);
+
+		cout << "table create error: " << ierr << endl;
 
 		//sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS types(id INT PRIMARY KEY, name TEXT, xml TEXT)", NULL, NULL, &err);
 
@@ -99,11 +104,12 @@ void GASP2db::init() {
 bool GASP2db::create(GASP2pop pop) {
 
 	char * err = 0;
+	int ierr;
 	sqlite3_stmt * stm;
 
 	if(connect()) {
 
-		sqlite3_prepare_v2(dbconn, "INSERT INTO structs ("
+		ierr = sqlite3_prepare_v2(dbconn, "INSERT INTO structs( "
 				"id, parentA, parentB, generation, version,"
 				"energy, force, pressure, spacegroup, cluster,"
 				"axis, type, centering, subtype,"
@@ -116,10 +122,12 @@ bool GASP2db::create(GASP2pop pop) {
 				"@en, @fr, @pr, @spcg, @cl,"
 				"@ax, @typ, @cen, @sub,"
 				"@st, @er, @tm, @steps,"
-				"@Ia, @Ib, @Ic, @Ial, @Ibt, @Igm, @Ira, @Irb, @Irc,"
-				"@ItA, @ItB, @ItC, @ImB, @IrhmC, "
-				"@Ixml"
-				")", 1, &stm, NULL);
+				"@ia, @ib, @ic, @ial, @ibt, @igm, @ira, @irb, @irc,"
+				"@itA, @itB, @itC, @imB, @irhmC, "
+				"@ixml "
+				")", -1, &stm, NULL);
+
+		cout << "create prep err: " << ierr << endl;
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
@@ -127,6 +135,8 @@ bool GASP2db::create(GASP2pop pop) {
 			pop.indv(i)->sqlbindCreate(stm);
 
 		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
+
+		sqlite3_finalize(stm);
 
 		disconnect();
 
@@ -143,12 +153,12 @@ bool GASP2db::create(GASP2pop pop) {
 bool GASP2db::update(GASP2pop pop) {
 
 	char * err = 0;
+	int ierr;
 	sqlite3_stmt * stm;
 
 	if(connect()) {
 
-		sqlite3_prepare_v2(dbconn, "UPDATE structs 
-				""
+		sqlite3_prepare_v2(dbconn, "UPDATE structs SET "
 				"energy = @en,"
 				"force = @fr,"
 				"pressure = @pr, "
@@ -171,14 +181,18 @@ bool GASP2db::update(GASP2pop pop) {
 				"mB = @mB, "
 				"rhmC = @rhmC,"
 				"xml = @xml "
-				"WHERE id = @id", 1, &stm, NULL);
+				"WHERE id =@id", -1, &stm, NULL);
+
+		cout << "update prep err: " << ierr << endl;
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
 		for(int i = 0; i < pop.size(); i++)
-			pop.indv(i)->sqlbindCreate(stm);
+			pop.indv(i)->sqlbindUpdate(stm);
 
 		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
+
+		sqlite3_finalize(stm);
 
 		disconnect();
 
@@ -195,16 +209,14 @@ GASP2pop GASP2db::getxml(string sql) {
 
 	char * err = 0;
 	sqlite3_stmt * stm;
-	string xml = "<mgac>\n<pop>\n";
+	string xml = "<pop>\n";
 	string stemp;
 	string xmlerr;
 	GASP2pop out;
 
 	if(connect()) {
 
-		string xml;
-
-		sqlite3_prepare_v2(dbconn, sql.c_str(), 1, &stm, NULL);
+		sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
@@ -213,10 +225,13 @@ GASP2pop GASP2db::getxml(string sql) {
 			result = sqlite3_step(stm);
 
 			if(result == SQLITE_ROW) {
-				stemp = sqlite3_column_text(stm, 0);
+				stemp = reinterpret_cast<const char*>(sqlite3_column_text(stm, 0));
 				if(stemp.size() < 1)
-					stemp = sqlite3_column_text(stm, 1);
+					stemp = reinterpret_cast<const char*>(sqlite3_column_text(stm, 1));
 				xml += stemp;
+
+				//cout << "xml: " << xml.size() << " ";
+
 			}
 			else if(result == SQLITE_DONE) {
 				break;
@@ -229,14 +244,27 @@ GASP2pop GASP2db::getxml(string sql) {
 
 		}
 
+
+
 		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
+
+		sqlite3_finalize(stm);
 
 		disconnect();
 
 		//parse after the disconnect
 
-		xml += "\n</pop>\n</mgac>\n";
-		out.parseXML(xml,xmlerr);
+		xml += "\n</pop>\n\0";
+
+		cout << xml << endl << endl;;
+
+		//THIS FUNCTION DOES NOT REQUIRE THE MGAC TAG
+		if(out.parseXML(xml,xmlerr)) cout << "OK" << endl;
+
+		cout << "xmlerr " << xmlerr << endl;
+
+		cout << "OUTSIZE: " << out.size() << endl;
+
 	}
 
 	return out;

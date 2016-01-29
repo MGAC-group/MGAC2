@@ -4,6 +4,7 @@
 #include "gasp2struct.hpp"
 #include "gasp2pop.hpp"
 #include "gasp2qe.hpp"
+#include "gasp2db.hpp"
 
 
 using namespace std;

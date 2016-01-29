@@ -1006,6 +1006,24 @@ void GASP2control::server_prog() {
 	//vector<bool> pinged(worldSize);
 	//the polling time is 200 ms
 
+	///TESTING CODE
+	server_randbuild(0);
+	writePop(randpop, "start", 0);
+
+	GASP2db db("testdb.sq3");
+	db.init();
+
+	db.create(randpop);
+	db.update(randpop);
+
+	GASP2pop temp = db.getAll();
+
+	writePop(temp, "validation", 0);
+
+
+	exit(1);
+
+	//END TESTING CODE
 
 	//initialize ownerlist
 	ownerlist.resize(worldSize);

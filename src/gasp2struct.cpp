@@ -3308,47 +3308,47 @@ void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
 
 	//bind the data
 	string stemp = ID.toStr();
-	sqlite3_bind_text(stmt,0,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
-	stemp = parentA.toStr();
 	sqlite3_bind_text(stmt,1,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
-	stemp = parentB.toStr();
+	stemp = parentA.toStr();
 	sqlite3_bind_text(stmt,2,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
-	sqlite3_bind_int(stmt,3,generation);
-	sqlite3_bind_int(stmt,4,version);
-	sqlite3_bind_double(stmt, 5, energy);
-	sqlite3_bind_double(stmt, 6, force);
-	sqlite3_bind_double(stmt, 7, pressure);
-	sqlite3_bind_int(stmt, 8, unit.spacegroup);
-	sqlite3_bind_int(stmt, 9, cluster);
-	sqlite3_bind_int(stmt, 10, getAxisInt(unit.axn));
-	sqlite3_bind_int(stmt, 11, getSchoenfliesInt(unit.typ)); //this might be a bad idea, consider text
-	sqlite3_bind_double(stmt, 12, unit.cen);
-	sqlite3_bind_double(stmt, 13, unit.sub);
+	stemp = parentB.toStr();
+	sqlite3_bind_text(stmt,3,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+	sqlite3_bind_int(stmt,4,generation);
+	sqlite3_bind_int(stmt,5,version);
+	sqlite3_bind_double(stmt, 6, energy);
+	sqlite3_bind_double(stmt, 7, force);
+	sqlite3_bind_double(stmt, 8, pressure);
+	sqlite3_bind_int(stmt, 9, unit.spacegroup);
+	sqlite3_bind_int(stmt, 10, cluster);
+	sqlite3_bind_int(stmt, 11, getAxisInt(unit.axn));
+	sqlite3_bind_int(stmt, 12, getSchoenfliesInt(unit.typ)); //this might be a bad idea, consider text
+	sqlite3_bind_double(stmt, 13, unit.cen);
+	sqlite3_bind_double(stmt, 14, unit.sub);
 
 	int state=0;
 	if(complete) state=1;
-	sqlite3_bind_int(stmt, 14, state);
-	sqlite3_bind_int(stmt, 15, structErrToInt(finalstate));
-	sqlite3_bind_int(stmt, 16, time);
-	sqlite3_bind_int(stmt, 17, steps);
-	sqlite3_bind_double(stmt, 18, unit.a);
-	sqlite3_bind_double(stmt, 19, unit.b);
-	sqlite3_bind_double(stmt, 20, unit.c);
-	sqlite3_bind_double(stmt, 21, unit.alpha);
-	sqlite3_bind_double(stmt, 22, unit.beta);
-	sqlite3_bind_double(stmt, 23, unit.gamma);
-	sqlite3_bind_double(stmt, 24, unit.ratA);
-	sqlite3_bind_double(stmt, 25, unit.ratB);
-	sqlite3_bind_double(stmt, 26, unit.ratC);
-	sqlite3_bind_double(stmt, 27, unit.triA);
-	sqlite3_bind_double(stmt, 28, unit.triB);
-	sqlite3_bind_double(stmt, 29, unit.triC);
-	sqlite3_bind_double(stmt, 30, unit.monoB);
-	sqlite3_bind_double(stmt, 31, unit.rhomC);
+	sqlite3_bind_int(stmt, 15, state);
+	sqlite3_bind_int(stmt, 16, structErrToInt(finalstate));
+	sqlite3_bind_int(stmt, 17, time);
+	sqlite3_bind_int(stmt, 18, steps);
+	sqlite3_bind_double(stmt, 19, unit.a);
+	sqlite3_bind_double(stmt, 20, unit.b);
+	sqlite3_bind_double(stmt, 21, unit.c);
+	sqlite3_bind_double(stmt, 22, unit.alpha);
+	sqlite3_bind_double(stmt, 23, unit.beta);
+	sqlite3_bind_double(stmt, 24, unit.gamma);
+	sqlite3_bind_double(stmt, 25, unit.ratA);
+	sqlite3_bind_double(stmt, 26, unit.ratB);
+	sqlite3_bind_double(stmt, 27, unit.ratC);
+	sqlite3_bind_double(stmt, 28, unit.triA);
+	sqlite3_bind_double(stmt, 29, unit.triB);
+	sqlite3_bind_double(stmt, 30, unit.triC);
+	sqlite3_bind_double(stmt, 31, unit.monoB);
+	sqlite3_bind_double(stmt, 32, unit.rhomC);
 
 
 	stemp = this->serializeXML();
-	sqlite3_bind_text(stmt,32,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt,33,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
 
 	//step in time, step in time
 	sqlite3_step(stmt);
@@ -3362,40 +3362,42 @@ void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
 void GASP2struct::sqlbindUpdate(sqlite3_stmt * stmt) {
 
 	string stemp;
+	int ierr;
 	//bind the data
-	sqlite3_bind_double(stmt, 0, energy);
-	sqlite3_bind_double(stmt, 1, force);
-	sqlite3_bind_double(stmt, 2, pressure);
+	sqlite3_bind_double(stmt, 1, energy);
+	sqlite3_bind_double(stmt, 2, force);
+	sqlite3_bind_double(stmt, 3, pressure);
 
 	int state=0;
 	if(complete) state=1;
-	sqlite3_bind_int(stmt, 3, state);
-	sqlite3_bind_int(stmt, 4, structErrToInt(finalstate));
-	sqlite3_bind_int(stmt, 5, time);
-	sqlite3_bind_int(stmt, 6, steps);
-	sqlite3_bind_double(stmt, 7, unit.a);
-	sqlite3_bind_double(stmt, 8, unit.b);
-	sqlite3_bind_double(stmt, 9, unit.c);
-	sqlite3_bind_double(stmt, 10, unit.alpha);
-	sqlite3_bind_double(stmt, 11, unit.beta);
-	sqlite3_bind_double(stmt, 12, unit.gamma);
-	sqlite3_bind_double(stmt, 13, unit.ratA);
-	sqlite3_bind_double(stmt, 14, unit.ratB);
-	sqlite3_bind_double(stmt, 15, unit.ratC);
-	sqlite3_bind_double(stmt, 16, unit.triA);
-	sqlite3_bind_double(stmt, 17, unit.triB);
-	sqlite3_bind_double(stmt, 18, unit.triC);
-	sqlite3_bind_double(stmt, 19, unit.monoB);
-	sqlite3_bind_double(stmt, 20, unit.rhomC);
+	sqlite3_bind_int(stmt, 4, state);
+	sqlite3_bind_int(stmt, 5, structErrToInt(finalstate));
+	sqlite3_bind_int(stmt, 6, time);
+	sqlite3_bind_int(stmt, 7, steps);
+	sqlite3_bind_double(stmt, 8, unit.a);
+	sqlite3_bind_double(stmt, 9, unit.b);
+	sqlite3_bind_double(stmt, 10, unit.c);
+	sqlite3_bind_double(stmt, 11, unit.alpha);
+	sqlite3_bind_double(stmt, 12, unit.beta);
+	sqlite3_bind_double(stmt, 13, unit.gamma);
+	sqlite3_bind_double(stmt, 14, unit.ratA);
+	sqlite3_bind_double(stmt, 15, unit.ratB);
+	sqlite3_bind_double(stmt, 16, unit.ratC);
+	sqlite3_bind_double(stmt, 17, unit.triA);
+	sqlite3_bind_double(stmt, 18, unit.triB);
+	sqlite3_bind_double(stmt, 19, unit.triC);
+	sqlite3_bind_double(stmt, 20, unit.monoB);
+	sqlite3_bind_double(stmt, 21, unit.rhomC);
 
 	stemp = this->serializeXML();
-	sqlite3_bind_text(stmt,21,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
-
-	stemp = ID.toStr();
 	sqlite3_bind_text(stmt,22,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
 
+	stemp = ID.toStr();
+	sqlite3_bind_text(stmt,23,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+
 	//step in time, step in time
-	sqlite3_step(stmt);
+	ierr = sqlite3_step(stmt);
+	//cout << "update step err: " << ierr << endl;
 
 	//reset the bindings
 	sqlite3_reset(stmt);
