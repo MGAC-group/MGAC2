@@ -28,7 +28,7 @@ GASP2param::GASP2param() {
 	const_scale = 1.0;
 	lin_scale = 1.0;
 	exp_scale = 0.5;
-	outputmode = "xml";
+	outputmode = "sql";
 	outputfile = "population_data";
 	spacemode = Limited;
 	group = 1;
@@ -250,10 +250,7 @@ bool GASP2param::parseXML(tinyxml2::XMLDocument *doc, string& errorstring) {
 			outputmode = "";
 			outputmode.append(stemp);
 			if (outputmode=="xml" ||
-				outputmode=="hdf5" ||
-				outputmode=="XML" ||
-				outputmode=="HDF5" ||
-				outputmode=="h5" ) { ; }
+				outputmode=="sql" ) { ; }
 			else {
 				errorstring = "The population output mode specified does not match a valid type!\n";
 				return false;

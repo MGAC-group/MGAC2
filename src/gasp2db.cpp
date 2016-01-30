@@ -4,23 +4,23 @@
 using namespace std;
 
 
-GASP2db::GASP2db(string name) {
+GASP2db::GASP2db() {
 
 	dbconn=NULL;
-	path = name;
+	path = "";
 	openState=false;
 
 }
 
 int GASP2db::connect() {
 	int state;
-	cout << "open state cn " << openState << endl;
+	//cout << "open state cn " << openState << endl;
 	if(!openState) {
 		state = sqlite3_open(path.c_str(), &dbconn);
 		if(state) {
 			//something bad happened on opening the SQL
 			//time to panic!
-			cout << mark() << "ERROR: SQLITE RETURN WITH ERROR CODE " << state << ". ABORTING!" << endl;
+			cout << mark() << "ERROR ON SQ CONNECT: SQLITE RETURNS WITH ERROR CODE " << state << ". ABORTING!" << endl;
 			MPI_Abort(MPI_COMM_WORLD, 1);
 			exit(1);
 		}
@@ -34,7 +34,7 @@ int GASP2db::connect() {
 
 int GASP2db::disconnect() {
 
-	cout << "open state dc " << openState << endl;
+	//cout << "open state dc " << openState << endl;
 	if(openState) {
 		//if close returns as SQLITE_BUSY, it's okay
 		//we just try to close later
@@ -56,10 +56,13 @@ int GASP2db::load(string name) {
 	if(!openState) {
 		path=name;
 
-		return 1;
+		if(connect()) {
+			disconnect();
+			return 1;
+		}
 	}
-	else
-		return 0;
+
+	return 0;
 }
 
 void GASP2db::init() {
@@ -71,25 +74,6 @@ void GASP2db::init() {
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
-		//the I prefix indicates initial, otherwise the value is current
-		ierr = sqlite3_exec(dbconn,
-				"CREATE TABLE IF NOT EXISTS structs( "
-				"id TEXT PRIMARY KEY,"
-				"parentA TEXT, parentB TEXT, generation INT, version INT,"
-				"energy REAL, force REAL, pressure REAL, spacegroup INT, cluster INT,"
-				"axis INT, type INT, centering REAL, subtype REAL,"
-				"state INT, error INT, time INT, steps INT,"
-				"a REAL, b REAL, c REAL, al REAL, bt REAL, gm REAL, ra REAL, rb REAL, rc REAL,"
-				"Ia REAL, Ib REAL, Ic REAL, Ial REAL, Ibt REAL, Igm REAL, Ira REAL, Irb REAL, Irc REAL,"
-				"tA REAL, tB REAL, tC REAL, mB REAL, rhmC REAL,"
-				"ItA REAL, ItB REAL, ItC REAL, ImB REAL, IrhmC REAL,"
-				"xml TEXT, Ixml TEXT"
-				")", NULL, NULL, &err);
-
-		cout << "table create error: " << ierr << endl;
-
-		//sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS types(id INT PRIMARY KEY, name TEXT, xml TEXT)", NULL, NULL, &err);
-
 		sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS inputs(id INT PRIMARY KEY, xml TEXT)", NULL, NULL, &err);
 
 		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
@@ -100,16 +84,53 @@ void GASP2db::init() {
 }
 
 
+void GASP2db::initTable(string name) {
+
+	char * err = 0;
+
+	if(connect()) {
+
+		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
+
+		//the I prefix indicates initial, otherwise the value is current
+		string sql="CREATE TABLE IF NOT EXISTS "+name+"( "
+				"id TEXT PRIMARY KEY,"
+				"parentA TEXT, parentB TEXT, generation INT, version INT,"
+				"energy REAL, force REAL, pressure REAL, spacegroup INT, cluster INT,"
+				"axis INT, type INT, centering REAL, subtype REAL,"
+				"state INT, error INT, time INT, steps INT,"
+				"a REAL, b REAL, c REAL, al REAL, bt REAL, gm REAL, ra REAL, rb REAL, rc REAL,"
+				"Ia REAL, Ib REAL, Ic REAL, Ial REAL, Ibt REAL, Igm REAL, Ira REAL, Irb REAL, Irc REAL,"
+				"tA REAL, tB REAL, tC REAL, mB REAL, rhmC REAL,"
+				"ItA REAL, ItB REAL, ItC REAL, ImB REAL, IrhmC REAL,"
+				"xml TEXT, Ixml TEXT"
+				")";
+
+		sqlite3_exec(dbconn, sql.c_str(), NULL, NULL, &err);
+
+		//cout << "table create error: " << ierr << endl;
+
+		//sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS types(id INT PRIMARY KEY, name TEXT, xml TEXT)", NULL, NULL, &err);
+
+		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
+
+		disconnect();
+	}
+
+}
+
 //sets the INITIAL RECORDS of the structs table
-bool GASP2db::create(GASP2pop pop) {
+bool GASP2db::create(GASP2pop pop, string table) {
 
 	char * err = 0;
 	int ierr;
 	sqlite3_stmt * stm;
 
-	if(connect()) {
+	cout << mark() << "Writing " << pop.size() << " structures..." << endl;
 
-		ierr = sqlite3_prepare_v2(dbconn, "INSERT INTO structs( "
+	if(connect()) {
+		//if there is already a primary key in the DB ignore the insert
+		string sql = "INSERT OR IGNORE INTO "+table+" "
 				"id, parentA, parentB, generation, version,"
 				"energy, force, pressure, spacegroup, cluster,"
 				"axis, type, centering, subtype,"
@@ -125,9 +146,11 @@ bool GASP2db::create(GASP2pop pop) {
 				"@ia, @ib, @ic, @ial, @ibt, @igm, @ira, @irb, @irc,"
 				"@itA, @itB, @itC, @imB, @irhmC, "
 				"@ixml "
-				")", -1, &stm, NULL);
+				")";
 
-		cout << "create prep err: " << ierr << endl;
+		ierr = sqlite3_prepare_v2(dbconn, sql.c_str(), -1, &stm, NULL);
+
+		//cout << "create prep err: " << ierr << endl;
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
@@ -140,6 +163,8 @@ bool GASP2db::create(GASP2pop pop) {
 
 		disconnect();
 
+		cout << mark() << "Write finished!" << endl;
+
 		return true;
 
 	}
@@ -150,15 +175,17 @@ bool GASP2db::create(GASP2pop pop) {
 }
 
 //sets the INITIAL RECORDS of the structs table
-bool GASP2db::update(GASP2pop pop) {
+bool GASP2db::update(GASP2pop pop, string table) {
 
 	char * err = 0;
 	int ierr;
 	sqlite3_stmt * stm;
 
+	cout << mark() << "Updating " << pop.size() << " structures..." << endl;
+
 	if(connect()) {
 
-		sqlite3_prepare_v2(dbconn, "UPDATE structs SET "
+		string sql="UPDATE "+table+" SET "
 				"energy = @en,"
 				"force = @fr,"
 				"pressure = @pr, "
@@ -181,9 +208,11 @@ bool GASP2db::update(GASP2pop pop) {
 				"mB = @mB, "
 				"rhmC = @rhmC,"
 				"xml = @xml "
-				"WHERE id =@id", -1, &stm, NULL);
+				"WHERE id =@id";
 
-		cout << "update prep err: " << ierr << endl;
+		sqlite3_prepare_v2(dbconn, sql.c_str(), -1, &stm, NULL);
+
+		//cout << "update prep err: " << ierr << endl;
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
@@ -195,6 +224,8 @@ bool GASP2db::update(GASP2pop pop) {
 		sqlite3_finalize(stm);
 
 		disconnect();
+
+		cout << mark() << "Update finished!" << endl;
 
 		return true;
 	}
@@ -256,14 +287,15 @@ GASP2pop GASP2db::getxml(string sql) {
 
 		xml += "\n</pop>\n\0";
 
-		cout << xml << endl << endl;;
+		//cout << xml << endl << endl;;
 
 		//THIS FUNCTION DOES NOT REQUIRE THE MGAC TAG
-		if(out.parseXML(xml,xmlerr)) cout << "OK" << endl;
+		out.parseXML(xml,xmlerr);
 
-		cout << "xmlerr " << xmlerr << endl;
+		//cout << "xmlerr " << xmlerr << endl;
 
-		cout << "OUTSIZE: " << out.size() << endl;
+		cout << mark() << "Query: " << sql << endl;
+		cout << mark() << "structures returned: " << out.size() << endl;
 
 	}
 
@@ -276,11 +308,45 @@ GASP2pop GASP2db::getAll() {
 
 }
 
+GASP2pop GASP2db::getSpcGroup(int best, int index, string name) {
 
+	string expr = "SELECT xml,Ixml from "+name+" WHERE spacegroup = ";
+	expr += to_string(index);
+	expr += " ORDER BY energy ASC LIMIT ";
+	expr += to_string(best);
+	expr += " ";
 
+	return getxml(expr);
 
+}
 
+GASP2pop GASP2db::getGen(int best, int gen, string name) {
 
+	string expr = "SELECT xml,Ixml from "+name+" WHERE generation = ";
+	expr += to_string(gen);
+	expr += " ORDER BY energy ASC LIMIT ";
+	expr += to_string(best);
+	expr += " ";
+
+	return getxml(expr);
+
+}
+
+GASP2pop GASP2db::getBest(int best, string name) {
+
+	string expr = "SELECT xml,Ixml from "+name+" ORDER BY energy ASC LIMIT ";
+	expr += to_string(best);
+	expr += " ";
+
+	return getxml(expr);
+
+}
+
+GASP2pop GASP2db::getIncomplete(string name) {
+
+	return getxml("SELECT xml,Ixml from "+name+" WHERE state = 0");
+
+}
 
 
 

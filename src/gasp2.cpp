@@ -89,24 +89,36 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart,
 
 	//parse the restart if it exists
 	if(restart.length() > 0) {
-		doc.LoadFile(restart.c_str());
-		if(doc.ErrorID() == 0) {
-			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
-			if(!rootpop.loadXMLrestart(pop, errorstring)) {
-				cout << "There was an error in the restart file: " << errorstring << endl;
-				MPI_Abort(1,MPI_COMM_WORLD);
-			}
-			//rootpop.energysort();
-			//rootpop.remIndv(rootpop.size() - params.popsize);
-
-		}
-		else {
-			cout << "!!! There was a problem with opening the RESTART file!" << endl;
-			cout << "Check to see if the file exists or if the XML file" << endl;
-			cout << "is properly formed, with tags formatted correctly." << endl;
-			cout << "Aborting... " << endl;
+		params.outputfile = this->restart;
+		if(!db.load(restart)) {
+			cout << "There was an error loading the restart file!" << endl;
 			MPI_Abort(1,MPI_COMM_WORLD);
+			exit(1);
 		}
+
+//		doc.LoadFile(restart.c_str());
+//		if(doc.ErrorID() == 0) {
+//			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
+//			if(!rootpop.loadXMLrestart(pop, errorstring)) {
+//				cout << "There was an error in the restart file: " << errorstring << endl;
+//				MPI_Abort(1,MPI_COMM_WORLD);
+//			}
+//			//rootpop.energysort();
+//			//rootpop.remIndv(rootpop.size() - params.popsize);
+//
+//		}
+//		else {
+//			cout << "!!! There was a problem with opening the RESTART file!" << endl;
+//			cout << "Check to see if the file exists or if the XML file" << endl;
+//			cout << "is properly formed, with tags formatted correctly." << endl;
+//			cout << "Aborting... " << endl;
+//			MPI_Abort(1,MPI_COMM_WORLD);
+//		}
+	}
+	else {
+		string suffix = ".sq3";
+		db.load(params.outputfile + suffix);
+		db.init();
 	}
 
 
@@ -149,45 +161,58 @@ void GASP2control::getHostInfo() {
 
 
 //handles the restart logic
+
+//FIXME FIXME FIXME
 void GASP2control::setup_restart() {
 
 	if(restart.length() > 0) {
 
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
 
-		//the rootpop might have zero energy structures
-		//those need to be evaluated first
-		rootpop = rootpop.symmLimit(params.symmlimit);
-		rootpop.runSymmetrize(hostlist[0].threads);
-		GASP2pop zeros;
-		GASP2pop evald = rootpop.energysplit(zeros);
-		zeros = zeros.volLimit();
-		writePop(zeros, "zeros", 0);
-		writePop(evald, "res-evald", 0);
-		if(zeros.size() > 0) {
-			server_qe(zeros,startstep);
-			evald.addIndv(zeros);
+
+		GASP2pop incomplete = db.getIncomplete("structs");
+		if(incomplete.size() > 0) {
+			server_qe(incomplete, startstep);
 		}
-		rootpop = evald;
-
-		//implicit: rootpop is the restart pop if a restart is specified
-
-//		if (params.type == "clustered")
-//			rootpop.spacebinCluster(hostlist[0].threads, bins, clusters, params);
-//		else
-		rootpop.spacebinV(bins, params.popsize);
-		writePop(rootpop, "root", 0);
 	}
+}
+
+//		//the rootpop might have zero energy structures
+//		//those need to be evaluated first
+//
+//		rootpop = rootpop.symmLimit(params.symmlimit);
+//		rootpop.runSymmetrize(hostlist[0].threads);
+//		GASP2pop zeros;
+//		GASP2pop evald = rootpop.energysplit(zeros);
+//		zeros = zeros.volLimit();
+//
+//		if(params.outputmode == "xml") {
+//			writePopXML(zeros, "zeros", 0);
+//			writePopXML(evald, "res-evald", 0);
+//		}
+//
+//		if(zeros.size() > 0) {
+//			server_qe(zeros,startstep);
+//			evald.addIndv(zeros);
+//		}
+//		rootpop = evald;
+//
+//		//implicit: rootpop is the restart pop if a restart is specified
+//
+////		if (params.type == "clustered")
+////			rootpop.spacebinCluster(hostlist[0].threads, bins, clusters, params);
+////		else
+//		rootpop.spacebinV(bins, params.popsize);
+//		if(params.outputmode == "xml") {
+//			writePopXML(rootpop, "root", 0);
+//		}
+//	}
 //	else {
 //		//rootpop is not initialized
 //		server_randbuild();
 //		rootpop = randpop;
 //	}
-
-
-
-
-}
+//}
 
 
 void GASP2control::server_fitcell(GASP2pop &pop) {
@@ -436,8 +461,11 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 			//output temporary save file
 			if(queue_restart_write) {
 				GASP2pop restart = evald;
-				restart.energysort();
-				writePop(restart, "restart", step);
+				//restart.energysort();
+//				if(params.outputmode == "xml") {
+//					writePopXML(restart, "restart", step);
+//				}
+				db.update(restart, "structs");
 				restart_timer = chrono::steady_clock::now();
 				queue_restart_write = false;
 			}
@@ -660,10 +688,11 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 
 		cout << mark() << "Sorting after QE" << endl;
 		evald.energysort();
-		writePop(evald, "evald", step);
+//		if(params.outputmode == "xml") {
+//			writePopXML(evald, "evald", step);
+//		}
+		db.update(evald, "structs");
 		pop = evald;
-
-
 
 		cout << mark() << "End of QE evalution" << endl;
 
@@ -1006,25 +1035,6 @@ void GASP2control::server_prog() {
 	//vector<bool> pinged(worldSize);
 	//the polling time is 200 ms
 
-	///TESTING CODE
-	server_randbuild(0);
-	writePop(randpop, "start", 0);
-
-	GASP2db db("testdb.sq3");
-	db.init();
-
-	db.create(randpop);
-	db.update(randpop);
-
-	GASP2pop temp = db.getAll();
-
-	writePop(temp, "validation", 0);
-
-
-	exit(1);
-
-	//END TESTING CODE
-
 	//initialize ownerlist
 	ownerlist.resize(worldSize);
 	for(int i = 0; i < worldSize; i++)
@@ -1047,6 +1057,9 @@ void GASP2control::server_prog() {
 		clusters[i].clear();
 	for(int i = 0; i < bins.size(); i++)
 		bins[i].clear();
+
+	db.initTable("structs");
+	db.initTable("badfitcell");
 
 	setup_restart();
 
@@ -1072,6 +1085,7 @@ void GASP2control::server_prog() {
 		int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
 		cout << mark() << "Starting precluster" << endl;
 		string temp = params.type;
+		db.initTable("precluster");
 
 		bestpop.clear();
 		GASP2pop prerand;
@@ -1092,7 +1106,10 @@ void GASP2control::server_prog() {
 				bestpop.addIndv(clusters[n]);
 			}
 			cout << mark() << "Cluster size " << bestpop.size() << endl;
-			writePop(bestpop, "precluster", 0);
+//			if(params.outputmode == "xml") {
+//				writePopXML(bestpop, "precluster", 0);
+//			}
+			db.create(bestpop, "precluster");
 			bestpop.clear();
 
 
@@ -1109,16 +1126,19 @@ void GASP2control::server_prog() {
 			clusters[i].clear();
 		}
 		cout << mark() << "Precluster QE evaluation starting" << endl;
+		db.create(pre,"structs");
 		pre.runSymmetrize(hostlist[0].threads);
 		server_qe(pre, 0);
 
 		server_popcombine(pre);
 		bestpop.clear();
-		for(int n = 0; n < bins.size(); n++) {
-			bestpop.addIndv(bins[n]);
-		}
-		writePop(bestpop, "precluster-eval", 0);
-		bestpop.clear();
+//		for(int n = 0; n < bins.size(); n++) {
+//			bestpop.addIndv(bins[n]);
+//		}
+////		if(params.outputmode == "xml") {
+////			writePopXML(bestpop, "precluster-eval", 0);
+////		}
+//		bestpop.clear();
 
 		cout << mark() << "Precluster finished" << endl;
 
@@ -1137,7 +1157,9 @@ void GASP2control::server_prog() {
 
 			//we always reinitialize the rootpop at each generation
 			server_randbuild(step);
-			writePop(randpop, "rand", step);
+//			if(params.outputmode == "xml") {
+//				writePopXML(randpop, "rand", step);
+//			}
 
 			//scale, cross and mutate
 			cout << mark() << "Scaling and Crossing..." << endl;
@@ -1166,12 +1188,16 @@ void GASP2control::server_prog() {
 
 				good.clear(); bad.clear();
 				good = evalpop.volLimit(bad);
+				db.create(good, "structs");
+				db.create(bad, "badfitcell");
 			}
 
 			cout << mark() << "Candidate popsize:" << good.size() << endl;
 
 			good.volumesort();
-			writePop(good, "vollimit", step);
+			if(params.outputmode == "xml") {
+				writePopXML(good, "vollimit", step);
+			}
 
 			if(good.size() > 0) {
 
@@ -1194,20 +1220,24 @@ void GASP2control::server_prog() {
 			evalpop.energysort();
 
 			if(params.type == "finaleval") {
-				cout << mark() << "Writing final output" << endl;
-				writePop(evalpop, "fulleval", step);
+//				cout << mark() << "Writing final output" << endl;
+//				if(params.outputmode == "xml") {
+//					writePopXML(evalpop, "fulleval", step);
+//				}
 				cout << mark() << "Final evaluation completed and written, exiting..." << endl;
 				break;
 			}
 			else {
 				cout << mark() << "Recombining populations" << endl;
 				server_popcombine(evalpop);
-				bestpop.clear();
-				for(int n = 0; n < bins.size(); n++) {
-					bestpop.addIndv(bins[n]);
-				}
-				writePop(bestpop, "final", step);
-				bestpop.clear();
+//				bestpop.clear();
+//				for(int n = 0; n < bins.size(); n++) {
+//					bestpop.addIndv(bins[n]);
+//				}
+//				if(params.outputmode == "xml") {
+//					writePopXML(bestpop, "final", step);
+//				}
+//				bestpop.clear();
 			}
 
 
@@ -1664,7 +1694,7 @@ string GASP2control::makeMachinefile(vector<int> slots) {
 }
 
 
-bool GASP2control::writePop(GASP2pop pop, string tag, int step) {
+bool GASP2control::writePopXML(GASP2pop pop, string tag, int step) {
 
 	stringstream outname;
 	ofstream outf;

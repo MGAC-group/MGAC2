@@ -54,12 +54,13 @@ using namespace std;
 
 class GASP2db {
 public:
-	GASP2db(string name); //name of DB
+	GASP2db(); //name of DB
 
 	void init(); //sets up initial tables
+	void initTable(string name);
 	int connect(); //opens the DB
 	int disconnect(); //closes the DB
-	int load(string name); //loads an existing table, not sure if needed, whatevs
+	int load(string name); //loads the table path, then checks to see if it can be opened
 
 	//takes a population and updates the database table
 	//if a structure does not exist it is added
@@ -70,16 +71,18 @@ public:
 	//this necessarily overwrites structures with the same UID
 	//since UID collision is improbable, this will not contribute
 	//to a meaningful loss of structures
-	bool create(GASP2pop pop); //creates main record
-	bool update(GASP2pop pop); //updates second record
+	bool create(GASP2pop pop, string table); //creates main record
+	bool update(GASP2pop pop, string table); //updates second record
 
 	GASP2pop getAll();
 
-	GASP2pop getGroup(int best, int index);
+	GASP2pop getSpcGroup(int best, int index, string name);
 	//GASP2pop getCluster(int index);
 	//GASP2pop getIndv(UUID u);
-	GASP2pop getGen(int best, int gen);
-	GASP2pop getBest(int best);
+	GASP2pop getGen(int best, int gen, string name);
+	GASP2pop getBest(int best, string name);
+
+	GASP2pop getIncomplete(string name);
 
 	//input tables
 	int addInput(string infile);

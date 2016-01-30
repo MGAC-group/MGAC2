@@ -147,6 +147,7 @@ private:
 	string hostname;
 	int nodethreads;
 
+	GASP2db db;
 	GASP2param params;
 	GASP2struct root; //base structure which all other structures are derived from
 	GASP2pop rootpop; //pop constructed from a root (or possibly from a restart)
@@ -182,7 +183,7 @@ private:
 	void getHostInfo();
 	void writeHost(string name, string data);
 
-	bool writePop(GASP2pop pop, string tag, int step);
+	bool writePopXML(GASP2pop pop, string tag, int step);
 	//bool writeBins(vector<GASP2pop> bins, string tag, int step);
 
 	bool parseInput(tinyxml2::XMLDocument *doc, string & errorstring);

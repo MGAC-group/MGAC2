@@ -586,7 +586,6 @@ bool GASP2pop::parseXML(string name, string &errorstring) {
 bool GASP2pop::loadXMLrestart(tinyxml2::XMLElement *pop, string & errorstring) {
 	GASP2struct temp;
 
-	cout << "test" << endl;
 	if(pop) {
 		tinyxml2::XMLElement * crystal = pop -> FirstChildElement("crystal");
 		if(!crystal) {

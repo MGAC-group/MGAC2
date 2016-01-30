@@ -900,7 +900,6 @@ bool GASP2struct::check() {
 		//cout << "center" << endl;
 	}
 
-
 	return true;
 }
 
@@ -1448,7 +1447,7 @@ bool GASP2struct::evaluate(string hostfile, GASP2param params) {
 	}
 
 	//never evaluate something that has already been evaluated
-	if(!didOpt) {
+	if(!complete) {
 		complete = eval(molecules, unit, energy, force, pressure, time, hostfile, params);
 		steps++;
 		cout << mark() << "evaluate energy: " << fixed << setw(6) <<  energy << endl;

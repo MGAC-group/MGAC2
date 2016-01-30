@@ -323,7 +323,7 @@ namespace QE {
 					pos = output.rfind(early_term);
 					if(pos!=string::npos) {
 						cout<< mark() << "QE finished with maximum number of SCF cycles.\n";
-						outstat = false;
+						outstat = true;
 						longeval_mut.unlock();
 						break;
 					}
@@ -332,6 +332,7 @@ namespace QE {
 					pos = output.rfind(complete_scan);
 					if(pos!=string::npos) {
 						cout << mark()  << "QE completed the run\n";
+						abandon = true;
 						longeval_mut.unlock();
 						break;
 					}
@@ -369,7 +370,7 @@ namespace QE {
 
 
 
-		}
+		} //FOR RESTART STEPS
 
         //add the time:
 	    int duration = chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count();
