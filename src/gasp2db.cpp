@@ -14,7 +14,7 @@ GASP2db::GASP2db() {
 
 int GASP2db::connect() {
 	int state;
-	//cout << "open state cn " << openState << endl;
+	cout << "open state cn " << openState << endl;
 	if(!openState) {
 		state = sqlite3_open(path.c_str(), &dbconn);
 		if(state) {
@@ -34,7 +34,7 @@ int GASP2db::connect() {
 
 int GASP2db::disconnect() {
 
-	//cout << "open state dc " << openState << endl;
+	cout << "open state dc " << openState << endl;
 	if(openState) {
 		//if close returns as SQLITE_BUSY, it's okay
 		//we just try to close later
@@ -86,6 +86,7 @@ void GASP2db::init() {
 
 void GASP2db::initTable(string name) {
 
+	int ierr;
 	char * err = 0;
 
 	if(connect()) {
@@ -93,7 +94,7 @@ void GASP2db::initTable(string name) {
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
 		//the I prefix indicates initial, otherwise the value is current
-		string sql="CREATE TABLE IF NOT EXISTS "+name+"( "
+		string sql=("CREATE TABLE IF NOT EXISTS "+name+"( "
 				"id TEXT PRIMARY KEY,"
 				"parentA TEXT, parentB TEXT, generation INT, version INT,"
 				"energy REAL, force REAL, pressure REAL, spacegroup INT, cluster INT,"
@@ -104,9 +105,9 @@ void GASP2db::initTable(string name) {
 				"tA REAL, tB REAL, tC REAL, mB REAL, rhmC REAL,"
 				"ItA REAL, ItB REAL, ItC REAL, ImB REAL, IrhmC REAL,"
 				"xml TEXT, Ixml TEXT"
-				")";
+				")");
 
-		sqlite3_exec(dbconn, sql.c_str(), NULL, NULL, &err);
+		ierr = sqlite3_exec(dbconn, sql.c_str(), NULL, NULL, &err);
 
 		//cout << "table create error: " << ierr << endl;
 
@@ -126,11 +127,14 @@ bool GASP2db::create(GASP2pop pop, string table) {
 	int ierr;
 	sqlite3_stmt * stm;
 
+	if(pop.size() < 1)
+		return true;
+
 	cout << mark() << "Writing " << pop.size() << " structures..." << endl;
 
 	if(connect()) {
 		//if there is already a primary key in the DB ignore the insert
-		string sql = "INSERT OR IGNORE INTO "+table+" "
+		string sql = ("INSERT OR IGNORE INTO "+table+" ("
 				"id, parentA, parentB, generation, version,"
 				"energy, force, pressure, spacegroup, cluster,"
 				"axis, type, centering, subtype,"
@@ -146,10 +150,11 @@ bool GASP2db::create(GASP2pop pop, string table) {
 				"@ia, @ib, @ic, @ial, @ibt, @igm, @ira, @irb, @irc,"
 				"@itA, @itB, @itC, @imB, @irhmC, "
 				"@ixml "
-				")";
+				")");
 
-		ierr = sqlite3_prepare_v2(dbconn, sql.c_str(), -1, &stm, NULL);
+		ierr = sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
 
+		//cout << sql << endl;
 		//cout << "create prep err: " << ierr << endl;
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
@@ -181,11 +186,14 @@ bool GASP2db::update(GASP2pop pop, string table) {
 	int ierr;
 	sqlite3_stmt * stm;
 
+	if(pop.size() < 1)
+		return true;
+
 	cout << mark() << "Updating " << pop.size() << " structures..." << endl;
 
 	if(connect()) {
 
-		string sql="UPDATE "+table+" SET "
+		string sql=("UPDATE "+table+" SET "
 				"energy = @en,"
 				"force = @fr,"
 				"pressure = @pr, "
@@ -208,9 +216,11 @@ bool GASP2db::update(GASP2pop pop, string table) {
 				"mB = @mB, "
 				"rhmC = @rhmC,"
 				"xml = @xml "
-				"WHERE id =@id";
+				"WHERE id =@id");
 
-		sqlite3_prepare_v2(dbconn, sql.c_str(), -1, &stm, NULL);
+		//cout << sql << endl;
+
+		ierr = sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
 
 		//cout << "update prep err: " << ierr << endl;
 
