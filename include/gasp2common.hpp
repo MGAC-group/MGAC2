@@ -222,4 +222,4 @@ public:
         friend bool operator==(const UUID &u, const UUID &v);
 };
 
-
+string get_file_contents(const char* filname);

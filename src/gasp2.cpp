@@ -11,37 +11,22 @@ std::mutex longeval_mut;
 std::atomic<bool> save_state;
 std::atomic<bool> completed;
 
-GASP2control::GASP2control(string infile) {
-
-	//parse the infile with output handling!
-	tinyxml2::XMLDocument doc;
-	string errorstring;
-	doc.LoadFile(infile.c_str());
-	if(doc.ErrorID() == 0) {
-		if(parseInput(&doc, errorstring)==false) {
-			cout << "There was an error in the input file: " << errorstring << endl;
-			exit(1);
-		}
-
-	}
-	else {
-		cout << "!!! There was a problem with opening the input file!" << endl;
-		cout << "Check to see if the file exists or if the XML file" << endl;
-		cout << "is properly formed, with tags formatted correctly." << endl;
-		cout << "Aborting... " << endl;
-		exit(1);
-	}
-
-}
-
-GASP2control::GASP2control(int ID, string infile) {
+//client version constructor
+GASP2control::GASP2control(int ID) {
 
 	this->ID = ID;
+
+
+	string infile;
+	int temp;
+
+	//get the infile via text receive
+	recvHost(infile, temp, 0);
 
 	//parse the infile
 	tinyxml2::XMLDocument doc;
 	string errorstring;
-	if(!doc.LoadFile(infile.c_str()))
+	if(!doc.Parse(infile.c_str()))
 		parseInput(&doc, errorstring);
 	else
 		exit(1);
@@ -59,33 +44,32 @@ GASP2control::GASP2control(int ID, string infile) {
 //controller ONLY. the server acts as both client
 //and server by dispatching pthreads in addition
 //to managing the other clients
-GASP2control::GASP2control(time_t start, int size, string input, string restart, int _startstep) {
-	starttime = start;
-	startstep = _startstep;
-	worldSize = size;
-	this->restart = restart;
-	infile = input;
+GASP2control::GASP2control(time_t start, int size, string input, string restart) {
+
+
 	ID = 0;
+	starttime = start;
+	worldSize = size;
+
+	startstep=0;
+
+	this->restart = restart;
+	infile = "";
+
 
 	//parse the infile with output handling!
-	tinyxml2::XMLDocument doc;
-	string errorstring;
-	doc.LoadFile(infile.c_str());
-	if(doc.ErrorID() == 0) {
-		if(parseInput(&doc, errorstring)==false) {
-			cout << "There was an error in the input file: " << errorstring << endl;
-			exit(1);
-		}
-
-	}
-	else {
-		cout << "!!! There was a problem with opening the input file!" << endl;
-		cout << "Check to see if the file exists or if the XML file" << endl;
-		cout << "is properly formed, with tags formatted correctly." << endl;
-		cout << "Aborting... " << endl;
+	if(input.length() < 1 && restart.length() < 1) {
+		cout << "GASP2control was passed an empty restart AND an empty infile!" << endl;
 		exit(1);
 	}
 
+	tinyxml2::XMLDocument doc;
+	string errorstring;
+
+	//read the input file if it exists
+	if(input.length() > 0) {
+		infile = get_file_contents(input.c_str());
+	}
 
 	//parse the restart if it exists
 	if(restart.length() > 0) {
@@ -95,36 +79,43 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart,
 			MPI_Abort(1,MPI_COMM_WORLD);
 			exit(1);
 		}
-
-//		doc.LoadFile(restart.c_str());
-//		if(doc.ErrorID() == 0) {
-//			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
-//			if(!rootpop.loadXMLrestart(pop, errorstring)) {
-//				cout << "There was an error in the restart file: " << errorstring << endl;
-//				MPI_Abort(1,MPI_COMM_WORLD);
-//			}
-//			//rootpop.energysort();
-//			//rootpop.remIndv(rootpop.size() - params.popsize);
-//
-//		}
-//		else {
-//			cout << "!!! There was a problem with opening the RESTART file!" << endl;
-//			cout << "Check to see if the file exists or if the XML file" << endl;
-//			cout << "is properly formed, with tags formatted correctly." << endl;
-//			cout << "Aborting... " << endl;
-//			MPI_Abort(1,MPI_COMM_WORLD);
-//		}
+		//get the infile if we didn't already generate one)
+		if(input.length() < 1) {
+			infile = db.getLastInput(startstep);
+		}
 	}
-	else {
+
+
+	//process the input files
+	if( doc.Parse(infile.c_str()) ) {
+		cout << "!!! There was a problem with parsing the input file!" << endl;
+		cout << "Check to see if the file exists or if the XML file" << endl;
+		cout << "is properly formed, with tags formatted correctly." << endl;
+		cout << "Aborting... " << endl;
+		exit(1);
+	}
+	if(parseInput(&doc, errorstring)==false) {
+		cout << "There was an error in the input file: " << errorstring << endl;
+		exit(1);
+	}
+
+	//if there wasn't a restart, do the initial setups
+	if(restart.length() < 1) {
+		startstep = 0;
 		string suffix = ".sq3";
 		db.load(params.outputfile + suffix);
 		db.init();
 	}
 
-
+	//add a new input file to the startup list
+	db.addInput(infile, start);
+	db.updateTime(start, startstep);
 
 	//random gen stuff
 //	checkSeed(params.seed);
+
+	for(int i = 1; i < worldSize; i++)
+		sendHost(infile, 0, i);
 
 	for(int i = 1; i < worldSize; i++)
 		MPI_Send(&params.seed, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
@@ -1115,6 +1106,9 @@ void GASP2control::server_prog() {
 
 		}
 
+
+		db.updateTime(time(0), startstep);
+
 		//bins = clusters;
 		GASP2pop pre;
 		for(int i = 0; i < bins.size(); i++) {
@@ -1150,6 +1144,8 @@ void GASP2control::server_prog() {
 ////////////////////START GENERATION EVALS/////////////////////////
 	if(params.mode == "stepwise") {
 		for(int step = startstep; step < params.generations; step++) {
+
+			db.updateTime(time(0), step);
 
 			GASP2pop bad, restart, good, tempstore;
 
@@ -1243,6 +1239,8 @@ void GASP2control::server_prog() {
 
 			//do a final check to see if the nodes are down
 			down_check();
+
+			db.updateTime(time(0), step);
 
 		}
 

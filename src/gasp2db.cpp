@@ -14,7 +14,7 @@ GASP2db::GASP2db() {
 
 int GASP2db::connect() {
 	int state;
-	cout << "open state cn " << openState << endl;
+	//cout << "open state cn " << openState << endl;
 	if(!openState) {
 		state = sqlite3_open(path.c_str(), &dbconn);
 		if(state) {
@@ -34,7 +34,7 @@ int GASP2db::connect() {
 
 int GASP2db::disconnect() {
 
-	cout << "open state dc " << openState << endl;
+	//cout << "open state dc " << openState << endl;
 	if(openState) {
 		//if close returns as SQLITE_BUSY, it's okay
 		//we just try to close later
@@ -74,7 +74,7 @@ void GASP2db::init() {
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
-		sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS inputs(id INT PRIMARY KEY, xml TEXT)", NULL, NULL, &err);
+		sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS startup(lastgen INT, start INT, end INT, xml TEXT)", NULL, NULL, &err);
 
 		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
 
@@ -312,9 +312,11 @@ GASP2pop GASP2db::getxml(string sql) {
 	return out;
 }
 
-GASP2pop GASP2db::getAll() {
+GASP2pop GASP2db::getAll(string name) {
 
-	return getxml("SELECT xml,Ixml from structs");
+	//return getxml("SELECT xml,Ixml from structs");
+	string expr = "SELECT xml,Ixml from "+name+" ";
+	return getxml(expr);
 
 }
 
@@ -359,9 +361,115 @@ GASP2pop GASP2db::getIncomplete(string name) {
 }
 
 
+void GASP2db::addInput(string infile, int time) {
+
+	int ierr;
+	char * err = 0;
+	sqlite3_stmt * stm;
+
+	if(connect()) {
+		string sql="INSERT INTO startup (xml, start) VALUES (@xml,@start)";
 
 
+		//cout << sql << endl;
 
+		ierr = sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
+
+		//cout << "update prep err: " << ierr << endl;
+
+		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
+
+		//sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS startup(lastgen INT, start INT, end INT, xml TEXT)", NULL, NULL, &err);
+		//sqlite3_exec(dbconn, sql.c_str(), NULL, NULL, &err);
+		sqlite3_bind_text(stm,1,infile.c_str(), infile.size(), SQLITE_TRANSIENT);
+		sqlite3_bind_int(stm,2,time);
+
+		sqlite3_step(stm);
+
+		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
+
+		sqlite3_finalize(stm);
+
+		disconnect();
+	}
+}
+
+string GASP2db::getLastInput(int &lastgen) {
+
+	int ierr;
+	char * err = 0;
+	sqlite3_stmt * stm;
+	string stemp = "";
+
+	if(connect()) {
+
+		string sql="SELECT xml,lastgen FROM startup WHERE ROWID=(SELECT max(ROWID) from startup)";
+
+		sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
+
+		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
+
+		int result;
+		while(true) {
+			result = sqlite3_step(stm);
+
+			if(result == SQLITE_ROW) {
+				stemp = reinterpret_cast<const char*>(sqlite3_column_text(stm, 0));
+				lastgen = sqlite3_column_int(stm, 1);
+			}
+			else if(result == SQLITE_DONE) {
+				break;
+			}
+			else {
+				cout << mark() << "ERROR: problem reading the database, code: " << result << endl;
+				MPI_Abort(MPI_COMM_WORLD, 1);
+				exit(1);
+			}
+
+		}		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
+
+		sqlite3_finalize(stm);
+
+		disconnect();
+
+	}
+
+	return stemp;
+}
+
+void GASP2db::updateTime(int time, int gen) {
+
+	int ierr;
+	char * err = 0;
+	sqlite3_stmt * stm;
+
+	if(connect()) {
+		string sql="UPDATE startup SET lastgen=@lastgen,end=@end WHERE rowid=(select max(ROWID) from startup)";
+
+		//cout << sql << endl;
+
+		ierr = sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
+
+		//cout << "update prep err: " << ierr << endl;
+
+		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
+
+		//sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS startup(lastgen INT, start INT, end INT, xml TEXT)", NULL, NULL, &err);
+		//sqlite3_exec(dbconn, sql.c_str(), NULL, NULL, &err);
+		sqlite3_bind_int(stm,1,gen);
+		sqlite3_bind_int(stm,2,time);
+
+		sqlite3_step(stm);
+
+		sqlite3_exec(dbconn, "END TRANSACTION", NULL, NULL, &err);
+
+		sqlite3_finalize(stm);
+
+		disconnect();
+	}
+
+
+}
 
 
 

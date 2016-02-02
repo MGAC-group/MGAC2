@@ -3,7 +3,7 @@
 
 using namespace std;
 
-const string version = "2.0-alpha";
+const string version = "2.0-pre-beta";
 
 //front material for option parsing
 struct Arg: public option::Arg
@@ -26,21 +26,21 @@ struct Arg: public option::Arg
 	  }
 };
 
-enum optIndex {INPUT,HELP,RESTART,STEP,SPACEGROUPS,CONVERT,COMBINE,SIZE,TEMPLATE,PLANE,RECLUSTER,THREADS };
+enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS,CONVERT,SIZE,TEMPLATE,PLANE,THREADS };
 
 const option::Descriptor usage[] =
 {
 		{INPUT,0,"i","input",Arg::Required,"-i,--input  The XML input file for running"},
 		{HELP,0,"h","help",option::Arg::Optional,"-h,--help  Displays this help message"},
 		{RESTART,0,"r","restart",Arg::NonEmpty,"-r,--restart  Optional argument for a restart file"},
-		{STEP,0,"S","step",Arg::NonEmpty,"-S,--step Optional argument used to specify starting step"},
+		//{STEP,0,"S","step",Arg::NonEmpty,"-S,--step Optional argument used to specify starting step"},
 		{SPACEGROUPS,0,"l","spacegroups",Arg::Optional,"-l,--spacegroups  List valid spacegroups"},
 		{CONVERT, 0, "c", "cif", Arg::NonEmpty, "-c, --cif  Name of output file for cif; takes the input (-i) and turns it into a cif"},
-		{COMBINE, 0, "m","merge",Arg::NonEmpty, "-m, --merge Combine multiple files to form a single population file (comma delimited)"},
-		{SIZE, 0, "s","size", Arg::NonEmpty, "-s, --size Used in conjunction with merge to denote the size of merged population"},
-		{TEMPLATE, 0, "t","template",Arg::NonEmpty, "-t, --template An XML molecule template from a cif; if a plane is given then rotation and other values will be checked"},
+		//{COMBINE, 0, "m","merge",Arg::NonEmpty, "-m, --merge Combine multiple files to form a single population file (comma delimited)"},
+		{SIZE, 0, "s","size", Arg::NonEmpty, "-s, --size Used in conjunction with cif conversion to determine pop size"},
+		{TEMPLATE, 0, "t","template",Arg::NonEmpty, "-t, --template Creates an XML molecule template from a cif; if a plane is given then rotation and other values will be checked"},
 		{PLANE, 0, "p", "plane",Arg::NonEmpty, "-p, --plane Specifies the three atom plane to be used for a template (comma delimited)"},
-		{RECLUSTER, 0, "g", "recluster",Arg::NonEmpty, "-g, --recluster Reclusters a population using a standard input for input and the population to be reclustered as the g argument"},
+		//{RECLUSTER, 0, "g", "recluster",Arg::NonEmpty, "-g, --recluster Reclusters a population using a standard input for input and the population to be reclustered as the g argument"},
 		{THREADS, 0, "j", "threads",Arg::NonEmpty, "-j, --threads Number of threads to use (ie, clustering)"},
 		{ 0, 0, 0, 0, 0, 0 }
 };
@@ -51,8 +51,8 @@ int main( int argc, char* argv[] ) {
 	int mpithreading;
 	//MPI_Init(&argc,&argv);
 	MPI_Init_thread(&argc,&argv, MPI_THREAD_FUNNELED, &mpithreading);
-	if(mpithreading == MPI_THREAD_FUNNELED)
-		cout << "Threading requested was given!" << endl;
+//	if(mpithreading == MPI_THREAD_FUNNELED)
+//		cout << "Threading requested was given!" << endl;
 
 	int size, ID;
     MPI_Comm_size(MPI_COMM_WORLD,&size);
@@ -98,92 +98,31 @@ int main( int argc, char* argv[] ) {
     }
 
 
-//AML: this is now obsolete because we don't need no XMLation
-//
-//    if(options[COMBINE]) {
-//    	int size=230*300;
-//    	if(options[SIZE]) {
-//    		//TODO: Need to put something here to set size
-//    		size = std::stoi(string(options[SIZE].arg));
-//    	}
-//
-//    	if(options[INPUT] && options[COMBINE].arg != NULL) {
-//    		GASP2pop temppop, finalpop;
-//    		ofstream outf;
-//    		string files = options[INPUT].arg;
-//    		vector<string> filelist=split(files,',');
-//    		string errorstring;
-//    		for(int i = 0; i < filelist.size(); i++) {
-//    			temppop.clear();
-//				tinyxml2::XMLDocument doc;
-//				doc.LoadFile(filelist[i].c_str());
-//				if(doc.ErrorID() == 0) {
-//					tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
-//					if(!temppop.loadXMLrestart(pop, errorstring)) {
-//						cout << "There was an error in " << filelist[i] <<": " << errorstring << endl;
-//						exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
-//					}
-//					finalpop.addIndv(temppop);
-//				}
-//				else {
-//					cout << "!!! There was a problem with opening input file \"" << filelist[i] << "\"!" << endl;
-//
-//					cout << "Check to see if the file exists or if the XML file" << endl;
-//					cout << "is properly formed, with tags formatted correctly." << endl;
-//					cout << "Aborting... " << endl;
-//					exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
-//				}
-//    		}
-//    		//remove(options[CONVERT].arg);
-//    		finalpop.energysort();
-//    		finalpop.dedup(size);
-//    		finalpop.runSymmetrize(threads);
-//
-//    		outf.open(options[COMBINE].arg, ofstream::out);
-//    		if(outf.fail()) {
-//    			cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! exiting sadly..." << endl;
-//    			exit(1);
-//    		}
-//    		else {
-//    			outf << "<mgac>\n" << finalpop.saveXML() << endl << "</mgac>\n";
-//    			outf.close();
-//    		}
-//
-//    		//finalpop.writeCIF(string(options[COMBINE].arg));
-//    		cout << mark() << "Files successfully merged and written" << endl;
-//
-//    	}
-//
-//    	return 0;
-//    }
-
     if(options[CONVERT]) {
     	if(options[CONVERT].arg == NULL) {
     		return 0;
     	}
     	if(options[INPUT] && options[CONVERT].arg != NULL) {
 
+    		size = 0;
+    		if(options[SIZE]) {
+    			size = std::stoi(string(options[SIZE].arg));
+    		}
+
+    		//TODO: need a way to set table name via arg
+
     		GASP2pop temppop;
-    		string errorstring;
-    		tinyxml2::XMLDocument doc;
-    		doc.LoadFile(options[INPUT].arg);
-    		cout << mark() << "xml loaded" << endl;
-    		if(doc.ErrorID() == 0) {
-    			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
-    			if(!temppop.loadXMLrestart(pop, errorstring)) {
-    				cout << "There was an error in the restart file: " << errorstring << endl;
-    				exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
-    			}
-    		}
-    		else {
-    			cout << "!!! There was a problem with opening the input file!" << endl;
-    			cout << "Check to see if the file exists or if the XML file" << endl;
-    			cout << "is properly formed, with tags formatted correctly." << endl;
-    			cout << "Aborting... " << endl;
-    			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
-    		}
+
+    		GASP2db db;
+    		db.load(options[INPUT].arg);
+    		if(size == 0)
+    			temppop = db.getAll("structs");
+    		else
+    			temppop = db.getBest(size,"structs");
+
+
     		remove(options[CONVERT].arg);
-    		doc.Clear();
+    		//doc.Clear();
     		cout << mark() << "pop loaded" << endl;
     		temppop.energysort();
     		cout << mark() << "sorted" << endl;
@@ -221,84 +160,26 @@ int main( int argc, char* argv[] ) {
     }
 
 
-//AML: also kind of obsolete
-//
-//    if(options[RECLUSTER]) {
-//    	if(options[RECLUSTER].arg == NULL) {
-//    		return 0;
-//    	}
-//    	if(options[INPUT] && options[RESTART].arg != NULL && options[RECLUSTER].arg != NULL) {
-//
-//    		GASP2control client(string(options[INPUT].arg));
-//    		GASP2param p = client.getParams();
-//    		cout << "got one" << endl;
-//    		GASP2pop temppop;
-//    		string errorstring;
-//    		tinyxml2::XMLDocument doc;
-//    		doc.LoadFile(options[RESTART].arg);
-//    		if(doc.ErrorID() == 0) {
-//    			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
-//    			if(!temppop.loadXMLrestart(pop, errorstring)) {
-//    				cout << "There was an error in the restart file: " << errorstring << endl;
-//    				exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
-//    			}
-//    		}
-//    		else {
-//    			cout << "!!! There was a problem with opening the input file!" << endl;
-//    			cout << "Check to see if the file exists or if the XML file" << endl;
-//    			cout << "is properly formed, with tags formatted correctly." << endl;
-//    			cout << "Aborting... " << endl;
-//    			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
-//    		}
-//
-//    		cout << mark() << "precluster" << endl;
-//    		GASP2pop clusters;
-//    		temppop.clusterReset();
-//    		temppop.cluster(clusters, p, threads);
-//    		cout << mark() << "cluster done, size: " << clusters.size() << endl;
-//    		//cout << mark() <<"group count: " << temppop.assignClusterGroups(p, threads) << endl;
-//    		cout << mark() << "writing dists" << endl;
-//    		temppop.allDistances(p, threads);
-//    		cout << mark() <<"done"<< endl;
-//
-//
-//    		ofstream outf;
-//    		outf.open(options[RECLUSTER].arg, ofstream::out);
-//    		if(outf.fail()) {
-//    			cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! exiting sadly..." << endl;
-//    			exit(1);
-//    		}
-//    		else {
-//    			outf << "<mgac>\n" << temppop.saveXML() << endl << "</mgac>\n";
-//    			outf.close();
-//    		}
-//
-//    		//temppop.writeCIF(string(options[RECLUSTER].arg));
-//    		cout << mark() << "File successfully converted" << endl;
-//    	}
-//    	else {
-//    		cout << "Requires -i for the input file!" << endl;
-//    	}
-//
-//
-//    	return 0;
-//    }
-
-
-
-    if(!options[INPUT]) {
-    	cout << "An input file is required! Use -i to specify." << endl;
-    	option::printUsage(cout, usage);
-    	return 0;
-    }
-    string infile;
-    infile.assign(options[INPUT].arg);
-
-
-
     time_t prog_start;
     //startup control for server/client
     if(ID==0) {
+
+        if(!options[INPUT] && !options[RESTART] ) {
+        	cout << "An input or restart file is required! Use -i or -r to specify." << endl;
+        	option::printUsage(cout, usage);
+        	MPI_Abort(MPI_COMM_WORLD, 1);
+        	return 0;
+        }
+
+
+        string infile = "", restart = "";
+
+        if(options[INPUT] && options[INPUT].arg != NULL)
+        	infile.assign(options[INPUT].arg);
+        if( options[RESTART] && options[RESTART].arg != NULL)
+        	restart.assign(options[RESTART].arg);
+
+
     	prog_start = time(0);
     	char * dt = ctime(&prog_start);
     	cout << "------------------------------------------------------------" << endl;
@@ -309,29 +190,13 @@ int main( int argc, char* argv[] ) {
     	cout << "------------------------------------------------------------" << endl << endl;
     	cout << "Using input file " << infile << endl << endl;
 
-    	if( options[RESTART] && options[RESTART].arg != NULL) {
-    		if(options[STEP] && options[STEP].arg != NULL) {
-    			int steps;
-    			stringstream stepconvert;
-    			stepconvert << options[STEP].arg;
-    			stepconvert >> steps;
 
-    			GASP2control server(prog_start,size, infile, options[RESTART].arg, steps);
-    			server.server_prog();
-    		}
-    		//ignore if steps isn't correct
-    		else {
-    			GASP2control server(prog_start,size, infile, options[RESTART].arg);
-    			server.server_prog();
-    		}
-    	}
-    	else {
-    		GASP2control server(prog_start,size, infile);
-    		server.server_prog();
-    	}
+		GASP2control server(prog_start,size, infile, restart);
+		server.server_prog();
+
     }
     else {
-    	GASP2control client(ID, infile);
+    	GASP2control client(ID);
     	client.client_prog();
     }
 

@@ -74,7 +74,7 @@ public:
 	bool create(GASP2pop pop, string table); //creates main record
 	bool update(GASP2pop pop, string table); //updates second record
 
-	GASP2pop getAll();
+	GASP2pop getAll(string name);
 
 	GASP2pop getSpcGroup(int best, int index, string name);
 	//GASP2pop getCluster(int index);
@@ -85,7 +85,12 @@ public:
 	GASP2pop getIncomplete(string name);
 
 	//input tables
-	int addInput(string infile);
+	void addInput(string infile, int time);
+	string getLastInput(int &lastgen);
+	void updateTime(int time, int gen);
+
+
+
 
 private:
 	bool openState;
