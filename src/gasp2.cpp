@@ -1369,7 +1369,7 @@ void GASP2control::client_prog() {
 				queueSend = true;
 
 			//do not allow the evalmode to change
-			if(i & (DoFitcell | DoCharmm | DoQE | DoCustom) && !queueEval) {
+			if( (i & (DoFitcell | DoCharmm | DoQE | DoCustom)) && !queueEval) {
 				evalmode = i;
 				cout << "evalmode " << (int) evalmode << endl;
 				queueEval = true;
@@ -1413,7 +1413,7 @@ void GASP2control::client_prog() {
 			else if(evalmode & DoQE) {
 				//evaluation not happening
 				if(eval_mut.try_lock()) {
-					if(!sendPop(temppop, 0))
+					if(!sendPop(evalpop, 0))
 						cout << mark() << "Sendpop DoQEev " << ID << " failed!" << endl;
 					queueSend = false;
 					eval_mut.unlock();
@@ -1487,6 +1487,7 @@ void GASP2control::client_prog() {
 			//}
 		}
 		if(completed) {
+
 			sendIns(Complete, 0);
 			completed = false;
 		}

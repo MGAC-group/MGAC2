@@ -42,6 +42,7 @@ extern std::mutex eval_mut;
 #define PI 3.1415926535897932384626433
 #define AUtoAng 0.529177249
 #define RydToKCalMol 313.7547345
+#define CaltoJoule 4.184
 #define VDWLimit 4.0
 
 using namespace std;

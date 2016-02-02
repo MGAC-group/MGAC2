@@ -212,7 +212,7 @@ namespace QE {
 						//the energy used here does not take into account basic stoich
 						//only the number of spacegroup operations
 						energy /= static_cast<double>(spacegroups[unit.spacegroup].R.size());
-						energy *= RydToKCalMol;
+						energy *= (RydToKCalMol * CaltoJoule);
 						//cout << "New energy: " << energy << endl;
 						epos = pos;
 					}
@@ -323,7 +323,8 @@ namespace QE {
 					pos = output.rfind(early_term);
 					if(pos!=string::npos) {
 						cout<< mark() << "QE finished with maximum number of SCF cycles.\n";
-						outstat = true;
+						//outstat = false;
+						//abandon = true;
 						longeval_mut.unlock();
 						break;
 					}
@@ -383,6 +384,7 @@ namespace QE {
 
         completed = true;
 	    return outstat;
+
 	}
 
 //	bool completeQE(vector<GASP2molecule>& mols, GASP2cell& unit, double &energy, double &force, double&pressure, time_t&time, string hostfile, GASP2param params) {

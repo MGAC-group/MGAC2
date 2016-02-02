@@ -97,62 +97,65 @@ int main( int argc, char* argv[] ) {
     	return 0;
     }
 
-    if(options[COMBINE]) {
-    	int size=230*300;
-    	if(options[SIZE]) {
-    		//TODO: Need to put something here to set size
-    		size = std::stoi(string(options[SIZE].arg));
-    	}
 
-    	if(options[INPUT] && options[COMBINE].arg != NULL) {
-    		GASP2pop temppop, finalpop;
-    		ofstream outf;
-    		string files = options[INPUT].arg;
-    		vector<string> filelist=split(files,',');
-    		string errorstring;
-    		for(int i = 0; i < filelist.size(); i++) {
-    			temppop.clear();
-				tinyxml2::XMLDocument doc;
-				doc.LoadFile(filelist[i].c_str());
-				if(doc.ErrorID() == 0) {
-					tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
-					if(!temppop.loadXMLrestart(pop, errorstring)) {
-						cout << "There was an error in " << filelist[i] <<": " << errorstring << endl;
-						exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
-					}
-					finalpop.addIndv(temppop);
-				}
-				else {
-					cout << "!!! There was a problem with opening input file \"" << filelist[i] << "\"!" << endl;
-
-					cout << "Check to see if the file exists or if the XML file" << endl;
-					cout << "is properly formed, with tags formatted correctly." << endl;
-					cout << "Aborting... " << endl;
-					exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
-				}
-    		}
-    		//remove(options[CONVERT].arg);
-    		finalpop.energysort();
-    		finalpop.dedup(size);
-    		finalpop.runSymmetrize(threads);
-
-    		outf.open(options[COMBINE].arg, ofstream::out);
-    		if(outf.fail()) {
-    			cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! exiting sadly..." << endl;
-    			exit(1);
-    		}
-    		else {
-    			outf << "<mgac>\n" << finalpop.saveXML() << endl << "</mgac>\n";
-    			outf.close();
-    		}
-
-    		//finalpop.writeCIF(string(options[COMBINE].arg));
-    		cout << mark() << "Files successfully merged and written" << endl;
-
-    	}
-
-    	return 0;
-    }
+//AML: this is now obsolete because we don't need no XMLation
+//
+//    if(options[COMBINE]) {
+//    	int size=230*300;
+//    	if(options[SIZE]) {
+//    		//TODO: Need to put something here to set size
+//    		size = std::stoi(string(options[SIZE].arg));
+//    	}
+//
+//    	if(options[INPUT] && options[COMBINE].arg != NULL) {
+//    		GASP2pop temppop, finalpop;
+//    		ofstream outf;
+//    		string files = options[INPUT].arg;
+//    		vector<string> filelist=split(files,',');
+//    		string errorstring;
+//    		for(int i = 0; i < filelist.size(); i++) {
+//    			temppop.clear();
+//				tinyxml2::XMLDocument doc;
+//				doc.LoadFile(filelist[i].c_str());
+//				if(doc.ErrorID() == 0) {
+//					tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
+//					if(!temppop.loadXMLrestart(pop, errorstring)) {
+//						cout << "There was an error in " << filelist[i] <<": " << errorstring << endl;
+//						exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
+//					}
+//					finalpop.addIndv(temppop);
+//				}
+//				else {
+//					cout << "!!! There was a problem with opening input file \"" << filelist[i] << "\"!" << endl;
+//
+//					cout << "Check to see if the file exists or if the XML file" << endl;
+//					cout << "is properly formed, with tags formatted correctly." << endl;
+//					cout << "Aborting... " << endl;
+//					exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
+//				}
+//    		}
+//    		//remove(options[CONVERT].arg);
+//    		finalpop.energysort();
+//    		finalpop.dedup(size);
+//    		finalpop.runSymmetrize(threads);
+//
+//    		outf.open(options[COMBINE].arg, ofstream::out);
+//    		if(outf.fail()) {
+//    			cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! exiting sadly..." << endl;
+//    			exit(1);
+//    		}
+//    		else {
+//    			outf << "<mgac>\n" << finalpop.saveXML() << endl << "</mgac>\n";
+//    			outf.close();
+//    		}
+//
+//    		//finalpop.writeCIF(string(options[COMBINE].arg));
+//    		cout << mark() << "Files successfully merged and written" << endl;
+//
+//    	}
+//
+//    	return 0;
+//    }
 
     if(options[CONVERT]) {
     	if(options[CONVERT].arg == NULL) {
@@ -217,66 +220,69 @@ int main( int argc, char* argv[] ) {
     	return 0;
     }
 
-    if(options[RECLUSTER]) {
-    	if(options[RECLUSTER].arg == NULL) {
-    		return 0;
-    	}
-    	if(options[INPUT] && options[RESTART].arg != NULL && options[RECLUSTER].arg != NULL) {
 
-    		GASP2control client(string(options[INPUT].arg));
-    		GASP2param p = client.getParams();
-    		cout << "got one" << endl;
-    		GASP2pop temppop;
-    		string errorstring;
-    		tinyxml2::XMLDocument doc;
-    		doc.LoadFile(options[RESTART].arg);
-    		if(doc.ErrorID() == 0) {
-    			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
-    			if(!temppop.loadXMLrestart(pop, errorstring)) {
-    				cout << "There was an error in the restart file: " << errorstring << endl;
-    				exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
-    			}
-    		}
-    		else {
-    			cout << "!!! There was a problem with opening the input file!" << endl;
-    			cout << "Check to see if the file exists or if the XML file" << endl;
-    			cout << "is properly formed, with tags formatted correctly." << endl;
-    			cout << "Aborting... " << endl;
-    			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
-    		}
-
-    		cout << mark() << "precluster" << endl;
-    		GASP2pop clusters;
-    		temppop.clusterReset();
-    		temppop.cluster(clusters, p, threads);
-    		cout << mark() << "cluster done, size: " << clusters.size() << endl;
-    		//cout << mark() <<"group count: " << temppop.assignClusterGroups(p, threads) << endl;
-    		cout << mark() << "writing dists" << endl;
-    		temppop.allDistances(p, threads);
-    		cout << mark() <<"done"<< endl;
-
-
-    		ofstream outf;
-    		outf.open(options[RECLUSTER].arg, ofstream::out);
-    		if(outf.fail()) {
-    			cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! exiting sadly..." << endl;
-    			exit(1);
-    		}
-    		else {
-    			outf << "<mgac>\n" << temppop.saveXML() << endl << "</mgac>\n";
-    			outf.close();
-    		}
-
-    		//temppop.writeCIF(string(options[RECLUSTER].arg));
-    		cout << mark() << "File successfully converted" << endl;
-    	}
-    	else {
-    		cout << "Requires -i for the input file!" << endl;
-    	}
-
-
-    	return 0;
-    }
+//AML: also kind of obsolete
+//
+//    if(options[RECLUSTER]) {
+//    	if(options[RECLUSTER].arg == NULL) {
+//    		return 0;
+//    	}
+//    	if(options[INPUT] && options[RESTART].arg != NULL && options[RECLUSTER].arg != NULL) {
+//
+//    		GASP2control client(string(options[INPUT].arg));
+//    		GASP2param p = client.getParams();
+//    		cout << "got one" << endl;
+//    		GASP2pop temppop;
+//    		string errorstring;
+//    		tinyxml2::XMLDocument doc;
+//    		doc.LoadFile(options[RESTART].arg);
+//    		if(doc.ErrorID() == 0) {
+//    			tinyxml2::XMLElement * pop = doc.FirstChildElement("mgac")->FirstChildElement("pop");
+//    			if(!temppop.loadXMLrestart(pop, errorstring)) {
+//    				cout << "There was an error in the restart file: " << errorstring << endl;
+//    				exit(1);//MPI_Abort(1,MPI_COMM_WORLD);
+//    			}
+//    		}
+//    		else {
+//    			cout << "!!! There was a problem with opening the input file!" << endl;
+//    			cout << "Check to see if the file exists or if the XML file" << endl;
+//    			cout << "is properly formed, with tags formatted correctly." << endl;
+//    			cout << "Aborting... " << endl;
+//    			exit(1);MPI_Abort(1,MPI_COMM_WORLD);
+//    		}
+//
+//    		cout << mark() << "precluster" << endl;
+//    		GASP2pop clusters;
+//    		temppop.clusterReset();
+//    		temppop.cluster(clusters, p, threads);
+//    		cout << mark() << "cluster done, size: " << clusters.size() << endl;
+//    		//cout << mark() <<"group count: " << temppop.assignClusterGroups(p, threads) << endl;
+//    		cout << mark() << "writing dists" << endl;
+//    		temppop.allDistances(p, threads);
+//    		cout << mark() <<"done"<< endl;
+//
+//
+//    		ofstream outf;
+//    		outf.open(options[RECLUSTER].arg, ofstream::out);
+//    		if(outf.fail()) {
+//    			cout << mark() << "ERROR: COULD NOT OPEN FILE FOR SAVING! exiting sadly..." << endl;
+//    			exit(1);
+//    		}
+//    		else {
+//    			outf << "<mgac>\n" << temppop.saveXML() << endl << "</mgac>\n";
+//    			outf.close();
+//    		}
+//
+//    		//temppop.writeCIF(string(options[RECLUSTER].arg));
+//    		cout << mark() << "File successfully converted" << endl;
+//    	}
+//    	else {
+//    		cout << "Requires -i for the input file!" << endl;
+//    	}
+//
+//
+//    	return 0;
+//    }
 
 
 
