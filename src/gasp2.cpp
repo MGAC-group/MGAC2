@@ -66,10 +66,7 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart)
 	tinyxml2::XMLDocument doc;
 	string errorstring;
 
-	//read the input file if it exists
-	if(input.length() > 0) {
-		infile = get_file_contents(input.c_str());
-	}
+
 
 	//parse the restart if it exists
 	if(restart.length() > 0) {
@@ -79,10 +76,17 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart)
 			MPI_Abort(1,MPI_COMM_WORLD);
 			exit(1);
 		}
-		//get the infile if we didn't already generate one)
-		if(input.length() < 1) {
-			infile = db.getLastInput(startstep);
-		}
+		//get the last infile
+		infile = db.getLastInput(startstep);
+		startstep += 1;
+
+	}
+
+
+	//read the input file if it exists
+	//this version of the infile supercedes the restart input
+	if(input.length() > 0) {
+		infile = get_file_contents(input.c_str());
 	}
 
 
@@ -101,7 +105,6 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart)
 
 	//if there wasn't a restart, do the initial setups
 	if(restart.length() < 1) {
-		startstep = 0;
 		string suffix = ".sq3";
 		db.load(params.outputfile + suffix);
 		db.init();
@@ -165,6 +168,11 @@ void GASP2control::setup_restart() {
 		if(incomplete.size() > 0) {
 			server_qe(incomplete, startstep);
 		}
+		incomplete.clear();
+		GASP2pop complete = db.getAll("structs");
+
+		complete.spacebinV(bins,params.popsize);
+
 	}
 }
 
@@ -1143,6 +1151,7 @@ void GASP2control::server_prog() {
 
 ////////////////////START GENERATION EVALS/////////////////////////
 	if(params.mode == "stepwise") {
+		//cout << mark() << "STARTING STEP: " << startstep << endl;
 		for(int step = startstep; step < params.generations; step++) {
 
 			db.updateTime(time(0), step);
@@ -1185,7 +1194,7 @@ void GASP2control::server_prog() {
 				good.clear(); bad.clear();
 				good = evalpop.volLimit(bad);
 				db.create(good, "structs");
-				db.create(bad, "badfitcell");
+				//db.create(bad, "badfitcell"); //this was a bad idea, too much data
 			}
 
 			cout << mark() << "Candidate popsize:" << good.size() << endl;

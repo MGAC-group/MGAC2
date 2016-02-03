@@ -405,7 +405,9 @@ string GASP2db::getLastInput(int &lastgen) {
 
 		string sql="SELECT xml,lastgen FROM startup WHERE ROWID=(SELECT max(ROWID) from startup)";
 
-		sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
+		ierr = sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
+
+		//cout << "lastinput prep err: " << ierr << endl;
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
