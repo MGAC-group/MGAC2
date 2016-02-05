@@ -393,7 +393,7 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 						recv = None;
 						recvIns(recv, i);
 
-						cout << mark() << "server QE received from " << i << ": " << recv << endl;
+						//cout << mark() << "server QE received from " << i << ": " << recv << endl;
 							if(recv & Busy) {
 								//cout << "marking busy " << i << endl;
 								ownerlist[i] = i;
@@ -441,7 +441,7 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 			//check the down nodes and re-idle them if they are okay
 			for(int i = 1; i < worldSize; i++) {
 				if(ownerlist[i] == DOWN) {
-					cout << mark() << "Testing " << i << "..." << endl;
+					//cout << mark() << "Testing " << i << "..." << endl;
 					sendIns(Ping, i);
 					int recvd;
 					MPI_Iprobe(i, CONTROL, MPI_COMM_WORLD, &recvd, &m);
@@ -1211,8 +1211,17 @@ void GASP2control::server_prog() {
 				}
 				if(params.calcmethod == "qe") {
 					server_qe(good, step);
+					cout << mark() << "Processing outliers" << endl;
+					bad.clear();
+					GASP2pop ok;
+					GASP2pop bad = good.outliers(ok);
+					if(bad.size() > 0)
+						server_qe(bad,step);
+					good=ok;
+					good.addIndv(bad);
 				}
 				evalpop = good;
+
 
 			} //if good size > 0
 			else {
@@ -1284,7 +1293,7 @@ bool GASP2control::runEvals(Instruction i, GASP2pop* p, string machinefilename) 
 //	outf << machinefile << endl;
 //	outf.close();
 	eval_mut.lock();
-	cout << "runeval evalmode " << (int) i << endl;
+//	cout << "runeval evalmode " << (int) i << endl;
 	//only one of these will execute
 	if(i & DoFitcell) {
 		p->runFitcell(nodethreads);
@@ -1352,7 +1361,7 @@ void GASP2control::client_prog() {
 			i = None;
 			recvIns(i, 0);
 
-			cout << mark() << "client " << this->ID << " received: " << i << endl;
+			//cout << mark() << "client " << this->ID << " received: " << i << endl;
 			if(i & Shutdown) {
 				remove(localmachinefile.c_str());
 				return;
@@ -1378,7 +1387,7 @@ void GASP2control::client_prog() {
 			//do not allow the evalmode to change
 			if( (i & (DoFitcell | DoCharmm | DoQE | DoCustom)) && !queueEval) {
 				evalmode = i;
-				cout << "evalmode " << (int) evalmode << endl;
+				//cout << "evalmode " << (int) evalmode << endl;
 				queueEval = true;
 			}
 
@@ -1405,7 +1414,7 @@ void GASP2control::client_prog() {
 
 		if(queueSend) {
 			//see what the current evalmode
-			cout << "client " << ID << ": send queued" << endl;
+			//cout << "client " << ID << ": send queued" << endl;
 			if(evalmode & DoFitcell) {
 				if(eval_mut.try_lock()) {
 					if(!sendPop(evalpop, 0))
@@ -1436,7 +1445,7 @@ void GASP2control::client_prog() {
 		}
 
 		if(queueRecv) {
-			cout << "client " << ID << ": recv queued" << endl;
+			//cout << "client " << ID << ": recv queued" << endl;
 			if(!queueSend) {
 				if(eval_mut.try_lock()) {
 					eval_mut.unlock();
@@ -1455,7 +1464,7 @@ void GASP2control::client_prog() {
 		}
 
 		if(queueEval) {
-			cout << "client " << ID << ": eval queued " << evalmode << endl;
+			//cout << "client " << ID << ": eval queued " << evalmode << endl;
 			if(eval_mut.try_lock()) {
 				eval_mut.unlock();
 				temppop = evalpop;
@@ -1611,7 +1620,7 @@ bool GASP2control::sendPop(GASP2pop p, int target) {
 	pop += "\0";
 	int t = pop.length();
 
-	cout << mark() << " Sendpop to " << target << " launched, ID " << ID << ", size: " << t <<  endl;
+	//cout << mark() << " Sendpop to " << target << " launched, ID " << ID << ", size: " << t <<  endl;
 	//send size info
 	MPI_Issend(&t, 1, MPI_INT, target,POP1,MPI_COMM_WORLD, &m);
 	if(!testReq(m, 120))
@@ -1623,7 +1632,7 @@ bool GASP2control::sendPop(GASP2pop p, int target) {
 	if(!testReq(m, 120))
 		return false;
 
-	cout << mark() << " Sendpop " << target << " finished, ID " << ID << endl;
+	//cout << mark() << " Sendpop " << target << " finished, ID " << ID << endl;
 
 	return true;
 }
@@ -1638,7 +1647,7 @@ bool GASP2control::recvPop(GASP2pop *p, int target) {
 	MPI_Irecv(&v, 1, MPI_INT, target,POP1,MPI_COMM_WORLD, &m);
 	if(!testReq(m, 120))
 		return false;
-	cout << mark() << " Recvpop from " << target << " launched, ID " << ID << ", size: " << v << endl;
+	//cout << mark() << " Recvpop from " << target << " launched, ID " << ID << ", size: " << v << endl;
 	//char * buff = new char[v+1];
 	//recv hostname
 	pop.resize(v+1);
@@ -1659,7 +1668,7 @@ bool GASP2control::recvPop(GASP2pop *p, int target) {
 
 	//cout << "Error" <<  error << endl;
 
-	cout << mark() << " Recvpop " << target << " finished, ID " << ID << ", structsize: " << p->size() << endl;
+	//cout << mark() << " Recvpop " << target << " finished, ID " << ID << ", structsize: " << p->size() << endl;
 
 	return true;
 }

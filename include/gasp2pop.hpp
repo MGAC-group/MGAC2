@@ -78,6 +78,10 @@ public:
 
 	GASP2pop completeCheck();
 
+	//returns a list of structures that are probably bad energies
+	//the OK pop is structures that are sane looking in terms of energies
+	GASP2pop outliers(GASP2pop & ok);
+
 	//remove N worst members from the population (for elitism)
 	//returns the removed members
 	//removes based on sort order,

@@ -361,6 +361,15 @@ GASP2pop GASP2db::getIncomplete(string name) {
 }
 
 
+//used for converting structures in sql selected subset
+//this can totally and will break if care is not taken
+//to establish a correct setting
+GASP2pop GASP2db::getGeneral(string sql) {
+
+	return getxml(sql);
+
+}
+
 void GASP2db::addInput(string infile, int time) {
 
 	int ierr;

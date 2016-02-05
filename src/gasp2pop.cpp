@@ -1336,3 +1336,39 @@ void GASP2pop::setGen(int gen) {
 
 }
 
+GASP2pop GASP2pop::outliers(GASP2pop &ok) {
+
+	GASP2pop bad;
+
+	//QE sometimes produces bad energies that are way lower than they ought to be
+	//it's not clear why this happens; it's an edge case that isn't worth exploring
+
+	//these energies are usually pretty bad, 2-3 magnitudes lower than then expected
+	//energy. they need to be either recalculated or excluded in most situations;
+	//typically recalculating the energies has been a successful operation.
+
+	//find the median energy of the population
+	double median = structures[size()/2].getEnergy();
+
+	//the threshold is 1/100 the energy of the median
+	//for histan this is about 1,600 kJ/mol
+	//his threshold is basically well above the expected issue energy level,
+	//which can be twice the total energy of the structure
+	//(or, about 334,000 kJ/mol for histan)
+	double medthresh = median / 100.0;
+
+	//we onyl care about structures that are substantially
+	//LOWER than the true energy
+	//a structure that is substantuially higher is not unexpected
+	//and also not relevant
+	for(int i = 0; i < size(); i++) {
+		if( (median - structures[i].getEnergy() ) > medthresh )
+			bad.addIndv(structures[i]);
+		else
+			ok.addIndv(structures[i]);
+	}
+
+	return bad;
+
+}
+

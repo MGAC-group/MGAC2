@@ -84,6 +84,8 @@ public:
 
 	GASP2pop getIncomplete(string name);
 
+	GASP2pop getGeneral(string sql);
+
 	//input tables
 	void addInput(string infile, int time);
 	string getLastInput(int &lastgen);

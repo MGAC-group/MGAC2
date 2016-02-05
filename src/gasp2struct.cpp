@@ -1752,10 +1752,10 @@ bool GASP2struct::parseXMLStruct(tinyxml2::XMLElement * crystal, string & errors
 			errorstring = "interdist is required but not specified!.\n";
 			return false;
 		}
-		if(interdist <= 0.0) {
-			errorstring = "interdist is out of bounds (interdist > 0.0).\n";
-			return false;
-		}
+//		if(interdist <= 0.0) {
+//			errorstring = "interdist is out of bounds (interdist > 0.0).\n";
+//			return false;
+//		}
 
 		//intradist
 		if(!crystal->QueryDoubleAttribute("intradist", &dtemp)) {
