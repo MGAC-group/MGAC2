@@ -239,6 +239,7 @@ public:
 	bool evaluate(string hostfile, GASP2param params);
 
 	//getters n stuff
+	int getContacts() { return contacts; };
 	void setCluster(int c) { cluster=c; };
 	void setClustergroup (int cg) { this->clustergroup=cg; };
 	int getCluster() { return cluster; };
@@ -281,6 +282,7 @@ private:
 	//values
 	double interdist;
 	double intradist;
+	double contactdist;
 	double maxvol;
 	double minvol;
 
@@ -299,6 +301,7 @@ private:
 	double energy;
 	double force;
 	double pressure;
+	int contacts;
 
 	//identifiers
 	UUID ID;
@@ -359,7 +362,7 @@ private:
 	void makeSuperCell(vector<GASP2molecule> &supercell, int shells);
 	void resetMols(double d, vector<GASP2molecule> &supercell, Vec3 ratios);
 	bool checkConnect(vector<GASP2molecule> supercell);
-
+	void calcContacts(vector<GASP2molecule> supercell, int shells, int molcount);
 
 
 };

@@ -97,7 +97,7 @@ void GASP2db::initTable(string name) {
 		string sql=("CREATE TABLE IF NOT EXISTS "+name+"( "
 				"id TEXT PRIMARY KEY,"
 				"parentA TEXT, parentB TEXT, generation INT, version INT,"
-				"energy REAL, force REAL, pressure REAL, spacegroup INT, cluster INT,"
+				"energy REAL, force REAL, pressure REAL, contacts INT, spacegroup INT, cluster INT,"
 				"axis INT, type INT, centering REAL, subtype REAL,"
 				"state INT, error INT, time INT, steps INT,"
 				"a REAL, b REAL, c REAL, al REAL, bt REAL, gm REAL, ra REAL, rb REAL, rc REAL,"
@@ -109,7 +109,7 @@ void GASP2db::initTable(string name) {
 
 		ierr = sqlite3_exec(dbconn, sql.c_str(), NULL, NULL, &err);
 
-		//cout << "table create error: " << ierr << endl;
+		cout << "table create error: " << ierr << endl;
 
 		//sqlite3_exec(dbconn, "CREATE TABLE IF NOT EXISTS types(id INT PRIMARY KEY, name TEXT, xml TEXT)", NULL, NULL, &err);
 
@@ -136,7 +136,7 @@ bool GASP2db::create(GASP2pop pop, string table) {
 		//if there is already a primary key in the DB ignore the insert
 		string sql = ("INSERT OR IGNORE INTO "+table+" ("
 				"id, parentA, parentB, generation, version,"
-				"energy, force, pressure, spacegroup, cluster,"
+				"energy, force, pressure, spacegroup, cluster, contacts,"
 				"axis, type, centering, subtype,"
 				"state, error, time, steps,"
 				"Ia, Ib, Ic, Ial, Ibt, Igm, Ira, Irb, Irc,"
@@ -144,7 +144,7 @@ bool GASP2db::create(GASP2pop pop, string table) {
 				"Ixml"
 				") VALUES ("
 				"@id, @pa, @pb, @gen, @ver,"
-				"@en, @fr, @pr, @spcg, @cl,"
+				"@en, @fr, @pr, @spcg, @cl, @ctn,"
 				"@ax, @typ, @cen, @sub,"
 				"@st, @er, @tm, @steps,"
 				"@ia, @ib, @ic, @ial, @ibt, @igm, @ira, @irb, @irc,"
@@ -155,7 +155,7 @@ bool GASP2db::create(GASP2pop pop, string table) {
 		ierr = sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
 
 		//cout << sql << endl;
-		//cout << "create prep err: " << ierr << endl;
+		cout << "create prep err: " << ierr << endl;
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 
@@ -248,10 +248,11 @@ bool GASP2db::update(GASP2pop pop, string table) {
 //WHERE statements are optional, but
 GASP2pop GASP2db::getxml(string sql) {
 
+	//const char * cctemp;
 	char * err = 0;
 	sqlite3_stmt * stm;
 	string xml = "<pop>\n";
-	string stemp;
+	string stemp = "";
 	string xmlerr;
 	GASP2pop out;
 
@@ -264,11 +265,17 @@ GASP2pop GASP2db::getxml(string sql) {
 		int result;
 		while(true) {
 			result = sqlite3_step(stm);
-
+			stemp = "";
+			const char * cctemp;
 			if(result == SQLITE_ROW) {
-				stemp = reinterpret_cast<const char*>(sqlite3_column_text(stm, 0));
-				if(stemp.size() < 1)
-					stemp = reinterpret_cast<const char*>(sqlite3_column_text(stm, 1));
+				cctemp = ((char *) sqlite3_column_text(stm, 0));
+				if(cctemp != NULL)
+					stemp = reinterpret_cast<const char *>(cctemp);
+				if(stemp.size() < 1) {
+					cctemp = ((char *) sqlite3_column_text(stm, 1));
+					if(cctemp != NULL)
+						stemp =  reinterpret_cast<const char *>(cctemp);
+				}
 				xml += stemp;
 
 				//cout << "xml: " << xml.size() << " ";

@@ -26,7 +26,7 @@ struct Arg: public option::Arg
 	  }
 };
 
-enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS,CONVERT,SIZE,TEMPLATE,PLANE,THREADS };
+enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS,CONVERT,SIZE,TEMPLATE,PLANE,THREADS,TABLE };
 
 const option::Descriptor usage[] =
 {
@@ -42,6 +42,7 @@ const option::Descriptor usage[] =
 		{PLANE, 0, "p", "plane",Arg::NonEmpty, "-p, --plane Specifies the three atom plane to be used for a template (comma delimited)"},
 		//{RECLUSTER, 0, "g", "recluster",Arg::NonEmpty, "-g, --recluster Reclusters a population using a standard input for input and the population to be reclustered as the g argument"},
 		{THREADS, 0, "j", "threads",Arg::NonEmpty, "-j, --threads Number of threads to use (ie, clustering)"},
+		{TABLE,0,"b","table",Arg::NonEmpty,"-b, --table Specify table name to select from"},
 		{ 0, 0, 0, 0, 0, 0 }
 };
 
@@ -104,9 +105,13 @@ int main( int argc, char* argv[] ) {
     	}
     	if(options[INPUT] && options[CONVERT].arg != NULL) {
 
-    		size = 0;
+    		size = 100;
+    		string table = "structs";
     		if(options[SIZE]) {
     			size = std::stoi(string(options[SIZE].arg));
+    		}
+    		if(options[TABLE]) {
+    			table = options[TABLE].arg;
     		}
 
     		//TODO: need a way to set table name via arg
@@ -115,16 +120,31 @@ int main( int argc, char* argv[] ) {
 
     		GASP2db db;
     		db.load(options[INPUT].arg);
-    		if(size == 0)
-    			temppop = db.getAll("structs");
-    		else
-    			temppop = db.getBest(size,"structs");
+    		//if(size == 0)
+    		//	temppop = db.getAll("structs");
+    		//else
+    		//	temppop = db.getBest(size,"structs");
+
+    		temppop = db.getAll(table);
 
 
     		remove(options[CONVERT].arg);
     		//doc.Clear();
     		cout << mark() << "pop loaded" << endl;
+    		vector<GASP2pop> bins(230);
+    		for(int i = 0; i < bins.size(); i++)
+    			bins[i].clear();
+    		GASP2param p;
+    		p.clusterdiff = 0.01;
+    		//temppop.remIndv(30000);
+    		GASP2pop out;
+    		for(int i = 0; i < temppop.size(); i+=1000)
+    			out.addIndv(temppop.subpop(i,1000).spacebinUniques(threads,bins,p));
+    		temppop = out;
+    		out.clear();
+    		cout << "total total uniques: " << temppop.size() << endl;
     		temppop.energysort();
+    		temppop.remIndv(temppop.size() - size);
     		cout << mark() << "sorted" << endl;
     		temppop.runSymmetrize(threads);
     		cout << mark() << "symmed" << endl;

@@ -163,14 +163,16 @@ void GASP2control::setup_restart() {
 
 		cout << mark() << "Starting from restart population \"" << restart << "\"\n";
 
-
-		GASP2pop incomplete = db.getIncomplete("structs");
-		if(incomplete.size() > 0) {
-			server_qe(incomplete, startstep);
+		if(params.calcmethod == "qe") {
+			GASP2pop incomplete = db.getIncomplete("structs");
+			if(incomplete.size() > 0) {
+				//TODO:: add limiter for fitcell->qe transition
+				server_qe(incomplete, startstep);
+			}
+			incomplete.clear();
 		}
-		incomplete.clear();
-		GASP2pop complete = db.getAll("structs");
 
+		GASP2pop complete = db.getAll("structs");
 		complete.spacebinV(bins,params.popsize);
 
 	}
@@ -1060,6 +1062,19 @@ void GASP2control::server_prog() {
 	db.initTable("structs");
 	db.initTable("badfitcell");
 
+
+
+//	GASP2pop blah;
+//	blah.init(root, 3, Spacemode::Single, 4);
+//
+//	blah.runFitcell(1);
+//
+//	for(int i = 1; i < worldSize; i++)
+//		sendIns(Shutdown, i);
+//
+//	cout << mark() << "Shutting down" << endl;
+//	return;
+
 	setup_restart();
 
 
@@ -1127,10 +1142,13 @@ void GASP2control::server_prog() {
 			pre.addIndv(clusters[i]);
 			clusters[i].clear();
 		}
-		cout << mark() << "Precluster QE evaluation starting" << endl;
 		db.create(pre,"structs");
-		pre.runSymmetrize(hostlist[0].threads);
-		server_qe(pre, 0);
+
+		if(params.calcmethod == "qe") {
+			cout << mark() << "Precluster QE evaluation starting" << endl;
+			pre.runSymmetrize(hostlist[0].threads);
+			server_qe(pre, 0);
+		}
 
 		server_popcombine(pre);
 		bestpop.clear();
@@ -1220,6 +1238,7 @@ void GASP2control::server_prog() {
 					good=ok;
 					good.addIndv(bad);
 				}
+
 				evalpop = good;
 
 
@@ -1230,6 +1249,7 @@ void GASP2control::server_prog() {
 			}
 
 			//sort and reduce
+			//TODO: fix this area for contact method
 			cout << mark() << "Energy sort" << endl;
 			evalpop.energysort();
 

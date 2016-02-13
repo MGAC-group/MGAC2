@@ -168,6 +168,30 @@ inline double vdw( Elem type ) {
 
 }
 
+inline double vdw3( Elem tA, Elem tB ) {
+    if ( tA == Elem::H )
+        return 1.09;
+    else if ( tA == Elem::C )
+        return 1.75;
+    else if ( tA == Elem::N  )
+        return 1.61;
+    else if ( tA == Elem::O  )
+        return 1.56;
+    else if ( tA == Elem::F  )
+        return 1.44;
+    else if ( tA == Elem::S  )
+        return 1.79;
+    else if ( tA == Elem::Cl  )
+        return 1.74;
+    else if ( tA == Elem::Br  )
+        return 1.85;
+    //else if ( type == I  )
+    //    return 2.00;
+    else if ( tA == Elem::P  )
+        return 1.80;
+
+}
+
 int indexSelect(double n, int size);
 
 Vec3 modVec3 (Vec3 in);

@@ -43,7 +43,7 @@ GASP2param::GASP2param() {
 	ratiostep = 0.1;
 	posstep = 0.03;
 	angstep = rad(5.0);
-	precompute = 500;
+	precompute = 0;
 
 
 	//qe params

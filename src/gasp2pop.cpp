@@ -22,6 +22,12 @@ struct {
 
 struct {
 	bool operator() (GASP2struct a, GASP2struct b) {
+		return a.getContacts() > b.getContacts();
+	}
+} ccomp;
+
+struct {
+	bool operator() (GASP2struct a, GASP2struct b) {
 		return a.getSymmcount() > b.getSymmcount();
 	}
 } symmcomp;
@@ -47,7 +53,7 @@ void GASP2pop::energysort() {
 	std::sort(structures.begin(), structures.end(), ecomp);
 	for(int i = 0; i < structures.size(); i++) {
 		if(structures[i].getEnergy() >= 0.0) {
-			std::sort(structures.begin() + i, structures.end(), vcomp);
+			std::sort(structures.begin() + i, structures.end(), ccomp);
 			break;
 		}
 	}
@@ -336,6 +342,7 @@ GASP2pop GASP2pop::spacebinUniques(int threads, vector<GASP2pop> clusterbins, GA
 		//bins[i].energysort();
 		//bins[i].dedup(300); //FIXME: hardcoded value of 300 dedups, may not be safe
 		int s = tempbin[i].size();
+		if(s <= 0) continue;
 		int pre = out.size();
 		out.addIndv(tempbin[i].getUniques(clusterbins[i], p, threads));
 		total += (out.size() - pre);

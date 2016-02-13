@@ -26,8 +26,10 @@ GASP2struct::GASP2struct() {
 	energy = 0.0;
 	force = 0.0;
 	pressure = 0.0;
+	contacts = 0;
 	interdist = 0.0;
 	intradist = 0.0;
+	contactdist=0.2;
 	maxvol = 0.0;
 	minvol = 0.0;
 
@@ -373,6 +375,50 @@ void GASP2struct::resetMols(double d, vector<GASP2molecule> &supercell, Vec3 rat
 	//cout << mark() << "resetmolout: " <<ID.toStr()<< endl;
 }
 
+void GASP2struct::calcContacts(vector<GASP2molecule> supercell, int shells, int molcount) {
+	int count = 0;
+	double dist;
+
+	//find the center starting index
+	int middle = shells/2;
+	int center = molcount * middle * (1+ shells+shells*shells);
+	//cout << "center: " << center << endl;
+
+
+
+	//calculate the distances
+	for(int i = 0; i < supercell.size(); i++) {
+		for(int j = center; j < (center+molcount); j++) {
+			//cout << "i,j: " << i << "," << j << endl;
+			if(i == j) continue;
+			//check to see if there is interaction
+			dist = len(supercell[i].center-supercell[j].center);
+			if(dist > (VDWLimit + contactdist + supercell[i].extent + supercell[j].extent) ) {
+				//cout << "cont" << endl;
+				continue;
+			}
+
+			for(int m = 0; m < supercell[i].atoms.size(); m++) {
+				for(int n = 0; n < supercell[j].atoms.size(); n++) {
+					dist = len(supercell[i].atoms[m].pos - supercell[j].atoms[n].pos);
+
+					if(dist < (contactdist + vdw(supercell[i].atoms[m].type) + vdw(supercell[j].atoms[n].type)) ) {
+					//if(dist < (contactdist + vdw2(supercell[i].atoms[m].type, supercell[j].atoms[n].type)) ) {
+						//cout << "dist: " << dist << endl;
+						//cout << mark() << "checkconout: " <<ID.toStr()<< endl;q
+						count+=1;
+					}
+				}
+			}
+		}
+	}
+
+	//cout << "count: " << count << endl;
+
+	contacts = count / spacegroups[unit.spacegroup].R.size();
+
+}
+
 bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 
 	double dist;
@@ -390,6 +436,7 @@ bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 					dist = len(supercell[i].atoms[m].pos - supercell[j].atoms[n].pos);
 
 					if(dist < (interdist + vdw(supercell[i].atoms[m].type) + vdw(supercell[j].atoms[n].type)) ) {
+					//if(dist < (interdist + vdw2(supercell[i].atoms[m].type, supercell[j].atoms[n].type)) ) {
 						//cout << "dist: " << dist << endl;
 						//cout << mark() << "checkconout: " <<ID.toStr()<< endl;
 						return true;
@@ -427,6 +474,12 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 //	if(!lastVolOK)
 //		return -1.0;
 
+
+	//find the longest axis
+
+
+	//TODO: Increase linearly to determine true distance
+
 	//phase 2: binary search decreasing d
 	steps = 0;
 	while (steps < 1000) {
@@ -446,6 +499,9 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 		cout << mark() << "Something bad happened with a collapse cell" << endl;
 	}
 	//cout << mark() << "collapseout: " <<ID.toStr()<< endl;
+
+	calcContacts(supercell, 3, molecules.size());
+
 	return d;
 
 }
@@ -617,6 +673,9 @@ bool GASP2struct::fitcell(double tlimit) {
 	//order = axissettings[unit.axisorder];
 
 	collapseCell(supercell, ratios);
+
+	//this actually belongs in collapseCell
+	//calcContacts(supercell, 3, molecules.size());
 
 
 	//AML NOTES:
@@ -1548,6 +1607,7 @@ string GASP2struct::serializeXML() {
 	pr.OpenElement("crystal");
 	pr.PushAttribute("interdist",interdist);
 	pr.PushAttribute("intradist",intradist);
+	pr.PushAttribute("contactdist",contactdist);
 	pr.PushAttribute("maxvol",maxvol);
 	pr.PushAttribute("minvol",minvol);
 	pr.PushAttribute("name",names[crylabel].c_str());
@@ -1569,6 +1629,7 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("steps",steps);
 		pr.PushAttribute("force",force);
 		pr.PushAttribute("pressure",pressure);
+		pr.PushAttribute("contacts",contacts);
 	pr.CloseElement(); //info
 	//cout << "info close" << endl;
 	pr.OpenElement("cell");
@@ -1767,6 +1828,19 @@ bool GASP2struct::parseXMLStruct(tinyxml2::XMLElement * crystal, string & errors
 		}
 		if(intradist <= 0.0) {
 			errorstring = "intradist is out of bounds (intradist > 0.0).\n";
+			return false;
+		}
+
+		//contactdist
+		if(!crystal->QueryDoubleAttribute("contactdist", &dtemp)) {
+			contactdist = dtemp;
+		}
+		else {
+			errorstring = "contactdist is required but not specified!.\n";
+			return false;
+		}
+		if(contactdist <= interdist) {
+			errorstring = "contactdist must be greater than interdist!.\n";
 			return false;
 		}
 
@@ -2701,6 +2775,13 @@ bool GASP2struct::readInfo(tinyxml2::XMLElement *elem, string& errorstring) {
 		steps = itemp;
 	}
 
+	//contacts
+	contacts = 0;
+	if(!elem->QueryIntAttribute("contacts", &itemp)) {
+		contacts = itemp;
+	}
+
+
 	return true;
 
 }
@@ -2929,7 +3010,7 @@ bool GASP2struct::cifString(string &out, int rank) {
 	outf << setprecision(5) << fixed;
 	outf << "data_" << setfill('0') << setw(3) << rank << "_" << names[crylabel]+"_"+ID.toStr() << endl;
 	outf << "_symmetry_space_group_name_H-M  '" << spacegroupNames[unit.spacegroup] << "'\n";
-	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<",vs="<<getVolScore()<<endl;
+	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<",vs="<<getVolScore()<<",ct="<<contacts<<endl;
 	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<<",fc="<<tfconv(isFitcell)<< endl;
 //	outf << "loop_" << endl;
 //	outf << "_symmetry_equiv_pos_site_id" << endl;
@@ -3319,35 +3400,36 @@ void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
 	sqlite3_bind_double(stmt, 8, pressure);
 	sqlite3_bind_int(stmt, 9, unit.spacegroup);
 	sqlite3_bind_int(stmt, 10, cluster);
-	sqlite3_bind_int(stmt, 11, getAxisInt(unit.axn));
-	sqlite3_bind_int(stmt, 12, getSchoenfliesInt(unit.typ)); //this might be a bad idea, consider text
-	sqlite3_bind_double(stmt, 13, unit.cen);
-	sqlite3_bind_double(stmt, 14, unit.sub);
+	sqlite3_bind_int(stmt, 11, contacts);
+	sqlite3_bind_int(stmt, 12, getAxisInt(unit.axn));
+	sqlite3_bind_int(stmt, 13, getSchoenfliesInt(unit.typ)); //this might be a bad idea, consider text
+	sqlite3_bind_double(stmt, 14, unit.cen);
+	sqlite3_bind_double(stmt, 15, unit.sub);
 
 	int state=0;
 	if(complete) state=1;
-	sqlite3_bind_int(stmt, 15, state);
-	sqlite3_bind_int(stmt, 16, structErrToInt(finalstate));
-	sqlite3_bind_int(stmt, 17, time);
-	sqlite3_bind_int(stmt, 18, steps);
-	sqlite3_bind_double(stmt, 19, unit.a);
-	sqlite3_bind_double(stmt, 20, unit.b);
-	sqlite3_bind_double(stmt, 21, unit.c);
-	sqlite3_bind_double(stmt, 22, unit.alpha);
-	sqlite3_bind_double(stmt, 23, unit.beta);
-	sqlite3_bind_double(stmt, 24, unit.gamma);
-	sqlite3_bind_double(stmt, 25, unit.ratA);
-	sqlite3_bind_double(stmt, 26, unit.ratB);
-	sqlite3_bind_double(stmt, 27, unit.ratC);
-	sqlite3_bind_double(stmt, 28, unit.triA);
-	sqlite3_bind_double(stmt, 29, unit.triB);
-	sqlite3_bind_double(stmt, 30, unit.triC);
-	sqlite3_bind_double(stmt, 31, unit.monoB);
-	sqlite3_bind_double(stmt, 32, unit.rhomC);
+	sqlite3_bind_int(stmt, 16, state);
+	sqlite3_bind_int(stmt, 17, structErrToInt(finalstate));
+	sqlite3_bind_int(stmt, 18, time);
+	sqlite3_bind_int(stmt, 19, steps);
+	sqlite3_bind_double(stmt, 20, unit.a);
+	sqlite3_bind_double(stmt, 21, unit.b);
+	sqlite3_bind_double(stmt, 22, unit.c);
+	sqlite3_bind_double(stmt, 23, unit.alpha);
+	sqlite3_bind_double(stmt, 24, unit.beta);
+	sqlite3_bind_double(stmt, 25, unit.gamma);
+	sqlite3_bind_double(stmt, 26, unit.ratA);
+	sqlite3_bind_double(stmt, 27, unit.ratB);
+	sqlite3_bind_double(stmt, 28, unit.ratC);
+	sqlite3_bind_double(stmt, 29, unit.triA);
+	sqlite3_bind_double(stmt, 30, unit.triB);
+	sqlite3_bind_double(stmt, 31, unit.triC);
+	sqlite3_bind_double(stmt, 32, unit.monoB);
+	sqlite3_bind_double(stmt, 33, unit.rhomC);
 
 
 	stemp = this->serializeXML();
-	sqlite3_bind_text(stmt,33,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt,34,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
 
 	//step in time, step in time
 	sqlite3_step(stmt);
