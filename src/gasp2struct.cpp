@@ -3011,7 +3011,7 @@ bool GASP2struct::cifString(string &out, int rank) {
 	outf << "data_" << setfill('0') << setw(3) << rank << "_" << names[crylabel]+"_"+ID.toStr() << endl;
 	outf << "_symmetry_space_group_name_H-M  '" << spacegroupNames[unit.spacegroup] << "'\n";
 	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<",vs="<<getVolScore()<<",ct="<<contacts<<endl;
-	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<<",fc="<<tfconv(isFitcell)<< endl;
+	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<<",fc="<<tfconv(isFitcell)<<",cl="<<cluster<< endl;
 //	outf << "loop_" << endl;
 //	outf << "_symmetry_equiv_pos_site_id" << endl;
 //	outf << "_symmetry_equiv_pos_as_xyz" << endl;
@@ -3104,6 +3104,8 @@ string getStructError(StructError finalstate) {
 //(e.g., given a step size of 20 degrees, 30 degrees gives a value of 1.5)
 //FIXME:THIS CODE ASSUMES THAT EQUIVALENT STOICHIMETRIES ARE GIVEN AS INPUT
 //crystals that do not have the same stoichimetry will have PROBLEMS
+
+//IF TRUE, STRUCTURES ARE "THE SAME"
 bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average, double & chebyshev, double & euclid, double & num) {
 	vector<double> scores;
 	scores.reserve(100);
@@ -3123,6 +3125,10 @@ bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average,
 	//if we add scores for certain genes, there will be
 	//artifically high similarity
 	Spgroup spg = spacegroups[unit.spacegroup];
+
+
+
+
 
 	//enforce angles and lengths
 	if (spg.L == Lattice::Cubic ) {
@@ -3225,8 +3231,24 @@ bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average,
 	average -= chebyshev;
 	average /= static_cast<double>(scores.size()-1);
 
+	double percentage =  ( num / static_cast<double>(scores.size()) );
+
+	//check the cell lengths
+	//if all three are within 0.2 angstroms of each other
+	//and the genetic similarity is > 50%
+	//then they are more or less the same
+	if(percentage >= 0.5) {
+		if( (std::abs(unit.a - alt.unit.a) < 0.2) &&
+			(std::abs(unit.b - alt.unit.b) < 0.2) &&
+			(std::abs(unit.c - alt.unit.c) < 0.2) ) {
+			return true;
+		}
+
+	}
+
+
 	//if(average <= p.clustersize && chebyshev <= p.chebyshevlimit)
-	if( ( num / static_cast<double>(scores.size()) ) > p.clusterdiff )
+	if( percentage > p.clusterdiff )
 		return true;
 	return false;
 

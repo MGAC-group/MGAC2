@@ -135,12 +135,13 @@ int main( int argc, char* argv[] ) {
     		for(int i = 0; i < bins.size(); i++)
     			bins[i].clear();
     		GASP2param p;
-    		p.clusterdiff = 0.01;
+    		p.clusterdiff = 0.90;
     		//temppop.remIndv(30000);
     		GASP2pop out;
     		for(int i = 0; i < temppop.size(); i+=1000)
     			out.addIndv(temppop.subpop(i,1000).spacebinUniques(threads,bins,p));
     		temppop = out;
+    		temppop = temppop.spacebinUniques(threads,bins,p);
     		out.clear();
     		cout << "total total uniques: " << temppop.size() << endl;
     		temppop.energysort();

@@ -904,11 +904,14 @@ bool multiCompare(int start, int end, GASP2pop *self, GASP2pop *clusters, GASP2p
 	return true;
 }
 
-GASP2pop GASP2pop::getUniques(GASP2pop clusters, GASP2param p, int threads) {
+GASP2pop GASP2pop::getUniques(GASP2pop &clusters, GASP2param p, int threads) {
 	double average, chebyshev, euclid, localchebyshev, localavg;
 	int res;
 
 	GASP2pop out;
+
+	//reset clusters
+	clusterReset();
 
 	for(int n = 0; n < 2; n++) {
 		if (structures.size() < threads)
