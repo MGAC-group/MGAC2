@@ -27,6 +27,7 @@ GASP2struct::GASP2struct() {
 	force = 0.0;
 	pressure = 0.0;
 	contacts = 0;
+	pseudoenergy = 0.0;
 	interdist = 0.0;
 	intradist = 0.0;
 	contactdist=0.2;
@@ -375,6 +376,74 @@ void GASP2struct::resetMols(double d, vector<GASP2molecule> &supercell, Vec3 rat
 	//cout << mark() << "resetmolout: " <<ID.toStr()<< endl;
 }
 
+
+double GASP2struct::calcPseudoE(vector<GASP2molecule> supercell, int shells, int molcount) {
+	double e = 0.0;
+
+
+
+
+	//find the center starting index
+	int middle = shells/2;
+	int center = molcount * middle * (1+ shells+shells*shells);
+	//cout << "center: " << center << endl;
+
+	double dist, theta, r, rmin, rd, coul;
+
+	//calculate the distances
+	for(int i = 0; i < supercell.size(); i++) {
+		for(int j = center; j < (center+molcount); j++) {
+			//cout << "i,j: " << i << "," << j << endl;
+			if(i == j) continue;
+			//check to see if there is interaction
+			dist = len(supercell[i].center-supercell[j].center);
+			//cutoff of 10 angstroms
+			if(dist > (100.0 + supercell[i].extent + supercell[j].extent) ) {
+				//cout << "cont" << endl;
+				continue;
+			}
+
+			for(int m = 0; m < supercell[i].atoms.size(); m++) {
+				for(int n = 0; n < supercell[j].atoms.size(); n++) {
+
+					//this is the exp-6 potential with couloumb pseudocomponent
+					//two terms; the exponential term (repulsion),
+					//and the attractive vdw term (r^6)
+					//this form uses an alpha steepness of 1.0
+
+					//distance rij between atoms
+					r = len(supercell[i].atoms[m].pos - supercell[j].atoms[n].pos);
+					if(r < 0.7) {
+						e = 10000.0;
+						return e;
+					}
+					//energy well minimum
+					rmin = vdw(supercell[i].atoms[m].type) + vdw(supercell[j].atoms[n].type) / -5.0;
+					//energy well depth
+					theta = ewell(supercell[i].atoms[m].type, supercell[j].atoms[n].type);
+					// rij ^ 6 term
+					rd = rmin/r;
+					rd = rd * rd * rd;
+					rd = rd * rd;
+
+					//coulumb term
+					coul = ( 4.0 * supercell[i].atoms[m].charge * supercell[j].atoms[n].charge ) / r;
+
+					//energy addition
+					e += (theta * ( 6.0*std::exp(1.0-(r/rmin)) - rd ) + coul);
+
+
+				}
+			}
+		}
+	}
+
+	//cout << "count: " << count << endl;
+	e = e / static_cast<double>(spacegroups[unit.spacegroup].R.size());
+	return e;
+}
+
+
 void GASP2struct::calcContacts(vector<GASP2molecule> supercell, int shells, int molcount) {
 	int count = 0;
 	double dist;
@@ -474,30 +543,84 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 //	if(!lastVolOK)
 //		return -1.0;
 
-
+	double maxd = d;
 	//find the longest axis
+	double maxaxis = 0;
+	if(unit.a > maxaxis) maxaxis = unit.a;
+	if(unit.b > maxaxis) maxaxis = unit.b;
+	if(unit.c > maxaxis) maxaxis = unit.c;
 
+	steps = maxaxis/0.1;
+	diff_d = maxd/steps;
+	d = 1.0;
+
+
+	//find "connective minimum"
+	while(steps > 0 ) {
+		resetMols(d,supercell,ratios);
+		if(checkConnect(supercell))
+			d+= diff_d;
+		else
+			break;
+
+		steps--;
+	}
+
+
+	double max_d = d;
+	d = maxd-(20.0*diff_d);
+
+
+	double pseudo;
+	double minpseudo = 0.0;
+	double trueD;
+
+	//ofstream tempfile("energy",ofstream::app);
+	//ofstream ciffile("traj.cif",ofstream::app);
+	//string temp;
+	steps = 0;
+	while(d < max_d) {
+		resetMols(d,supercell,ratios);
+		//if(checkConnect(supercell))
+		pseudo = calcPseudoE(supercell, 3, molecules.size());
+		if(pseudo < minpseudo) {
+			minpseudo = pseudo;
+			trueD = d;
+		}
+		//tempfile << steps << "," << d << "," << pseudo << endl;
+		//cifString(temp,steps);
+		//ciffile << temp << endl;
+		d += diff_d;
+		steps++;
+	}
+
+	d = trueD;
+	resetMols(d,supercell,ratios);
+
+//	if(steps == 0) {
+//		cout << mark() << "Something bad happened with a collapse cell" << endl;
+//	}
 
 	//TODO: Increase linearly to determine true distance
 
 	//phase 2: binary search decreasing d
-	steps = 0;
-	while (steps < 1000) {
-		diff_d = std::abs(d - last_d) / 2.0;
-		last_d = d;
-		if (diff_d < 0.0625 && touches==false)
-			break; //this is 0.125 (not 0.25) because diff / 2
-		resetMols(d, supercell, ratios);
-		touches = checkConnect(supercell);
-		if (touches)
-			d += diff_d;
-		else
-			d -= diff_d;
-		steps++;
-	}
-	if(steps >= 1000) {
-		cout << mark() << "Something bad happened with a collapse cell" << endl;
-	}
+//	steps = 0;
+//	while (steps < 1000) {
+//		diff_d = std::abs(d - last_d) / 2.0;
+//		last_d = d;
+//		if (diff_d < 0.0625 && touches==false)
+//			break; //this is 0.125 (not 0.25) because diff / 2
+//		resetMols(d, supercell, ratios);
+//		touches = checkConnect(supercell);
+//		if (touches)
+//			d += diff_d;
+//		else
+//			d -= diff_d;
+//		steps++;
+//	}
+//	if(steps >= 1000) {
+//		cout << mark() << "Something bad happened with a collapse cell" << endl;
+//	}
 	//cout << mark() << "collapseout: " <<ID.toStr()<< endl;
 
 	calcContacts(supercell, 3, molecules.size());
@@ -1344,6 +1467,8 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 	childA.steps = childB.steps = 0;
 	childA.energy = 0.0;
 	childB.energy = 0.0;
+	childA.pseudoenergy = 0.0;
+	childB.pseudoenergy = 0.0;
 
 	//perform the crossing
 	//it is implied by De Jong et al. that
@@ -1630,6 +1755,7 @@ string GASP2struct::serializeXML() {
 		pr.PushAttribute("force",force);
 		pr.PushAttribute("pressure",pressure);
 		pr.PushAttribute("contacts",contacts);
+		pr.PushAttribute("pseudoenergy",pseudoenergy);
 	pr.CloseElement(); //info
 	//cout << "info close" << endl;
 	pr.OpenElement("cell");
@@ -1701,6 +1827,7 @@ string GASP2struct::serializeXML() {
 				pr.PushAttribute("x",mol.atoms[j].pos[0]);
 				pr.PushAttribute("y",mol.atoms[j].pos[1]);
 				pr.PushAttribute("z",mol.atoms[j].pos[2]);
+				pr.PushAttribute("c",mol.atoms[j].charge);
 			pr.CloseElement(); //atom
 			}
 
@@ -1979,6 +2106,11 @@ bool GASP2struct::readAtom(tinyxml2::XMLElement *elem, string& errorstring, GASP
 		else {
 			errorstring = "No value was given for a Z coordinate!\n";
 			return false;
+		}
+
+		at.charge = 0.0;
+		if(!elem->QueryDoubleAttribute("c", &dtemp)) {
+			at.charge = dtemp;
 		}
 
 	return true;
@@ -2727,6 +2859,11 @@ bool GASP2struct::readInfo(tinyxml2::XMLElement *elem, string& errorstring) {
 		energy = dtemp;
 	}
 
+	pseudoenergy = 0.0;
+	if(!elem->QueryDoubleAttribute("pseudoenergy", &dtemp)) {
+		pseudoenergy = dtemp;
+	}
+
 	//force
 	force = 0.0;
 	if(!elem->QueryDoubleAttribute("force", &dtemp)) {
@@ -3232,15 +3369,18 @@ bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average,
 	average /= static_cast<double>(scores.size()-1);
 
 	double percentage =  ( num / static_cast<double>(scores.size()) );
-
+	//cout << percentage << " ";
 	//check the cell lengths
-	//if all three are within 0.2 angstroms of each other
+	//if all three are within 1.0 angstroms of each other
 	//and the genetic similarity is > 50%
 	//then they are more or less the same
+	//why 1.0 ang? because highly similar unit cells will optimize to each other
+	//essentially, a wide net reduces the computational load
 	if(percentage >= 0.5) {
-		if( (std::abs(unit.a - alt.unit.a) < 0.2) &&
-			(std::abs(unit.b - alt.unit.b) < 0.2) &&
-			(std::abs(unit.c - alt.unit.c) < 0.2) ) {
+		if( (std::abs(unit.a - alt.unit.a) < 1.0) &&
+			(std::abs(unit.b - alt.unit.b) < 1.0) &&
+			(std::abs(unit.c - alt.unit.c) < 1.0) ) {
+			//cout << "cellsame" << endl;
 			return true;
 		}
 
@@ -3248,8 +3388,11 @@ bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average,
 
 
 	//if(average <= p.clustersize && chebyshev <= p.chebyshevlimit)
-	if( percentage > p.clusterdiff )
+	if( percentage > p.clusterdiff ) {
+		//cout << "genesame" << endl;
 		return true;
+	}
+	//cout << "notsame" << endl;
 	return false;
 
 
@@ -3423,35 +3566,36 @@ void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
 	sqlite3_bind_int(stmt, 9, unit.spacegroup);
 	sqlite3_bind_int(stmt, 10, cluster);
 	sqlite3_bind_int(stmt, 11, contacts);
-	sqlite3_bind_int(stmt, 12, getAxisInt(unit.axn));
-	sqlite3_bind_int(stmt, 13, getSchoenfliesInt(unit.typ)); //this might be a bad idea, consider text
-	sqlite3_bind_double(stmt, 14, unit.cen);
-	sqlite3_bind_double(stmt, 15, unit.sub);
+	sqlite3_bind_double(stmt, 12, pseudoenergy);
+	sqlite3_bind_int(stmt, 13, getAxisInt(unit.axn));
+	sqlite3_bind_int(stmt, 14, getSchoenfliesInt(unit.typ)); //this might be a bad idea, consider text
+	sqlite3_bind_double(stmt, 15, unit.cen);
+	sqlite3_bind_double(stmt, 16, unit.sub);
 
 	int state=0;
 	if(complete) state=1;
-	sqlite3_bind_int(stmt, 16, state);
-	sqlite3_bind_int(stmt, 17, structErrToInt(finalstate));
-	sqlite3_bind_int(stmt, 18, time);
-	sqlite3_bind_int(stmt, 19, steps);
-	sqlite3_bind_double(stmt, 20, unit.a);
-	sqlite3_bind_double(stmt, 21, unit.b);
-	sqlite3_bind_double(stmt, 22, unit.c);
-	sqlite3_bind_double(stmt, 23, unit.alpha);
-	sqlite3_bind_double(stmt, 24, unit.beta);
-	sqlite3_bind_double(stmt, 25, unit.gamma);
-	sqlite3_bind_double(stmt, 26, unit.ratA);
-	sqlite3_bind_double(stmt, 27, unit.ratB);
-	sqlite3_bind_double(stmt, 28, unit.ratC);
-	sqlite3_bind_double(stmt, 29, unit.triA);
-	sqlite3_bind_double(stmt, 30, unit.triB);
-	sqlite3_bind_double(stmt, 31, unit.triC);
-	sqlite3_bind_double(stmt, 32, unit.monoB);
-	sqlite3_bind_double(stmt, 33, unit.rhomC);
+	sqlite3_bind_int(stmt, 17, state);
+	sqlite3_bind_int(stmt, 18, structErrToInt(finalstate));
+	sqlite3_bind_int(stmt, 19, time);
+	sqlite3_bind_int(stmt, 20, steps);
+	sqlite3_bind_double(stmt, 21, unit.a);
+	sqlite3_bind_double(stmt, 22, unit.b);
+	sqlite3_bind_double(stmt, 23, unit.c);
+	sqlite3_bind_double(stmt, 24, unit.alpha);
+	sqlite3_bind_double(stmt, 25, unit.beta);
+	sqlite3_bind_double(stmt, 26, unit.gamma);
+	sqlite3_bind_double(stmt, 27, unit.ratA);
+	sqlite3_bind_double(stmt, 28, unit.ratB);
+	sqlite3_bind_double(stmt, 29, unit.ratC);
+	sqlite3_bind_double(stmt, 30, unit.triA);
+	sqlite3_bind_double(stmt, 31, unit.triB);
+	sqlite3_bind_double(stmt, 32, unit.triC);
+	sqlite3_bind_double(stmt, 33, unit.monoB);
+	sqlite3_bind_double(stmt, 34, unit.rhomC);
 
 
 	stemp = this->serializeXML();
-	sqlite3_bind_text(stmt,34,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt,35,stemp.c_str(),stemp.size(),SQLITE_TRANSIENT);
 
 	//step in time, step in time
 	sqlite3_step(stmt);

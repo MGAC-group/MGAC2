@@ -168,27 +168,50 @@ inline double vdw( Elem type ) {
 
 }
 
-inline double vdw3( Elem tA, Elem tB ) {
-    if ( tA == Elem::H )
-        return 1.09;
-    else if ( tA == Elem::C )
-        return 1.75;
-    else if ( tA == Elem::N  )
-        return 1.61;
-    else if ( tA == Elem::O  )
-        return 1.56;
-    else if ( tA == Elem::F  )
-        return 1.44;
-    else if ( tA == Elem::S  )
-        return 1.79;
-    else if ( tA == Elem::Cl  )
-        return 1.74;
-    else if ( tA == Elem::Br  )
-        return 1.85;
-    //else if ( type == I  )
-    //    return 2.00;
-    else if ( tA == Elem::P  )
-        return 1.80;
+
+
+//taken from the autodock version 3.0 manual
+//from : http://autodock.scripps.edu/faqs-help/manual/autodock-3-user-s-guide/AutoDock3.0.5_UserGuide.pdf
+//date : 2/22/2016
+//converted from kcal/mol to kJ/mol
+inline double ewell(Elem a, Elem b) {
+	if (a == Elem::C) {
+		if( b == Elem::C) return 0.6276;
+		else if( b == Elem::N) return 0.64852;
+		else if( b == Elem::O) return 0.723832;
+		else if( b == Elem::S) return 0.723832;
+		else if( b == Elem::H) return 0.23012;
+	}
+	else if (a == Elem::N) {
+		if( b == Elem::C) return 0.64852;
+		else if( b == Elem::N) return 0.66944;
+		else if( b == Elem::O) return 0.748936;
+		else if( b == Elem::S) return 0.748936;
+		else if( b == Elem::H) return 0.238488;
+	}
+	else if (a == Elem::O) {
+		if( b == Elem::C) return 0.723832;
+		else if( b == Elem::N) return 0.748936;
+		else if( b == Elem::O) return 0.8368;
+		else if( b == Elem::S) return 0.8368;
+		else if( b == Elem::H) return 0.26392;
+	}
+	else if (a == Elem::S) {
+		if( b == Elem::C) return 0.723832;
+		else if( b == Elem::N) return 0.748936;
+		else if( b == Elem::O) return 0.8368;
+		else if( b == Elem::S) return 0.8368;
+		else if( b == Elem::H) return 0.26392;
+	}
+	else if (a == Elem::H) {
+		if( b == Elem::C) return 0.23012;
+		else if( b == Elem::N) return 0.238488;
+		else if( b == Elem::O) return 0.26392;
+		else if( b == Elem::S) return 0.26392;
+		else if (b == Elem::H) return 0.08368;
+	}
+	else
+		return 0.0; //we don't know what the energy well actually is
 
 }
 

@@ -130,7 +130,7 @@ public:
 
 	//remove duplicate UUIDs
 	//since the chance of a collision is so low, is not problematic
-	void dedup(int max);
+	GASP2pop dedup(GASP2param p, int threads);
 
 	GASP2pop getCluster(int c);
 	void cluster(GASP2pop &clusters, GASP2param p, int threads);
@@ -139,7 +139,7 @@ public:
 	int assignClusterGroups(GASP2param p, int threads);
 	void stripClusters(int clusters, int n);
 	void clusterReset();
-	GASP2pop getUniques(GASP2pop &clusters, GASP2param p, int threads);
+	GASP2pop getUniques(GASP2pop clusters, GASP2param p, int threads);
 
 	void setGen(int gen);
 

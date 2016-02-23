@@ -28,6 +28,13 @@ struct {
 
 struct {
 	bool operator() (GASP2struct a, GASP2struct b) {
+		return a.getPseudoenergy() < b.getPseudoenergy();
+	}
+} psecomp;
+
+
+struct {
+	bool operator() (GASP2struct a, GASP2struct b) {
 		return a.getSymmcount() > b.getSymmcount();
 	}
 } symmcomp;
@@ -53,7 +60,7 @@ void GASP2pop::energysort() {
 	std::sort(structures.begin(), structures.end(), ecomp);
 	for(int i = 0; i < structures.size(); i++) {
 		if(structures[i].getEnergy() >= 0.0) {
-			std::sort(structures.begin() + i, structures.end(), ccomp);
+			std::sort(structures.begin() + i, structures.end(), psecomp);
 			break;
 		}
 	}
@@ -424,7 +431,7 @@ void GASP2pop::spacebinV(vector<GASP2pop> &bins, int binsize, int binsave) {
 
 	for(int i = 0; i < 230; i++) {
 		bins[i].energysort();
-		bins[i].dedup(binsize);
+		//bins[i].dedup(binsize);
 	}
 
 	std::sort(bins.begin(), bins.end(), popcomp);
@@ -449,7 +456,7 @@ GASP2pop GASP2pop::spacebin(int binsize, int binsave) {
 
 	for(int i = 0; i < 230; i++) {
 		bins[i].energysort();
-		bins[i].dedup(binsize);
+		//bins[i].dedup(binsize);
 	}
 
 	std::sort(bins.begin(), bins.end(), popcomp);
@@ -808,28 +815,7 @@ void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2mole
 }
 
 //VERY IMPORTANT! Before deduping population must be energy sorted.
-void GASP2pop::dedup(int max) {
 
-//this full loop thing is a Baaaaaaad idea
-//takes waaaaay too long
-	vector<GASP2struct> temp;
-
-	if(structures.size() > 0) {
-		temp.push_back(structures[0]);
-		for(int i = 1; i < structures.size(); i++) {
-			bool test = true;
-			for(int j = 0; j < temp.size(); j++) {
-				if(structures[i].getID() == temp[j].getID())
-					test = false;
-			}
-			if(test)
-				temp.push_back(structures[i]);
-			if(temp.size() >= max)
-				break;
-		}
-	}
-	structures = temp;
-}
 
 //extract all population members of a particular cluster
 GASP2pop GASP2pop::getCluster(int c) {
@@ -858,6 +844,113 @@ void GASP2pop::stripClusters(int clusters, int n) {
 
 }
 
+
+bool dedupCompare(int start, int end, GASP2pop *self, GASP2param p) {
+	double average, chebyshev, euclid, localchebyshev, localavg, num;
+	for(int j = start; j < end; j++) {
+
+		for(int i = 0; i < self->size(); i++) {
+			//if(self->indv(i)->getCluster() > -1) continue;
+			if(self->indv(i)->simpleCompare(*self->indv(j),p,average,chebyshev,euclid,num)) {
+				self->indv(j)->setCluster(1);
+				//break;
+			}
+		}
+	}
+
+}
+
+GASP2pop GASP2pop::dedup(GASP2param p, int threads) {
+	double average, chebyshev, euclid, localchebyshev, localavg, num;
+	bool result;
+
+	GASP2pop out;
+	p.clusterdiff = 0.90;
+	clusterReset();
+
+
+	for(int i = 0; i < size(); i++) {
+		if(structures[i].getCluster() > -1) continue;
+		for(int j = i+1; j < size(); j++) {
+			if(structures[i].simpleCompare(structures[j],p,average,chebyshev,euclid,num)) {
+				structures[j].setCluster(1);
+			}
+		}
+	}
+
+//	{
+//		if (structures.size() < threads)
+//			threads = structures.size();
+//		if(threads == 0) {
+//			return out;
+//		}
+//
+//		vector<future<bool>> futures(threads);
+//		vector<int> finalindex(threads + 1);
+//		chrono::milliseconds timeout(0);
+//		chrono::milliseconds thread_wait(20);
+//
+//		int thread_run = 0;
+//
+//		int s,e;
+//		int totalload = ( size() * size() - size() ) / 2;
+//		//cout << "size " << size() << endl;
+//		int threadavg = (totalload / threads);
+//		//cout << "threadavg " << threadavg << endl;
+//
+//		int val = 0;
+//		finalindex[0] = 1;
+//		int ind = 1;
+//		for(int i = 0; i < size(); i++) {
+//			val += (i+1);
+//			if(val > threadavg) {
+//				finalindex[ind] = i;
+//				//cout << "findex " << finalindex[ind] << endl;
+//				ind++;
+//				val = 0;
+//			}
+//		}
+//		finalindex[threads] = size();
+//
+//		for(int j = 0; j < threads; j++) {
+//			if(!futures[j].valid() ) {//&& (i < size()) && thread_run < threads ) {
+//				s = finalindex[j];
+//				e = finalindex[j+1];
+//				futures[j] = async(launch::async, dedupCompare, s,e, this, p);
+//
+//			}
+//		}
+//
+//
+////		}
+//		for(int j = 0; j < threads; j++) {
+//			if(futures[j].valid()) {
+//				//cout << "waiting on j: " << j << endl;
+//				futures[j].wait();
+//				futures[j].get();
+//				//cout << "got j: " << j << endl;
+//			}
+//		}
+//	}
+
+
+
+	int count = 0;
+	for(int i = 0; i < size(); i++) {
+		if(structures[i].getCluster() < 0)
+			count++;
+	}
+	out.reserve(count);
+
+	for(int i = 0; i < size(); i++) {
+		if(structures[i].getCluster() < 0)
+			out.addIndv(structures[i]);
+	}
+
+	return out;
+
+}
+
 bool multiCompare(int start, int end, GASP2pop *self, GASP2pop *clusters, GASP2param p) {
 	double average, chebyshev, euclid;
 	double num;
@@ -871,11 +964,12 @@ bool multiCompare(int start, int end, GASP2pop *self, GASP2pop *clusters, GASP2p
 
 
 		//this pass is to find all structures that match an existing known cluster
-		for(int j = 0; j < clusters->size(); j++)
+		for(int j = 0; j < clusters->size(); j++) {
 			if(self->indv(index)->simpleCompare(*clusters->indv(j), p, average, chebyshev, euclid, num)) {
 				cluster = j;
 				break;
 			}
+		}
 
 		//cout << "cluster " << cluster << endl;
 
@@ -904,14 +998,17 @@ bool multiCompare(int start, int end, GASP2pop *self, GASP2pop *clusters, GASP2p
 	return true;
 }
 
-GASP2pop GASP2pop::getUniques(GASP2pop &clusters, GASP2param p, int threads) {
+
+
+
+GASP2pop GASP2pop::getUniques(GASP2pop clusters, GASP2param p, int threads) {
 	double average, chebyshev, euclid, localchebyshev, localavg;
 	int res;
 
 	GASP2pop out;
 
 	//reset clusters
-	clusterReset();
+	//clusterReset();
 
 	for(int n = 0; n < 2; n++) {
 		if (structures.size() < threads)

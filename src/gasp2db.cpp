@@ -97,7 +97,7 @@ void GASP2db::initTable(string name) {
 		string sql=("CREATE TABLE IF NOT EXISTS "+name+"( "
 				"id TEXT PRIMARY KEY,"
 				"parentA TEXT, parentB TEXT, generation INT, version INT,"
-				"energy REAL, force REAL, pressure REAL, contacts INT, spacegroup INT, cluster INT,"
+				"energy REAL, force REAL, pressure REAL, contacts INT, spacegroup INT, cluster INT, pseudoenergy REAL,"
 				"axis INT, type INT, centering REAL, subtype REAL,"
 				"state INT, error INT, time INT, steps INT,"
 				"a REAL, b REAL, c REAL, al REAL, bt REAL, gm REAL, ra REAL, rb REAL, rc REAL,"
@@ -136,7 +136,7 @@ bool GASP2db::create(GASP2pop pop, string table) {
 		//if there is already a primary key in the DB ignore the insert
 		string sql = ("INSERT OR IGNORE INTO "+table+" ("
 				"id, parentA, parentB, generation, version,"
-				"energy, force, pressure, spacegroup, cluster, contacts,"
+				"energy, force, pressure, spacegroup, cluster, contacts, pseudoenergy,"
 				"axis, type, centering, subtype,"
 				"state, error, time, steps,"
 				"Ia, Ib, Ic, Ial, Ibt, Igm, Ira, Irb, Irc,"
@@ -144,7 +144,7 @@ bool GASP2db::create(GASP2pop pop, string table) {
 				"Ixml"
 				") VALUES ("
 				"@id, @pa, @pb, @gen, @ver,"
-				"@en, @fr, @pr, @spcg, @cl, @ctn,"
+				"@en, @fr, @pr, @spcg, @cl, @ctn, @pse,"
 				"@ax, @typ, @cen, @sub,"
 				"@st, @er, @tm, @steps,"
 				"@ia, @ib, @ic, @ial, @ibt, @igm, @ira, @irb, @irc,"
@@ -155,7 +155,7 @@ bool GASP2db::create(GASP2pop pop, string table) {
 		ierr = sqlite3_prepare_v2(dbconn, sql.c_str(), sql.size(), &stm, NULL);
 
 		//cout << sql << endl;
-		cout << "create prep err: " << ierr << endl;
+		//cout << "create prep err: " << ierr << endl;
 
 		sqlite3_exec(dbconn, "BEGIN TRANSACTION", NULL, NULL, &err);
 

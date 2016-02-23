@@ -26,7 +26,7 @@ struct Arg: public option::Arg
 	  }
 };
 
-enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS,CONVERT,SIZE,TEMPLATE,PLANE,THREADS,TABLE };
+enum optIndex {INPUT,HELP,RESTART,SPACEGROUPS,CONVERT,DEDUP,SIZE,TEMPLATE,PLANE,THREADS,TABLE };
 
 const option::Descriptor usage[] =
 {
@@ -36,6 +36,7 @@ const option::Descriptor usage[] =
 		//{STEP,0,"S","step",Arg::NonEmpty,"-S,--step Optional argument used to specify starting step"},
 		{SPACEGROUPS,0,"l","spacegroups",Arg::Optional,"-l,--spacegroups  List valid spacegroups"},
 		{CONVERT, 0, "c", "cif", Arg::NonEmpty, "-c, --cif  Name of output file for cif; takes the input (-i) and turns it into a cif"},
+		{DEDUP, 0, "d", "dedup", Arg::Optional, "-d, --dedup  De-duplicates structures in a cif conversion."},
 		//{COMBINE, 0, "m","merge",Arg::NonEmpty, "-m, --merge Combine multiple files to form a single population file (comma delimited)"},
 		{SIZE, 0, "s","size", Arg::NonEmpty, "-s, --size Used in conjunction with cif conversion to determine pop size"},
 		{TEMPLATE, 0, "t","template",Arg::NonEmpty, "-t, --template Creates an XML molecule template from a cif; if a plane is given then rotation and other values will be checked"},
@@ -137,13 +138,18 @@ int main( int argc, char* argv[] ) {
     		GASP2param p;
     		p.clusterdiff = 0.90;
     		//temppop.remIndv(30000);
-    		GASP2pop out;
-    		for(int i = 0; i < temppop.size(); i+=1000)
-    			out.addIndv(temppop.subpop(i,1000).spacebinUniques(threads,bins,p));
-    		temppop = out;
-    		temppop = temppop.spacebinUniques(threads,bins,p);
-    		out.clear();
-    		cout << "total total uniques: " << temppop.size() << endl;
+
+    		//NEED DEDUP FLAG
+    		if(options[DEDUP]) {
+    			GASP2pop out;
+				for(int i = 0; i < temppop.size(); i+=1000)
+					out.addIndv(temppop.subpop(i,1000).dedup(p,threads));
+				temppop = out;
+				temppop = temppop.dedup(p,threads);
+				out.clear();
+    		}
+
+    		cout << mark() << "Final structures: " << temppop.size() << endl;
     		temppop.energysort();
     		temppop.remIndv(temppop.size() - size);
     		cout << mark() << "sorted" << endl;

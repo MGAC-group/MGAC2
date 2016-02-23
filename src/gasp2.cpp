@@ -807,12 +807,12 @@ GASP2pop GASP2control::server_popbuild(int gen) {
 	//full cross with random pop insertion
 	else if (params.type == "fullcross" ) {
 
-		outpop = randpop;
-		outpop.addIndv( randpop.fullCross(params.spacemode) );
+		outpop = randpop.dedup(specialp, hostlist[0].threads);
+		outpop.addIndv( randpop.fullCross(params.spacemode).dedup(specialp,hostlist[0].threads) );
 
 		for(int i = 0; i < params.binlimit; i++) {
-			outpop.addIndv(bins[i].fullCross(params.spacemode));
-			outpop.addIndv(bins[i].fullCross(params.spacemode, rootpop));
+			outpop.addIndv(bins[i].fullCross(params.spacemode).dedup(specialp, hostlist[0].threads));
+			outpop.addIndv(bins[i].fullCross(params.spacemode, rootpop).dedup(specialp, hostlist[0].threads));
 			outpop = outpop.symmLimit(params.symmlimit);
 		}
 
@@ -896,24 +896,26 @@ GASP2pop GASP2control::server_popbuild(int gen) {
 	//this mode is used for clustered structure generation.
 	else if (params.type == "clustered") {
 
-		outpop = randpop;
+		outpop = randpop.dedup(specialp, hostlist[0].threads);
 		//outpop.addIndv( randpop.fullCross(params.spacemode) );
 		if(params.spacemode == Spacemode::Single) {
-			outpop.addIndv( randpop.newPop(replace,params.spacemode) );
+			outpop.addIndv( randpop.newPop(replace,params.spacemode).dedup(specialp, hostlist[0].threads) );
 		}
 		else{
-			outpop.addIndv( randpop.fullCross(params.spacemode) );
+			outpop.addIndv( randpop.fullCross(params.spacemode).dedup(specialp, hostlist[0].threads) );
 		}
 		randpop.scale(1.0,0.0,0.0);
 
 		for(int i = 0; i < params.binlimit; i++) {
+
 			bins[i].scale(params.const_scale, params.lin_scale, params.exp_scale);
-			outpop.addIndv(bins[i].newPop(replace,params.spacemode));
-			outpop.addIndv(bins[i].newPop(randpop,replace,params.spacemode));
+			outpop.addIndv(bins[i].newPop(replace,params.spacemode).dedup(specialp, hostlist[0].threads));
+			outpop.addIndv(bins[i].newPop(randpop,replace,params.spacemode).dedup(specialp, hostlist[0].threads));
 		}
 
 		outpop = outpop.symmLimit(params.symmlimit);
 		//outpop = outpop.spacebinUniques(hostlist[0].threads, bins, specialp);
+		//outpop = outpop.dedup(params, hostlist[0].threads);
 
 	}
 	else if(params.type == "finaleval") {
@@ -980,6 +982,11 @@ void GASP2control::server_popcombine(GASP2pop pop) {
 	}
 	else if (params.type == "fullcross" || params.type == "clustered") {
 		pop.spacebinV(bins, params.popsize);
+		double temp = params.clusterdiff;
+		params.clusterdiff = 0.90;
+		for(int i = 0; i < bins.size(); i++)
+			bins[i].dedup(params,hostlist[0].threads);
+		params.clusterdiff = temp;
 	}
 	else if (params.type == "precluster") {
 		pop.spacebinCluster(hostlist[0].threads, bins, clusters, params);
@@ -997,7 +1004,6 @@ void GASP2control::server_popcombine(GASP2pop pop) {
 		}
 		cout << endl;
 	}
-
 
 
 
@@ -1065,10 +1071,8 @@ void GASP2control::server_prog() {
 
 
 //	GASP2pop blah;
-//	blah.init(root, 3, Spacemode::Single, 4);
-//
+//	blah.init(root, 2, Spacemode::Single, 4);
 //	blah.runFitcell(1);
-//
 //	for(int i = 1; i < worldSize; i++)
 //		sendIns(Shutdown, i);
 //

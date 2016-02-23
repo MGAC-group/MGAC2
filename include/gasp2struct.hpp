@@ -36,6 +36,7 @@ int structErrToInt(StructError err);
 
 struct GASP2atom {
 	Vec3 pos; //always stored as cartesian angstrom coord
+	double charge;
 	Elem type;
 	NIndex label; //index to a string in "names";
 };
@@ -240,6 +241,7 @@ public:
 
 	//getters n stuff
 	int getContacts() { return contacts; };
+	double getPseudoenergy() { return pseudoenergy; };
 	void setCluster(int c) { cluster=c; };
 	void setClustergroup (int cg) { this->clustergroup=cg; };
 	int getCluster() { return cluster; };
@@ -302,6 +304,7 @@ private:
 	double force;
 	double pressure;
 	int contacts;
+	double pseudoenergy;
 
 	//identifiers
 	UUID ID;
@@ -363,6 +366,7 @@ private:
 	void resetMols(double d, vector<GASP2molecule> &supercell, Vec3 ratios);
 	bool checkConnect(vector<GASP2molecule> supercell);
 	void calcContacts(vector<GASP2molecule> supercell, int shells, int molcount);
+	double calcPseudoE(vector<GASP2molecule> supercell, int shells, int molcount);
 
 
 };
