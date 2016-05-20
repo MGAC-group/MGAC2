@@ -15,7 +15,8 @@ using namespace std;
  *
  * 1) Workflow
  * -The server and clients are initialized.
- * -Both server and the clients read the input file.
+ * -Server reads the input file and transmits to
+ * client programs
  * -The server generates a new population from the
  * root structure definition. This becomes the rootpop.
  * -The server fitcells the rootpop, then forks off
@@ -54,7 +55,7 @@ using namespace std;
  *
  * 3) Send/Receive Structure
  *
- * Structures are sent via xml or (eventually) HDF5 files. These are
+ * Structures are sent via xml. These are
  * interpreted by the receiver. By packaging the message as a file
  * development time is saved if future features are implemented.
  *
@@ -65,13 +66,13 @@ using namespace std;
  * 4) Fitcell/Optimization scheduling
  *
  * Fitcell is spread across as many threads as there are physical processors.
- * So, a 12 core node will have 12 threads. The threads a C11 threads,
+ * So, a 12 core node will have 12 threads. The threads are C++11 threads,
  * but since the calculation has deterministic time (I am not aware of any
  * situation where the thread would not complete) then the threads do not
  * need to be terminated
  *
  * Optimization for QE is accomplished by receiving a machinefile from the
- * server along with a single member population, and then dispatching a thread.
+ * server along with a single individual population, and then dispatching a thread.
  * This thread calls a special version of popen which also returns the
  * subprocess assigned to QE. Then, as QE executes, the output pipe is read
  * periodically by the thread, enabling real time data collection and eliminating
@@ -114,7 +115,7 @@ typedef enum Instruction {
 	DoFitcell = (1u<<5), //order to client to perform fitcell
 	DoCharmm = (1u<<6), //reserved for future usage, not implemented
 	DoQE = (1u<<7), //order to client to perform QE
-	DoCustom = (1u<<8), //order to client to perform custom eval
+	DoCustom = (1u<<8), //order to client to perform custom eval, NOT IMPLEMENTED
 	Shutdown = (1u<<9), //Send a shutdown signal for cleanup n stuff
 	GetHost = (1u<<10),
 	Complete = (1u<<11),
@@ -130,40 +131,41 @@ class GASP2control {
 public:
 	//GASP2control(string infile);
 	GASP2control(int ID); //client version
-	GASP2control(time_t start, int size, string input, string restart);
+	GASP2control(time_t start, int size, string input, string restart); //server version
 	void server_prog();
 	void client_prog();
 	GASP2param getParams() {return params;};
 
 private:
 	//procedural variables
-	time_t starttime;
-	int startstep;
-	string infile;
-	string restart;
-	int worldSize;
-	int ID;
+	time_t starttime; //time of startup
+	int startstep; //starting generation of sim
+	string infile; //input file
+	string restart; //restart file
+	int worldSize; //number of nodes in world
+	int ID; //the logical MPI id of this node
 
-	string hostname;
-	int nodethreads;
+	string hostname; //hostname of the current node
+	int nodethreads; //number of threads the node can run
 
-	GASP2db db;
-	GASP2param params;
+	GASP2db db; //database for storing structures
+	GASP2param params; //parameters assigned from input
 	GASP2struct root; //base structure which all other structures are derived from
-	GASP2pop rootpop; //pop constructed from a root (or possibly from a restart)
+	GASP2pop rootpop; //pop constructed from the root structure (or possibly from a restart)
 	GASP2pop randpop; //random pop
 
-	Instruction evalmode;
+	Instruction evalmode; //the base evalmode for this node (eg QE, fitcell, charmm)
 
-	vector<GASP2pop> clusters;
-	vector<GASP2pop> bins;
+	//these vectors are organized by spacegroup
+	vector<GASP2pop> clusters; //clustered structure from preclustering algorithm
+	vector<GASP2pop> bins; //binned populations for structures
 
-	vector<Host> hostlist;
-	vector<int> ownerlist;
+	vector<Host> hostlist; //list of hostnames (server only)
+	vector<int> ownerlist; //stores ownership state of nodes
 
-	bool testReq(MPI_Request &m, int t);
+	bool testReq(MPI_Request &m, int t); //helper routine to test if a communication worked
 
-	//control instructions
+	//send/recv control instructions
 	bool sendIns(Instruction i, int target);
 	bool recvIns(Instruction &i, int target);
 
@@ -172,16 +174,20 @@ private:
 	bool recvPop(GASP2pop *p, int sender);
 
 	//for sending MPI host info between nodes
-	//can also be used for sending strings in general
+	//can also be used for sending strings in general (like the input
 	bool sendHost(string host, int procs, int target);
 	bool recvHost(string &host, int &procs, int target);
 
+	//performs evaluations
 	bool runEvals(Instruction i, GASP2pop *p, string machinefilename);
 
+	//generates a string machinefile for a given set of nodes
 	string makeMachinefile(vector<int> slots);
 
+	//reads and writes host info (hostname, number of cores)
 	void getHostInfo();
 	void writeHost(string name, string data);
+
 
 	bool writePopXML(GASP2pop pop, string tag, int step);
 	//bool writeBins(vector<GASP2pop> bins, string tag, int step);
@@ -189,14 +195,15 @@ private:
 	bool parseInput(tinyxml2::XMLDocument *doc, string & errorstring);
 
 	//string mark();
-	void server_fitcell(GASP2pop &pop);
-	void server_qe(GASP2pop &pop, int step);
-	void ownerlist_update();
-	void server_randbuild(int gen);
-	GASP2pop server_popbuild(int gen);
-	void setup_restart();
-	void server_popcombine(GASP2pop pop);
-	void down_check();
+	//various subroutines of server program
+	void server_fitcell(GASP2pop &pop); //runs and distributes fitcell
+	void server_qe(GASP2pop &pop, int step); //runs and distributes QE
+	void ownerlist_update(); //check the node ownership and update the ownerlist
+	void server_randbuild(int gen); //generates a random population
+	GASP2pop server_popbuild(int gen); //generates a new population for evaluation
+	void setup_restart(); //setup MGAC to restart
+	void server_popcombine(GASP2pop pop); //combines populations
+	void down_check(); //tests for down nodes
 
 
 

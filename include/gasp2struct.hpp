@@ -188,6 +188,8 @@ string getStructError(StructError finalstate);
 
 //AML: NO POINTERS. We are not writing copy constructors.
 
+//AML: REPEAT: NO POINTERS IN GASP2struct. WE ARE NOT WRITING COPY CONSTRUCTORS.
+
 class GASP2struct {
 	//friend GASP2db; //this is HACKTOWN
 public:

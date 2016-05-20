@@ -2,7 +2,7 @@
 
 //using namespace std;
 
-//static data
+//static data for spacegroups
 vector<Spgroup> spacegroups;
 vector<string> spacegroupNames;
 
@@ -755,7 +755,7 @@ bool loadSpaceGroups() {
 
 }
 
-//adapted from the original MGAC code (not sure who wrote this particular code
+//adapted from the original MGAC code (not sure who wrote this particular code)
 void parseSymop ( string symm, Mat3 &symmR, Vec3 &symmT ) {
 
     double    aux_coord;
@@ -869,6 +869,8 @@ int pclose2(pid_t pid, FILE *outfp) {
   return kill(pid, SIGTERM);
 }
 
+
+//outputs the time of an event in [dd-hh:mm:ss]
 string mark() {
 	string out = "[";
 	time_t t = time(0);

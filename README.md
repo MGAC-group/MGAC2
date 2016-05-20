@@ -51,5 +51,7 @@ A hook for steady state methods exists in gasp2.cpp at line 1304, This is where 
 
 SQL stuff: 
 
+
+
 Outlier filter testing: There is a function designed to test if a structure energy is way out of range. (GASP2pop.cpp, line 1496). It isn't working right. 
 

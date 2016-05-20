@@ -34,11 +34,11 @@ public:
 	//crystal params
 	//double distcell; //0.05 ang
 	//double intradist; //0.5 ang
-	string name; //REQUIRED
+	string name; //REQUIRED name of structure
 	//double expectvol; //REQUIRED
 	//double maxvol; //100.0
 	//double minvol; //-50.0
-	string spacegroup; //REQUIRED
+	string spacegroup; //REQUIRED ?
 
 	//run params
 	string calcmethod; //REQUIRED: fitcell, qe, custom
@@ -53,25 +53,26 @@ public:
 	int popsize; //30
 	int seed; //0
 	bool test_seed; //if true; sets seed to 0
-	double const_scale;
-	double lin_scale;
-	double exp_scale;
-	string outputmode;
-	string outputfile;
-	Spacemode spacemode;
-	Index group;
-	int symmlimit;
+	double const_scale; //scaling parameters
+	double lin_scale; // ..
+	double exp_scale;// ..
+	string outputmode; //SQLITE ONLY
+	string outputfile; //name of outputfile
+	Spacemode spacemode; //single, limited, or full spacegroup mode
+	Index group; //single spacegroup specification
+	int symmlimit; //limit to number of symm groups
 	int binlimit; //number of bins to limit search on
 	int downlimit; //number of downed nodes
 	int precompute;
-	double clusterdiff; //number of differences between two structs
+	double clusterdiff; //percent difference between two structs
 	double clustersize;
 	double chebyshevlimit;
-	double dihstep;
-	double rotstep;
-	double ratiostep;
-	double posstep;
-	double angstep;
+	//the following parameters are for clustering
+	double dihstep; //minimum difference between dihedrals
+	double rotstep; // rotations difference
+	double ratiostep; //ratio difference
+	double posstep; //fractional position difference
+	double angstep; //cell angle differences
 
 
 
@@ -114,10 +115,7 @@ public:
 	string Cscript; //REQUIRED name of conversion/running script
 
 	//parsers and writers
-	bool serializeXML(string filename) {return true;};
-	bool serializeH5(string filename) {return true;};
 	bool parseXML( tinyxml2::XMLDocument *doc, string& errorstring );
-	bool readH5(string filename) {return true;};
 	void logParams();
 
 

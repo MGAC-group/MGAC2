@@ -53,6 +53,8 @@ using namespace std;
 typedef unsigned int Index;
 typedef unsigned int NIndex;
 
+
+//elements
 typedef enum struct Elem {
 	UNK=0,C,H,N,O,P,Cl,F,S,Br,
 }Elem;
@@ -60,6 +62,7 @@ typedef enum struct Elem {
 typedef enum struct Centering {
 	UNK=0, P, C, I, F, R, H,
 }Centering;
+
 
 typedef enum struct Schoenflies {
 	 UNK=0,Cn, Cnv, Cnh, Sn, Dn, Dnh, Dnd,

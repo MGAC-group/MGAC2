@@ -424,7 +424,7 @@ void GASP2db::addInput(string infile, int time) {
 	}
 }
 
-//helper function for ?
+//helper function for getting previous inputs?
 string GASP2db::getLastInput(int &lastgen) {
 
 	int ierr;

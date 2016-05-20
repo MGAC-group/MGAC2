@@ -43,6 +43,7 @@ public:
 
 	GASP2pop subpop(int start, int subsize);
 
+	//initializes a new pop
 	void init(GASP2struct s, int size, Spacemode mode, Index spcg = 1);
 
 	//generate a new population by crossing the
@@ -96,6 +97,8 @@ public:
 	GASP2pop symmLimit(int limit) {GASP2pop t; return symmLimit(t, limit);};
 	GASP2pop volLimit(GASP2pop &bad);
 	GASP2pop symmLimit(GASP2pop &bad, int limit);
+
+	//sorts structures into bins based on spacegroups
 	GASP2pop spacebin(int binsize, int binsave = 230);
 	void spacebinV(vector<GASP2pop> &bins, int binsize, int binsave = 230);
 	void spacebinCluster(int threads, vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave = 230);
@@ -126,6 +129,7 @@ public:
 	bool parseXML(string name, string &errorstring);
 	bool loadXMLrestart(tinyxml2::XMLElement *elem, string& errorstring);
 
+	//writes a cif directly
 	bool writeCIF(string name);
 
 	//remove duplicate UUIDs
