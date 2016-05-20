@@ -129,6 +129,11 @@ GASP2control::GASP2control(time_t start, int size, string input, string restart)
 
 }
 
+
+//interprets /proc/cpuinfo to determine how many physical CPUs exist on the
+//machine for accurate thread work distribution
+//determines the hostname of the machine
+//for MPI distribution
 void GASP2control::getHostInfo() {
 
 	FILE * p =  popen("cat /proc/cpuinfo | grep \"physical id\" | sort | uniq | wc -l","r");
@@ -156,7 +161,7 @@ void GASP2control::getHostInfo() {
 
 //handles the restart logic
 
-//FIXME FIXME FIXME
+//FIXME: why is there a fixme here? something is wrong probably
 void GASP2control::setup_restart() {
 
 	if(restart.length() > 0) {
@@ -178,6 +183,8 @@ void GASP2control::setup_restart() {
 	}
 }
 
+
+//AML: this is old code
 //		//the rootpop might have zero energy structures
 //		//those need to be evaluated first
 //
@@ -216,6 +223,8 @@ void GASP2control::setup_restart() {
 //}
 
 
+
+//server routine for distributing fitcell across all available cores
 void GASP2control::server_fitcell(GASP2pop &pop) {
 	//distribute the structures evenly so
 	//that one host doesn't get too overloaded.
@@ -302,6 +311,7 @@ void GASP2control::server_fitcell(GASP2pop &pop) {
 		//cout << "i:" << i << endl;
 	}
 
+	//recombine populations
 	pop.clear();
 	for(int i = 0; i < worldSize; i++)
 		pop.addIndv(split[i]);
@@ -311,10 +321,16 @@ void GASP2control::server_fitcell(GASP2pop &pop) {
 
 }
 
+//this routine distributes QE across nodes
+//WARNING: this is a really unstable method
+//if QE exits uncleanly then it messes up MPI
+//communication somehow
 
+//A single node cannot run this method and will hang forever!
 void GASP2control::server_qe(GASP2pop &pop, int step) {
 		int completed_structs;
 		int launched_structs;
+		int downcount;
 		MPI_Status m;
 		Instruction recv, send;
 		auto restart_timer = chrono::steady_clock::now();
@@ -483,185 +499,193 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 					avail++;
 
 
-
+			downcount = 0;
+			// if there are more than 3 down nodes at the end of the process, then we kill
+			for(int i = 0; i < worldSize; i++) {
+				if(ownerlist[i] == DOWN) {
+					downcount++;
+				}
+			}
 
 			//if there are clients available, try three times to launch a job
-			for(int n = 0; n < 3; n++) {
-				if(avail > 0) {
+			//if any nodes are down, skip launch
+			if (downcount < 1) {
+				for(int n = 0; n < 3; n++) {
+					if(avail > 0) {
 
-					cout << mark() << " evallist: ";
-					for(int i = 0; i < evallist.size(); i++)
-						cout << evallist[i] << " ";
-					cout << endl;
+						cout << mark() << " evallist: ";
+						for(int i = 0; i < evallist.size(); i++)
+							cout << evallist[i] << " ";
+						cout << endl;
 
-					int ind = -1;
-					for(int i = 0; i < evallist.size();i++) {
-						if(evallist[i] == 0)  {
-							ind = i;
-							break;
+						int ind = -1;
+						for(int i = 0; i < evallist.size();i++) {
+							if(evallist[i] == 0)  {
+								ind = i;
+								break;
+							}
 						}
-					}
-					if(ind == -1) break;
+						if(ind == -1) break;
 
-					cout << mark() << "Evaluating structure " << ind << ", ID " << pop.indv(ind)->getID().toStr() << endl;
-					cout << mark() << "structures avail: " << avail << endl;
-					cout << mark() << " ownerlist: ";
-					for(int i = 0; i < worldSize; i++)
-						cout << ownerlist[i] << " ";
-					cout << endl;
+						cout << mark() << "Evaluating structure " << ind << ", ID " << pop.indv(ind)->getID().toStr() << endl;
+						cout << mark() << "structures avail: " << avail << endl;
+						cout << mark() << " ownerlist: ";
+						for(int i = 0; i < worldSize; i++)
+							cout << ownerlist[i] << " ";
+						cout << endl;
 
-					//see how many nodes are needed
-					int given;
-					int needed;
-					int next_needed;
+						//see how many nodes are needed
+						int given;
+						int needed;
+						int next_needed;
 
-					//we need as many nodes as there are symmops
-					//if P1, we take two nodes to avoid serverthread
-					if(pop.indv(ind)->getSymmcount() == 1)
-						needed = 2;
-					else
-						needed = pop.indv(ind)->getSymmcount();
-
-					//we see how many nodes the next structure needs
-					int next_ind = -1;
-					for(int i = ind+1; i < evallist.size();i++) {
-						if(evallist[i] == 0)  {
-							next_ind = i;
-							break;
-						}
-					}
-
-					if(next_ind >= 0) {
-						if(pop.indv(next_ind)->getSymmcount() == 1)
-							next_needed = 2;
+						//we need as many nodes as there are symmops
+						//if P1, we take two nodes to avoid serverthread
+						if(pop.indv(ind)->getSymmcount() == 1)
+							needed = 2;
 						else
-							next_needed = pop.indv(next_ind)->getSymmcount();
-					}
-					else
-						next_needed = 0;
+							needed = pop.indv(ind)->getSymmcount();
 
-					//in the event we do not have enough nodes
-					//to fulfill the symmetry needs
-					if(needed > worldSize)
-						given = avail;
-
-					if(next_needed > (avail-needed))
-						given = avail;
-					else if (next_needed == 0)
-						given = avail;
-					else
-						given = needed;
-
-					//limit the maximum number of nodes
-					//to eight, because of efficiency concerns
-					if(given > 8)
-						given = 8;
-
-					cout << mark() << "needed is " << needed << endl;
-					cout << mark() << "next_needed is " << next_needed << endl;
-					cout << mark() << "given is " << given << endl;
-
-
-					//get the slots
-					vector<int> slots;
-					slots.clear();
-					int first = IDLE;
-					for(int i = worldSize-1; i >= 0; i--) {
-						if(ownerlist[i] == IDLE) {
-							if(first == IDLE)
-								first = i;
-							slots.push_back(i);
-							ownerlist[i] = first;
+						//we see how many nodes the next structure needs
+						int next_ind = -1;
+						for(int i = ind+1; i < evallist.size();i++) {
+							if(evallist[i] == 0)  {
+								next_ind = i;
+								break;
+							}
 						}
-						if(slots.size() >= given)
-							break;
-					}
 
-
-					cout << mark() << "first is " << first << endl;
-//								if(first == IDLE)
-//									break;
-
-					avail -= given;
-					cout << mark() << "avail is " << avail << endl;
-
-					string hostfile;
-					hostfile.clear();
-					hostfile = makeMachinefile(slots);
-
-					if(first == 0) {
-						//writeHost(localmachinefile, hostfile);
-					}
-					else {
-						sendIns(GetHost, first);
-						if(!sendHost(hostfile, 0, first)) {
-							cout << mark() << "Sever host send failed" << endl;
-							ownerlist[first] = DOWN;
+						if(next_ind >= 0) {
+							if(pop.indv(next_ind)->getSymmcount() == 1)
+								next_needed = 2;
+							else
+								next_needed = pop.indv(next_ind)->getSymmcount();
 						}
-					}
+						else
+							next_needed = 0;
 
-					if(ownerlist[first] == first) { //prevents launch if first node goes DOWN
-						evaldind[first] = ind;
-						localpops[first] = pop.subpop(ind,1);
+						//in the event we do not have enough nodes
+						//to fulfill the symmetry needs
+						if(needed > worldSize)
+							given = avail;
+
+						if(next_needed > (avail-needed))
+							given = avail;
+						else if (next_needed == 0)
+							given = avail;
+						else
+							given = needed;
+
+						//limit the maximum number of nodes
+						//to eight, because of efficiency concerns
+						if(given > 8)
+							given = 8;
+
+						cout << mark() << "needed is " << needed << endl;
+						cout << mark() << "next_needed is " << next_needed << endl;
+						cout << mark() << "given is " << given << endl;
+
+
+						//get the slots
+						vector<int> slots;
+						slots.clear();
+						int first = IDLE;
+						for(int i = worldSize-1; i >= 0; i--) {
+							if(ownerlist[i] == IDLE) {
+								if(first == IDLE)
+									first = i;
+								slots.push_back(i);
+								ownerlist[i] = first;
+							}
+							if(slots.size() >= given)
+								break;
+						}
+
+
+						cout << mark() << "first is " << first << endl;
+	//								if(first == IDLE)
+	//									break;
+
+						avail -= given;
+						cout << mark() << "avail is " << avail << endl;
+
+						string hostfile;
+						hostfile.clear();
+						hostfile = makeMachinefile(slots);
 
 						if(first == 0) {
-//										if(eval_mut.try_lock()) {
-//											eval_mut.unlock();
-//											if(!serverthread.valid()) {
-//												cout << mark() << "Launching QE on server with "<< given << "nodes..."<< endl;
-//												serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
-//												launched++;
-//											}
-//											else {
-//												cout << mark() << "serverthread stuck" << endl;
-//											}
-//
-//										}
-//										else {
-//											cout << mark() << "server thread is locked! marking DOWN" << endl;
-//											ownerlist[0] = DOWN;
-//										}
-							cout << mark() << "first is 0! something went wrong..." << endl;
-							ownerlist[0] = IDLE;
+							//writeHost(localmachinefile, hostfile);
 						}
 						else {
-							cout << mark() << "Launching QE on client " << first << "with "<< given << "nodes..." << endl;
-							sendIns(PopAvail, first);
-							if(!sendPop(localpops[first], first)) {
-								cout << mark() << "Server send failed" << endl;
+							sendIns(GetHost, first);
+							if(!sendHost(hostfile, 0, first)) {
+								cout << mark() << "Server host send failed" << endl;
 								ownerlist[first] = DOWN;
-								evallist[ind] = 0;
-							}
-							else {
-								sendIns(DoQE, first);
-								//launched++;
-								evallist[ind] = 1;
 							}
 						}
-					}
 
-					launched_structs = 0;
-					completed_structs = 0;
-					for(int i = 0; i < evallist.size(); i++) {
-						if( evallist[i] == 1 ) launched_structs++;
-						if( evallist[i] == 2 ) completed_structs++;
-					}
-					launched_structs += completed_structs;
+						if(ownerlist[first] == first) { //prevents launch if first node goes DOWN
+							evaldind[first] = ind;
+							localpops[first] = pop.subpop(ind,1);
 
-					cout << mark() << launched_structs  << " launched" << endl;
-					cout << mark() << completed_structs  << " completed" << endl;
+							if(first == 0) {
+	//										if(eval_mut.try_lock()) {
+	//											eval_mut.unlock();
+	//											if(!serverthread.valid()) {
+	//												cout << mark() << "Launching QE on server with "<< given << "nodes..."<< endl;
+	//												serverthread = std::async(launch::async, &GASP2control::runEvals, this, DoQE, &localpops[first], localmachinefile);
+	//												launched++;
+	//											}
+	//											else {
+	//												cout << mark() << "serverthread stuck" << endl;
+	//											}
+	//
+	//										}
+	//										else {
+	//											cout << mark() << "server thread is locked! marking DOWN" << endl;
+	//											ownerlist[0] = DOWN;
+	//										}
+								cout << mark() << "first is 0! something went wrong..." << endl;
+								ownerlist[0] = IDLE;
+							}
+							else {
+								cout << mark() << "Launching QE on client " << first << "with "<< given << "nodes..." << endl;
+								sendIns(PopAvail, first);
+								if(!sendPop(localpops[first], first)) {
+									cout << mark() << "Server send failed" << endl;
+									ownerlist[first] = DOWN;
+									evallist[ind] = 0;
+								}
+								else {
+									sendIns(DoQE, first);
+									//launched++;
+									evallist[ind] = 1;
+								}
+							}
+						}
 
-					cout << mark() << " ownerlist: ";
-					for(int i = 0; i < worldSize; i++)
-						cout << ownerlist[i] << " ";
-					cout << endl;
+						launched_structs = 0;
+						completed_structs = 0;
+						for(int i = 0; i < evallist.size(); i++) {
+							if( evallist[i] == 1 ) launched_structs++;
+							if( evallist[i] == 2 ) completed_structs++;
+						}
+						launched_structs += completed_structs;
 
-				} //if avail structures and not all structures launched
+						cout << mark() << launched_structs  << " launched" << endl;
+						cout << mark() << completed_structs  << " completed" << endl;
+
+						cout << mark() << " ownerlist: ";
+						for(int i = 0; i < worldSize; i++)
+							cout << ownerlist[i] << " ";
+						cout << endl;
+
+					} //if avail structures and not all structures launched
 
 
 
-			} //for three steps
-
+				} //for three steps
+			}
 
 
 			launched_structs = 0;
@@ -679,6 +703,14 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 					idle = false;
 			}
 
+			//fail fast protocol; fail when everything is idle and downcount > 0
+			//for script side restart
+			if(downcount > 0 && idle) {
+				cout << mark() << "At the end of the QE evaluation, there were down nodes. Killing this job..." << endl;
+				db.update(evald, "structs");
+				MPI_Abort(MPI_COMM_WORLD, 1);
+				exit(1);
+			}
 
 			cout << flush;
 			if( ( completed_structs >= pop.size() ) && idle)
@@ -701,7 +733,8 @@ void GASP2control::server_qe(GASP2pop &pop, int step) {
 
 }
 
-
+//this method updates the ownerlist and checks to make sure all nodes are available
+//for work
 void GASP2control::ownerlist_update() {
 
 	MPI_Status m;
@@ -752,7 +785,7 @@ void GASP2control::ownerlist_update() {
 
 }
 
-
+//constructs a random population
 void GASP2control::server_randbuild(int gen) {
 	cout << mark() << "Generating new randpop" << endl;
 	randpop.clear();
@@ -781,6 +814,9 @@ void GASP2control::server_randbuild(int gen) {
 //				statfile.close();
 
 
+//construct new populations by invoking the genetic operators
+//determines which method to build poulations with
+//based on the params
 GASP2pop GASP2control::server_popbuild(int gen) {
 
 	int replace = static_cast<int>(static_cast<double>(params.popsize)*params.replacement);
@@ -929,7 +965,8 @@ GASP2pop GASP2control::server_popbuild(int gen) {
 	return outpop;
 }
 
-
+//checks to see how many nodes are down
+//if more nodes than the downlimit fail to communicate, abort
 void GASP2control::down_check() {
 
 	MPI_Status m;
@@ -973,6 +1010,8 @@ void GASP2control::down_check() {
 
 }
 
+//at the end of evaluations, recombine populations
+//so that new generation can iterate.
 void GASP2control::server_popcombine(GASP2pop pop) {
 
 	if(params.type == "elitism") {
@@ -1008,7 +1047,11 @@ void GASP2control::server_popcombine(GASP2pop pop) {
 
 
 }
-//this function is awful and really needs to be cleaned up. badly
+
+
+
+//the main control method for
+//FIXME: this method needs cleaning up
 void GASP2control::server_prog() {
 
 	getHostInfo();
@@ -1029,18 +1072,15 @@ void GASP2control::server_prog() {
 	string localmachinefile = "/tmp/machinefile-";
 	localmachinefile.append(u.toStr());
 
-	//this vector indicates the owner of all nodes
+	//the OWNERLIST vector indicates the owner of each node
 	//so, if ownerlist[i] = 0, node i is owned by
 	//the server thread
-	//0-worldsize means the node is running
+	//0 up to (worldsize) means the node is running
 	//IDLE (-1) means the node is idle
 	//DOWN (-2) means the node is in a bad state
 	//and is not responding to pings
 	//vector<int> ownerlist(worldSize);
 	//this vector contains a ping test for each node
-
-	//vector<bool> pinged(worldSize);
-	//the polling time is 200 ms
 
 	//initialize ownerlist
 	ownerlist.resize(worldSize);
@@ -1048,36 +1088,18 @@ void GASP2control::server_prog() {
 		ownerlist[i] = IDLE;
 
 
+	//initalize basic populations
 	GASP2pop evalpop, lastpop, bestpop;
 	//vector<GASP2pop> bins(230), clusterbins(230);
 	bins.resize(230); clusters.resize(230);
-//	if(params.spacemode != Spacemode::Single) {
-//		bins.resize(230); clusters.resize(230);
-//	}
-//	else {
-//		bins.resize(1);	clusters.resize(1);
-//		//VERY IMPORTANT! if binlimit is not set right
-//		//all of the binning algorithms will segfault
-//		params.binlimit=1;
-//	}
 	for(int i = 0; i < clusters.size(); i++)
 		clusters[i].clear();
 	for(int i = 0; i < bins.size(); i++)
 		bins[i].clear();
 
+	//setup SQL tables
 	db.initTable("structs");
 	db.initTable("badfitcell");
-
-
-
-//	GASP2pop blah;
-//	blah.init(root, 2, Spacemode::Single, 4);
-//	blah.runFitcell(1);
-//	for(int i = 1; i < worldSize; i++)
-//		sendIns(Shutdown, i);
-//
-//	cout << mark() << "Shutting down" << endl;
-//	return;
 
 	setup_restart();
 
@@ -1089,13 +1111,9 @@ void GASP2control::server_prog() {
 //	else if(params.calcmethod == "fitcell")
 //		evalmode = (Instruction) (evalmode | DoFitcell);
 
-
-
 	vector<future<bool>> popsend(worldSize);
 	future<bool> eval;
 	future<bool> writer;
-
-
 
 
 ////////////////////START PRECLUSTER////////////////////////
@@ -1156,13 +1174,7 @@ void GASP2control::server_prog() {
 
 		server_popcombine(pre);
 		bestpop.clear();
-//		for(int n = 0; n < bins.size(); n++) {
-//			bestpop.addIndv(bins[n]);
-//		}
-////		if(params.outputmode == "xml") {
-////			writePopXML(bestpop, "precluster-eval", 0);
-////		}
-//		bestpop.clear();
+
 
 		cout << mark() << "Precluster finished" << endl;
 
@@ -1287,11 +1299,16 @@ void GASP2control::server_prog() {
 		}
 
 	}
-	else if(params.mode == "steadystate") {
-		cout << "Steadystate not yet implemented" << endl;
-	}
 ////////////////////END GENERATION EVALS/////////////////////////
 
+////////////////////STEADY STATE EVALS///////////////////////////
+	else if(params.mode == "steadystate") {
+
+		//THIS IS THE HOOK LOCATION FOR STEADYSTATE EVALUATION
+
+		cout << "Steadystate not yet implemented" << endl;
+	}
+////////////////////END STEADY STATE EVALS///////////////////////
 	//clean up files
 	remove(localmachinefile.c_str());
 	for(int i = 1; i < worldSize; i++)
@@ -1303,6 +1320,9 @@ void GASP2control::server_prog() {
 }
 
 
+//this is a client side program for handling the evaluation method
+//GASP2control passes a value to determine the eval mode
+//which is handled by the client
 bool GASP2control::runEvals(Instruction i, GASP2pop* p, string machinefilename) {
 
 	//get the hostfile stuff
@@ -1338,6 +1358,10 @@ bool GASP2control::runEvals(Instruction i, GASP2pop* p, string machinefilename) 
 
 }
 
+
+//client program: this handles dispatches from the server_prog to perform work
+//this works in a very similar way to the original GASP library
+//but must handle some mutex and other multithreaded methods.
 void GASP2control::client_prog() {
 
 	getHostInfo();
@@ -1538,7 +1562,7 @@ void GASP2control::client_prog() {
 }
 
 
-
+//handle the parsing of input
 bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 
 	//pass the doc to gasp2param
@@ -1555,6 +1579,9 @@ bool GASP2control::parseInput(tinyxml2::XMLDocument *doc, string& errors) {
 
 }
 
+//Sendhost/recvhost can be used to pass arbitrary strings
+
+//send host information to target
 bool GASP2control::sendHost(string host, int procs, int target) {
 	int t = host.length();
 	MPI_Request m;
@@ -1584,6 +1611,7 @@ bool GASP2control::sendHost(string host, int procs, int target) {
 	return true;
 }
 
+//receive host information from source
 bool GASP2control::recvHost(string &host, int &procs, int target) {
 	int ierr;
 	int v = 0;
@@ -1636,6 +1664,9 @@ bool GASP2control::testReq(MPI_Request &m, int t) {
 
 }
 
+//send a population to a remote MPI node
+//sendPop sends serialized XML
+//this way, only the xml specification needs to be modified
 bool GASP2control::sendPop(GASP2pop p, int target) {
 	string pop = p.saveXML();
 	//cout << "Pop" << endl << pop << endl << endl
@@ -1661,6 +1692,7 @@ bool GASP2control::sendPop(GASP2pop p, int target) {
 	return true;
 }
 
+//receives a popoulation and parses the received xml
 bool GASP2control::recvPop(GASP2pop *p, int target) {
 	string pop;
 	int v = 0;
@@ -1697,7 +1729,9 @@ bool GASP2control::recvPop(GASP2pop *p, int target) {
 	return true;
 }
 
-
+//sends an instruction to a remote target via MPI
+//an Instruction is a coded integer with possibly multiple
+//instructions
 bool GASP2control::sendIns(Instruction i, int target) {
 	//cout << "sending ins to target " << target << endl;
 
@@ -1709,6 +1743,7 @@ bool GASP2control::sendIns(Instruction i, int target) {
 	return true;
 }
 
+//receives instruction
 bool GASP2control::recvIns(Instruction &i, int target) {
 	//cout << "receiving ins from target " << target << endl;
 	MPI_Request r;
@@ -1721,6 +1756,9 @@ bool GASP2control::recvIns(Instruction &i, int target) {
 }
 
 
+////// UTILITY ROUTINES //////
+
+//constructs a machinefile for MPI.
 string GASP2control::makeMachinefile(vector<int> slots) {
 	stringstream out;
 	out.str("");
@@ -1734,7 +1772,8 @@ string GASP2control::makeMachinefile(vector<int> slots) {
 	return out.str();
 }
 
-
+//write a population to file as XML
+//this is generally not used anymore and has been superseded by SQL
 bool GASP2control::writePopXML(GASP2pop pop, string tag, int step) {
 
 	stringstream outname;
@@ -1757,6 +1796,7 @@ bool GASP2control::writePopXML(GASP2pop pop, string tag, int step) {
 	return true;
 }
 
+//write a host file for use in MPI
 void GASP2control::writeHost(string name, string data) {
 		ofstream outf;
 		outf.open(name.c_str(), ofstream::out);

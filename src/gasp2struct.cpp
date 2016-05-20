@@ -2,6 +2,7 @@
 
 using namespace std;
 
+//no longer used
 const vector<Vec3> axissettings = {
 		Vec3(1.0,2.0,0.0),
 		Vec3(1.0,0.0,2.0),
@@ -13,6 +14,7 @@ const vector<Vec3> axissettings = {
 
 vector<string> GASP2struct::names;
 
+//constructor, duh
 GASP2struct::GASP2struct() {
 	molecules.clear();
 	isFitcell = false;
@@ -46,6 +48,7 @@ GASP2struct::GASP2struct() {
 
 }
 
+//gets the volume, checks to make sure it isn't NaN
 double GASP2struct::getVolume() {
 	double vol = cellVol(unit);
 	//strongly penalize structures that spit
@@ -58,7 +61,7 @@ double GASP2struct::getVolume() {
 }
 
 
-//returns a fractional score
+//returns a fractional volume score for sorting
 double GASP2struct::getVolScore() {
 	double expectvol = 0.0;
 	double vol = getVolume();
@@ -80,6 +83,8 @@ double GASP2struct::getVolScore() {
 
 }
 
+
+//determines if the volume is within the volume limits
 bool GASP2struct::minmaxVol() {
 	double expectvol = 0.0;
 	double vol = getVolume();
@@ -105,6 +110,7 @@ bool GASP2struct::minmaxVol() {
 	return true;
 }
 
+//secondary check to make sure a structure is within the max volume
 bool GASP2struct::checkMaxVol() {
 	double expectvol = 0.0;
 	double vol = getVolume();
@@ -124,6 +130,8 @@ bool GASP2struct::checkMaxVol() {
 	return false;
 
 }
+
+
 
 bool GASP2struct::enforceCrystalType() {
 	//find the crystal type from
@@ -194,6 +202,8 @@ bool GASP2struct::enforceCrystalType() {
 	return true;
 }
 
+
+//centers the molecule coordinates about the centroid
 void GASP2struct::centerMol(GASP2molecule & mol) {
 	Vec3 center = getMolCentroid(mol);
 	double length;
@@ -206,6 +216,8 @@ void GASP2struct::centerMol(GASP2molecule & mol) {
 	}
 }
 
+//center the molecule coordinates about the centroid, then translates to a new
+//position
 void GASP2struct::centerMol(GASP2molecule & mol, Vec3 pos) {
 	Vec3 newpos =  pos - getMolCentroid(mol);
 	for(int i = 0; i < mol.atoms.size(); i++) {
@@ -213,6 +225,7 @@ void GASP2struct::centerMol(GASP2molecule & mol, Vec3 pos) {
 	}
 }
 
+//applies dihedral rotations
 bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
 	Mat3 rot;
 	Vec3 a,b,c,d, axis;
@@ -303,6 +316,8 @@ bool GASP2struct::applyDihedrals(GASP2molecule &mol) {
 	return true;
 }
 
+
+//applies molecules rotations
 void GASP2struct::applyRot(GASP2molecule &mol) {
 
 	centerMol(mol);
@@ -318,6 +333,8 @@ void GASP2struct::applyRot(GASP2molecule &mol) {
 
 }
 
+
+//applies symmetry operations
 void GASP2struct::symmetrize(GASP2molecule &mol) {
 	if(mol.symm == 0)
 		return;
@@ -339,8 +356,7 @@ void GASP2struct::symmetrize(GASP2molecule &mol) {
 	centerMol(mol);
 }
 
-
-
+//generates a supercell with arbitrary shell levels
 void GASP2struct::makeSuperCell(vector<GASP2molecule> &supercell, int shells) {
 	int nsize = supercell.size();
 	GASP2molecule temp;
@@ -359,6 +375,7 @@ void GASP2struct::makeSuperCell(vector<GASP2molecule> &supercell, int shells) {
 	}
 }
 
+//resets the cell axes and positions of molecules in a supercell
 void GASP2struct::resetMols(double d, vector<GASP2molecule> &supercell, Vec3 ratios) {
 	//cout << mark() << "resetmol: " <<ID.toStr()<< endl;
 	//reset the cell params in unit
@@ -376,7 +393,7 @@ void GASP2struct::resetMols(double d, vector<GASP2molecule> &supercell, Vec3 rat
 	//cout << mark() << "resetmolout: " <<ID.toStr()<< endl;
 }
 
-
+//calculates a pseudoenergy using the exp-6 potential
 double GASP2struct::calcPseudoE(vector<GASP2molecule> supercell, int shells, int molcount) {
 	double e = 0.0;
 
@@ -388,8 +405,8 @@ double GASP2struct::calcPseudoE(vector<GASP2molecule> supercell, int shells, int
 	int center = molcount * middle * (1+ shells+shells*shells);
 	//cout << "center: " << center << endl;
 
-	double dist, theta, r, rmin, rd, coul;
-
+	double dist, theta, r, rmin, rd, coul,te;
+	//cout << "start" << endl;
 	//calculate the distances
 	for(int i = 0; i < supercell.size(); i++) {
 		for(int j = center; j < (center+molcount); j++) {
@@ -413,25 +430,35 @@ double GASP2struct::calcPseudoE(vector<GASP2molecule> supercell, int shells, int
 
 					//distance rij between atoms
 					r = len(supercell[i].atoms[m].pos - supercell[j].atoms[n].pos);
-					if(r < 0.7) {
-						e = 10000.0;
-						return e;
+					rmin = (vdw(supercell[i].atoms[m].type) + vdw(supercell[j].atoms[n].type));
+					if(r < (rmin*0.7 )) {
+						//continue;
+						return 0.0;
 					}
-					//energy well minimum
-					rmin = vdw(supercell[i].atoms[m].type) + vdw(supercell[j].atoms[n].type) / -5.0;
+//					if(r < 10.0) {
+						//energy well minimum
+
 					//energy well depth
-					theta = ewell(supercell[i].atoms[m].type, supercell[j].atoms[n].type);
+					theta = ewell(supercell[i].atoms[m].type, supercell[j].atoms[n].type) / -5.0;
 					// rij ^ 6 term
 					rd = rmin/r;
 					rd = rd * rd * rd;
 					rd = rd * rd;
 
 					//coulumb term
-					coul = ( 4.0 * supercell[i].atoms[m].charge * supercell[j].atoms[n].charge ) / r;
+					//coul = ( 4.0 * supercell[i].atoms[m].charge * supercell[j].atoms[n].charge ) / r;
 
 					//energy addition
-					e += (theta * ( 6.0*std::exp(1.0-(r/rmin)) - rd ) + coul);
+					//te = (theta * ( 6.0*std::exp(1.0-(r/rmin)) - rd ) + coul);
+					te = (theta * ( 6.0*std::exp(1.0-(r/rmin)) - rd ));
 
+//					if(te < 0)
+						//if( (r > rmin) && (te < -0.001) )
+					e += te;
+
+						//cout << r << "," << te << endl;
+
+//					}
 
 				}
 			}
@@ -443,7 +470,7 @@ double GASP2struct::calcPseudoE(vector<GASP2molecule> supercell, int shells, int
 	return e;
 }
 
-
+//determines the number of nearby contacts
 void GASP2struct::calcContacts(vector<GASP2molecule> supercell, int shells, int molcount) {
 	int count = 0;
 	double dist;
@@ -488,6 +515,8 @@ void GASP2struct::calcContacts(vector<GASP2molecule> supercell, int shells, int 
 
 }
 
+
+//check connectivity of molecules to each other to make sure molecules are not touching
 bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 
 	double dist;
@@ -518,6 +547,7 @@ bool GASP2struct::checkConnect(vector<GASP2molecule> supercell) {
 	return false;
 }
 
+//adjusts cell axes to minimize volume while preventing contacts
 double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 	//cout << mark() << "collapse: " <<ID.toStr()<< endl;
 	int steps;
@@ -566,36 +596,45 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 		steps--;
 	}
 
+	pseudoenergy = calcPseudoE(supercell, 3, molecules.size());
 
-	double max_d = d;
-	d = maxd-(20.0*diff_d);
+//	double max_d;
+//	max_d = d;
+//	//d = 1.0;
+//	//max_d = maxd;
+//	d = max_d-(40.0*diff_d);
+//
+//
+//	double pseudo;
+//	double minpseudo = 9999.0;
+//	double trueD = max_d;
+//
+////	ofstream tempfile("energy",ofstream::app);
+////	ofstream ciffile("traj.cif",ofstream::app);
+////	string temp;
+//	steps = 0;
+//	int cc;
+//	while(d < max_d) {
+//		resetMols(d,supercell,ratios);
+//		//if(checkConnect(supercell))
+//		pseudo = calcPseudoE(supercell, 3, molecules.size());
+//		//calcContacts(supercell, 3, molecules.size());
+//		if(pseudo < minpseudo) {
+//			minpseudo = pseudo;
+//			trueD = d;
+//		}
+////		tempfile << steps << "," << d*unit.ratA << "," << pseudo << endl;
+////		cifString(temp,steps);
+////		ciffile << temp << endl;
+//		d += diff_d;
+//		steps++;
+//	}
+//   pseudoenergy=minpseudo;
+//	d = trueD;
+//	resetMols(d,supercell,ratios);
 
-
-	double pseudo;
-	double minpseudo = 0.0;
-	double trueD;
-
-	//ofstream tempfile("energy",ofstream::app);
-	//ofstream ciffile("traj.cif",ofstream::app);
-	//string temp;
-	steps = 0;
-	while(d < max_d) {
-		resetMols(d,supercell,ratios);
-		//if(checkConnect(supercell))
-		pseudo = calcPseudoE(supercell, 3, molecules.size());
-		if(pseudo < minpseudo) {
-			minpseudo = pseudo;
-			trueD = d;
-		}
-		//tempfile << steps << "," << d << "," << pseudo << endl;
-		//cifString(temp,steps);
-		//ciffile << temp << endl;
-		d += diff_d;
-		steps++;
-	}
-
-	d = trueD;
-	resetMols(d,supercell,ratios);
+//	tempfile.close();
+//	ciffile.close();
 
 //	if(steps == 0) {
 //		cout << mark() << "Something bad happened with a collapse cell" << endl;
@@ -629,6 +668,8 @@ double GASP2struct::collapseCell(vector<GASP2molecule> supercell, Vec3 ratios) {
 
 }
 
+
+//determine the axis order (sort of defunct)
 Vec3 GASP2struct::getOrder(Vec3 rat) {
 	Vec3 result;
 
@@ -652,6 +693,7 @@ Vec3 GASP2struct::getOrder(Vec3 rat) {
 	return result;
 }
 
+//adjust cell ratios (defunct function)
 void GASP2struct::modCellRatio(Vec3 &ratios, Vec3 order, int n, double delta) {
 	int axisswitch;
 	Spgroup spg = spacegroups[unit.spacegroup];
@@ -727,7 +769,8 @@ bool GASP2struct::simplesymm() {
 		//isFitcell = false;
 }
 
-
+//fitcell applies all rotation and translation operations
+//and then minimizes the volume of the unit cell
 bool GASP2struct::fitcell(double tlimit) {
 	//std::thread::id itit = std::this_thread::get_id();
 	//cout << "pid: " << itit << endl;
@@ -876,6 +919,8 @@ bool GASP2struct::fitcell(double tlimit) {
 	return true;
 }
 
+
+//undo the fitcell by removing symmetrically equivalent molecules
 bool GASP2struct::unfitcell() {
 
 	vector<GASP2molecule> tempmol;
@@ -895,6 +940,7 @@ bool GASP2struct::unfitcell() {
 	return true;
 }
 
+//input helper to read a CIF format structure
 bool GASP2struct::readCifMol(string name, string outname, string plane) {
 
 	ifstream input;
@@ -1032,6 +1078,7 @@ bool GASP2struct::readCifMol(string name, string outname, string plane) {
 
 }
 
+//performs structure checks to make sure everything is still connected properly
 bool GASP2struct::check() {
 	Index a,b,c,d;
 	double val;
@@ -1082,9 +1129,17 @@ bool GASP2struct::check() {
 		//cout << "center" << endl;
 	}
 
+	//recalc pseudoenergy
+	vector<GASP2molecule> supercell;
+	supercell = molecules;
+	makeSuperCell(supercell, 3);
+	pseudoenergy = calcPseudoE(supercell, 3, molecules.size());
+
+
 	return true;
 }
 
+//initializes a structure genome
 bool GASP2struct::init(Spacemode mode, Index spcg) {
 	//set UUIDs appropriately
 	ID.generate();
@@ -1246,6 +1301,8 @@ bool GASP2struct::init(Spacemode mode, Index spcg) {
 	return true;
 }
 
+
+//mutates a structure genome
 bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
 
 	Index spcg = unit.spacegroup;
@@ -1444,6 +1501,7 @@ bool GASP2struct::mutateStruct(double rate, Spacemode mode) {
 	return true;
 }
 
+//cross two structures
 void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2struct &childB, double rate,  Spacemode mode) {
 	this->unfitcell();
 	partner.unfitcell();
@@ -1621,7 +1679,7 @@ void GASP2struct::crossStruct(GASP2struct partner, GASP2struct &childA, GASP2str
 }
 
 
-
+//evaluate the structure by calling the externally assigned functor
 bool GASP2struct::evaluate(string hostfile, GASP2param params) {
 
 	if(!isFitcell) {
@@ -1642,6 +1700,7 @@ bool GASP2struct::evaluate(string hostfile, GASP2param params) {
 	return complete;
 };
 
+//set the spacegroup from the spacegroup gene
 bool GASP2struct::setSpacegroup(bool frExclude) {
 	Index index;
 	vector<cryGroup> temp;
@@ -1725,7 +1784,7 @@ Index GASP2struct::molLookup(NIndex nameInd) {
 	return -1;
 }
 
-
+//output a serializedXML string for the structure
 string GASP2struct::serializeXML() {
 	tinyxml2::XMLPrinter pr(NULL);
 
@@ -3035,6 +3094,7 @@ void GASP2struct::logStruct() {
 
 }
 
+//get the planerotation of the molecule
 Mat3 GASP2struct::getPlaneRot(GASP2molecule mol) {
 	Mat3 out;
 	Vec3 a = mol.atoms[mol.p2].pos - mol.atoms[mol.p1].pos;
@@ -3051,6 +3111,7 @@ Mat3 GASP2struct::getPlaneRot(GASP2molecule mol) {
 	return out;
 }
 
+//get the centroid of the molecule
 Vec3 GASP2struct::getMolCentroid(GASP2molecule mol) {
 	Vec3 out = vl_0;
 	for(int i = 0; i < mol.atoms.size(); i++)
@@ -3058,6 +3119,7 @@ Vec3 GASP2struct::getMolCentroid(GASP2molecule mol) {
 	return out/static_cast<double>(mol.atoms.size());
 }
 
+//output a cif file (NOT USED ANYMORE, USE cifString)
 bool GASP2struct::cifOut(string name) {
 
 	ofstream outf;
@@ -3119,6 +3181,7 @@ bool GASP2struct::cifOut(string name) {
 
 }
 
+//generates a CIF from the structure info
 bool GASP2struct::cifString(string &out, int rank) {
 
 	out = "";
@@ -3147,7 +3210,7 @@ bool GASP2struct::cifString(string &out, int rank) {
 	outf << setprecision(5) << fixed;
 	outf << "data_" << setfill('0') << setw(3) << rank << "_" << names[crylabel]+"_"+ID.toStr() << endl;
 	outf << "_symmetry_space_group_name_H-M  '" << spacegroupNames[unit.spacegroup] << "'\n";
-	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<",vs="<<getVolScore()<<",ct="<<contacts<<endl;
+	outf << "#meta e="<<energy<<",f="<<force<<",p="<<pressure<<",v="<<getVolume()<<",vs="<<getVolScore()<<",ct="<<contacts<<",pse="<<pseudoenergy<<endl;
 	outf << "#meta t="<<time<<",s="<<steps<<",st="<<getStructError(finalstate)<<",c="<<tfconv(complete)<<",fc="<<tfconv(isFitcell)<<",cl="<<cluster<< endl;
 //	outf << "loop_" << endl;
 //	outf << "_symmetry_equiv_pos_site_id" << endl;
@@ -3182,7 +3245,7 @@ bool GASP2struct::cifString(string &out, int rank) {
 
 }
 
-
+//convert fractional cooridnates to cartesian
 Mat3 fracToCart(GASP2cell cl) {
 	double phi = cellPhi(cl);
 	double kappa = (cl.c*(cos(cl.alpha)-cos(cl.beta)*cos(cl.gamma))) / sin(cl.gamma);
@@ -3192,11 +3255,13 @@ Mat3 fracToCart(GASP2cell cl) {
 				 0,		0,					cl.c*phi/sin(cl.gamma)
 				);
 }
-
+//vice versa
 Mat3 cartToFrac(GASP2cell cl) {
 	return inv(fracToCart(cl));
 
 }
+
+//helpder function for frac/cart conversion
 double cellPhi(GASP2cell cl) {
 
 	double cosA = cos(cl.alpha);
@@ -3210,28 +3275,11 @@ double cellPhi(GASP2cell cl) {
             		+ phi) ;
 }
 
+//get the cell volume
 double cellVol(GASP2cell cl) {
 	return cl.a * cl.b * cl.c * cellPhi(cl);
 }
 
-string getStructError(StructError finalstate) {
-		string strtemp;
-		if(finalstate == OKStruct)
-			strtemp = "OKStruct";
-		else if(finalstate == OptBadBond)
-			strtemp = "OptBadBond";
-		else if(finalstate == OptBadAng)
-			strtemp = "OptBadAng";
-		else if(finalstate == OptBadDih)
-			strtemp = "OptBadDih";
-		else if(finalstate == FitcellBadDih)
-			strtemp = "FitcellBadDih";
-		else if(finalstate == FitcellBadCell)
-			strtemp = "FitcellBadCell";
-		else if(finalstate == NoFitcell)
-			strtemp = "NoFitcell";
-		return strtemp;
-}
 
 
 //the simple comparison reports the Chebyshev distance between
@@ -3399,6 +3447,7 @@ bool GASP2struct::simpleCompare(GASP2struct alt, GASP2param p, double & average,
 }
 
 //FIXME:THESE FUNCTIONS DO NOT HANDLE VECTORS FOR DIFFERENT MOLECULE TYPES
+//THIS FUNCTION HAS NEVER WORKED CORRECTLY
 void GASP2struct::setVector(vector<double> in, int mol, int dih) {
 
 
@@ -3443,6 +3492,7 @@ void GASP2struct::setVector(vector<double> in, int mol, int dih) {
 }
 
 //FIXME:THESE FUNCTIONS DO NOT HANDLE VECTORS FOR DIFFERENT MOLECULE TYPES
+//THIS FUNCTION HAS NEVER WORKED CORRECTLY
 vector<double> GASP2struct::getVector(int &mol, int &dih) {
 	vector<double> out;
 	Vec3 axis, pos; double ang;
@@ -3477,6 +3527,7 @@ vector<double> GASP2struct::getVector(int &mol, int &dih) {
 	return out;
 }
 
+//THIS FUNCTION IS BROKEN
 bool vectoradd(vector<double> &sum, vector<double> add, int mol, int dih) {
 
 	double diff, revdiff;
@@ -3540,14 +3591,14 @@ bool vectoradd(vector<double> &sum, vector<double> add, int mol, int dih) {
 		return false;
 	return true;
 }
-
+//ALSO A BROKEN FUNCTION
 void vectordiv(vector<double> &sum, double val) {
 	for(int i = 0; i < sum.size(); i++)
 		sum[i] /= val;
 }
 
 
-
+//helper function for SQL commits
 void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
 
 
@@ -3605,7 +3656,7 @@ void GASP2struct::sqlbindCreate(sqlite3_stmt * stmt) {
 
 }
 
-
+//helper for SQL commits
 void GASP2struct::sqlbindUpdate(sqlite3_stmt * stmt) {
 
 	string stemp;
@@ -3652,6 +3703,26 @@ void GASP2struct::sqlbindUpdate(sqlite3_stmt * stmt) {
 }
 
 
+string getStructError(StructError finalstate) {
+		string strtemp;
+		if(finalstate == OKStruct)
+			strtemp = "OKStruct";
+		else if(finalstate == OptBadBond)
+			strtemp = "OptBadBond";
+		else if(finalstate == OptBadAng)
+			strtemp = "OptBadAng";
+		else if(finalstate == OptBadDih)
+			strtemp = "OptBadDih";
+		else if(finalstate == FitcellBadDih)
+			strtemp = "FitcellBadDih";
+		else if(finalstate == FitcellBadCell)
+			strtemp = "FitcellBadCell";
+		else if(finalstate == NoFitcell)
+			strtemp = "NoFitcell";
+		return strtemp;
+}
+
+
 int structErrToInt(StructError err) {
 	switch(err) {
 	case OKStruct:
@@ -3675,7 +3746,7 @@ int structErrToInt(StructError err) {
 
 //AML: This whole binary format things is WAY too complicated.
 //if I ever decide to send proper binary format data via MPI
-//hen maybe it will be relevent
+//then maybe it will be relevent
 
 //this should only be used on a ROOT structure
 //otherwise weird things might happen

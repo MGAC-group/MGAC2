@@ -6,6 +6,7 @@
 vector<Spgroup> spacegroups;
 vector<string> spacegroupNames;
 
+//generator for random numbers
 mt19937_64 rgen;
 
 //this table is where the different spacegroup genes are encoded.
@@ -103,14 +104,15 @@ vector<cryGroup> groupgenes = {
 };
 
 
+//radian/degree conversions
 double rad(double deg) {
 	return deg/180.0*PI;
 }
-
 double deg(double rad) {
 	return rad/PI*180.0;
 }
 
+//calculate the angle between three points
 double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C ) {
     double cos_angle = dot(A-B,C-B) / ( len(A-B) * len(C-B) );
 
@@ -119,8 +121,7 @@ double angle ( const Vec3 & A, const Vec3 & B, const Vec3 & C ) {
     return ( acos(cos_angle) );
 }
 
-
-
+//returns the angle of a dihedral from 4 points
 double dihedral ( const Vec3 & A, const Vec3 & B, const Vec3 & C, const Vec3 & D ) {
 	Vec3 b1,b2,b3, n1, n2, m1;
 	double x,y;
@@ -156,7 +157,7 @@ Mat3 stabilize(Mat3 m) {
 }
 
 
-//AML: Adapted from Gabriel's code
+//AML: Adapted from Gabriel's code in MGAC1
 //return a matrix that the columns 1th and 2th are 2 vectors that
 //defines the molecular plane. if(det(matrix3Result==1) then OK
 //else anything is wrong
@@ -250,7 +251,7 @@ void getAngleAxis(Mat3 m, Vec3 &v, double &theta ) {
 		return; // return 180 deg rotation
 	}
 
-	//no singularities, get mah angle
+	//no singularities, get the angle
 	double preacos = (m[0][0] + m[1][1] + m[2][2] - 1.0) / 2.0;
 	double angle = acos(preacos);
 
@@ -265,6 +266,8 @@ void getAngleAxis(Mat3 m, Vec3 &v, double &theta ) {
 	return;
 }
 
+
+//THESE FUNCTIONS ARE ENCODED IN gasp2common.hpp!
 
 /// Reference: Cambridge Crystallographic Data Centre
 //double rcov( const Elem type ) {
@@ -317,6 +320,8 @@ void getAngleAxis(Mat3 m, Vec3 &v, double &theta ) {
 //
 //}
 
+
+//helpers for fitcell
 int indexSelect(double n, int size) {
 	double i = 1.0 / static_cast<double>(size);
 	int index = 0;
@@ -685,6 +690,10 @@ bool operator==(const UUID &u, const UUID &v) {
 }
 
 
+
+///handler for spacegroup lists
+//reads the raw data embedded in the executable
+//and then inteprets the instructions
 bool loadSpaceGroups() {
 	string strtemp;
 	const char* stemp;
@@ -746,7 +755,7 @@ bool loadSpaceGroups() {
 
 }
 
-//adapted from the original MGAC code (written by
+//adapted from the original MGAC code (not sure who wrote this particular code
 void parseSymop ( string symm, Mat3 &symmR, Vec3 &symmT ) {
 
     double    aux_coord;
@@ -817,6 +826,7 @@ void parseSymop ( string symm, Mat3 &symmR, Vec3 &symmT ) {
 
 }
 
+//helper for xml serializing
 string tfconv(bool var) {
 	if(var)
 		return "true";
@@ -824,7 +834,8 @@ string tfconv(bool var) {
 		return "false";
 }
 
-
+//special popen for QE
+//returns the pid so it can be killed later
 FILE * popen2(const char *command, pid_t &pid)
 {
     int pdes[2];

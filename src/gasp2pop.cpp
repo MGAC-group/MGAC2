@@ -2,6 +2,8 @@
 
 using namespace std;
 
+//sorting functions for different structure sorting mthods
+
 struct {
 	bool operator() (GASP2struct a, GASP2struct b) {
 		return a.getEnergy() < b.getEnergy();
@@ -83,6 +85,8 @@ void GASP2pop::symmsort() {
 
 }
 
+
+//extract a subpopulation of the given population
 GASP2pop GASP2pop::subpop(int start, int subsize) {
 	GASP2pop out;
 	int end = start + subsize;
@@ -94,6 +98,7 @@ GASP2pop GASP2pop::subpop(int start, int subsize) {
 	return out;
 }
 
+//randomly initialize the population
 void GASP2pop::init(GASP2struct s, int size, Spacemode mode, Index spcg) {
 	for(int i = 0; i < size; i++) {
 		structures.push_back(s);
@@ -143,6 +148,8 @@ GASP2pop GASP2pop::newPop(int size, Spacemode smode, GAselection mode) {
 	return out;
 }
 
+
+//generate a new population from two different populations
 GASP2pop GASP2pop::newPop(GASP2pop alt, int size, Spacemode smode, GAselection mode) {
 	GASP2pop out;
 	GASP2struct a,b;
@@ -185,11 +192,13 @@ GASP2pop GASP2pop::newPop(GASP2pop alt, int size, Spacemode smode, GAselection m
 
 	}
 	else { //pattern
+		//AML: I had plans for a pattern method but never finished implementing it
 		cout << "Pattern mode not implemented!" << endl;
 	}
 	return out;
 }
 
+//cross all structures with every other structure in the population
 GASP2pop GASP2pop::fullCross(Spacemode mode) {
 	GASP2pop out;
 	GASP2struct a,b;
@@ -208,6 +217,7 @@ GASP2pop GASP2pop::fullCross(Spacemode mode) {
 }
 
 //alternative fullcross for two pops;
+//cross every structure in one population with every structure in the other
 GASP2pop GASP2pop::fullCross(Spacemode mode, GASP2pop alt) {
 	GASP2pop out;
 	GASP2struct a,b;
@@ -225,6 +235,8 @@ GASP2pop GASP2pop::fullCross(Spacemode mode, GASP2pop alt) {
 	return out;
 }
 
+//shuffle structures in place
+//used for a more classic GA where genes are preserved in the population
 GASP2pop GASP2pop::inplaceCross(Spacemode mode) {
 	GASP2pop out;
 	GASP2struct a,b;
@@ -242,6 +254,7 @@ GASP2pop GASP2pop::inplaceCross(Spacemode mode) {
 	return out;
 }
 
+//add random structures to the population
 void GASP2pop::addIndv(int add) {
 
 	int init = structures.size();
@@ -254,12 +267,14 @@ void GASP2pop::addIndv(int add) {
 
 }
 
+//combine populations
 void GASP2pop::addIndv(GASP2pop add) {
 	//structures.reserve(structures.size() + add.structures.size());
 	structures.insert(structures.end(), add.structures.begin(), add.structures.end());
 
 }
 
+//used to merge structures in GASP2control server program
 void GASP2pop::mergeIndv(GASP2pop add, int ind) {
 	if(add.size() > 1)
 		return;
@@ -269,6 +284,8 @@ void GASP2pop::mergeIndv(GASP2pop add, int ind) {
 
 }
 
+//checks to see is a structure is complete and then sets the opt to false
+//AML: pretty sure this is a defunct function
 GASP2pop GASP2pop::completeCheck() {
 	GASP2pop output;
 	for(int i = 0; i < size(); i++) {
@@ -282,6 +299,7 @@ GASP2pop GASP2pop::completeCheck() {
 
 }
 
+//removes the last N individuals from the population
 GASP2pop GASP2pop::remIndv(int n) {
 	GASP2pop bad;
 	for(int i = 0; i < n; i++) {
@@ -291,6 +309,7 @@ GASP2pop GASP2pop::remIndv(int n) {
 	return bad;
 }
 
+//splits structures depending if they are negative or positive
 GASP2pop GASP2pop::energysplit(GASP2pop &zero) {
 	GASP2pop ok;
 
@@ -304,7 +323,8 @@ GASP2pop GASP2pop::energysplit(GASP2pop &zero) {
 	return ok;
 }
 
-
+//filters structures on whether or not they pass the structure volume limits
+//volume limits are established from minmaxVol()
 GASP2pop GASP2pop::volLimit(GASP2pop &bad) {
 	GASP2pop ok;
 
@@ -318,6 +338,8 @@ GASP2pop GASP2pop::volLimit(GASP2pop &bad) {
 	return ok;
 }
 
+
+//filters structures based on symmetry operation in the spacegroup
 GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 	GASP2pop ok;
 
@@ -331,7 +353,9 @@ GASP2pop GASP2pop::symmLimit(GASP2pop &bad, int limit) {
 	return ok;
 }
 
-
+//this function sorts structures into spacegroup bins and then
+//determines the unique set of structures per the genetic unique determination method
+//in AML dissertation, Ch. 6
 GASP2pop GASP2pop::spacebinUniques(int threads, vector<GASP2pop> clusterbins, GASP2param p, int binsave) {
 
 	vector<GASP2pop> tempbin(230);
@@ -364,11 +388,9 @@ GASP2pop GASP2pop::spacebinUniques(int threads, vector<GASP2pop> clusterbins, GA
 	cout << mark() << "total uniques: " << total << endl;
 
 	return out;
-
-
 }
 
-
+//this is the same as spacebinUniques, but uses the clustering algorithm instead
 void GASP2pop::spacebinCluster(int threads, vector<GASP2pop> &bins, vector<GASP2pop> &clusterbins, GASP2param p, int binsave) {
 
 	vector<GASP2pop> tempbin(230);
@@ -444,6 +466,7 @@ void GASP2pop::spacebinV(vector<GASP2pop> &bins, int binsize, int binsave) {
 
 }
 
+//the original bin sorting function
 GASP2pop GASP2pop::spacebin(int binsize, int binsave) {
 	vector<GASP2pop> bins(230);
 	GASP2pop out;
@@ -471,7 +494,7 @@ GASP2pop GASP2pop::spacebin(int binsize, int binsave) {
 
 }
 
-//scaling must be manually after ranking
+//scaling must be manually performedafter ranking
 
 //scaling obeys a three part weighted equation:
 // scale(score) = c + l*lin_score + e*exp_score;
@@ -552,7 +575,7 @@ void GASP2pop::scale(double con, double lin, double exp) {
 //this determines whether a structure is mutated
 //if a mutation happens, then 0.15 of all genes
 //within a structure will be mutated, on average
-//whether or not this is a slient mutation is irrrelevant
+//whether or not this is a silent mutation is irrelevant
 //the point is that the structure is modified
 //enough that it still partially resembles the initial structure
 void GASP2pop::mutate(double rate, Spacemode mode) {
@@ -570,6 +593,8 @@ void GASP2pop::mutate(double rate, Spacemode mode) {
 
 }
 
+
+//save this population as XML
 string GASP2pop::saveXML() {
 	string open("<pop>\n");
 	string close("</pop>\n");
@@ -580,6 +605,7 @@ string GASP2pop::saveXML() {
 	return open + out + close;
 }
 
+//parse an XML definition of the population
 bool GASP2pop::parseXML(string name, string &errorstring) {
 
 	tinyxml2::XMLDocument doc;
@@ -597,6 +623,9 @@ bool GASP2pop::parseXML(string name, string &errorstring) {
 	return true;
 }
 
+
+//loads an xml restart function
+//although the xml restart method is defunct, this function is still used
 bool GASP2pop::loadXMLrestart(tinyxml2::XMLElement *pop, string & errorstring) {
 	GASP2struct temp;
 
@@ -623,6 +652,7 @@ bool GASP2pop::loadXMLrestart(tinyxml2::XMLElement *pop, string & errorstring) {
 	return true;
 }
 
+//write a CIF to string
 bool GASP2pop::writeCIF(string name) {
 
 	ofstream outf;
@@ -642,6 +672,7 @@ bool GASP2pop::writeCIF(string name) {
 	return true;
 }
 
+//run a multi-threaded fitcell on all structures in the population
 void GASP2pop::runFitcell(int threads) {
 	//GASP2pop out; out.structures = this->structures;
 
@@ -694,6 +725,7 @@ void GASP2pop::runFitcell(int threads) {
 	//return out;
 }
 
+//helper function for runSymmetrize
 bool multiSymm(int start, int end, GASP2pop* self) {
 	for(int index = start; index < end; index ++) {
 		self->indv(index)->simplesymm();
@@ -701,6 +733,9 @@ bool multiSymm(int start, int end, GASP2pop* self) {
 	return true;
 }
 
+//applies symmetry operation to structures after fitcell has
+//already been performed in multi-threaded mode
+//used especially for restarts and .cif conversion
 void GASP2pop::runSymmetrize(int threads) {
 	//GASP2pop out; out.structures = this->structures;
 
@@ -766,7 +801,9 @@ void GASP2pop::runSymmetrize(int threads) {
 
 
 
-
+//this function runs the external evaluation function on all threads
+//this function is kind of broken though
+//only QE really uses it, and when QE is run, only single structures are passed remotely.
 void GASP2pop::runEval(string hosts, GASP2param p, bool (*eval)(vector<GASP2molecule>&, GASP2cell&, double&, double&, double&, time_t&, string, GASP2param)) {
 
 //	future<bool> thread;
@@ -844,7 +881,8 @@ void GASP2pop::stripClusters(int clusters, int n) {
 
 }
 
-
+//DO NOT USE THIS FUNCTION
+//helper for dedup
 bool dedupCompare(int start, int end, GASP2pop *self, GASP2param p) {
 	double average, chebyshev, euclid, localchebyshev, localavg, num;
 	for(int j = start; j < end; j++) {
@@ -860,6 +898,8 @@ bool dedupCompare(int start, int end, GASP2pop *self, GASP2param p) {
 
 }
 
+//Used to remove duplicate structures
+//is very broken and highly experimental
 GASP2pop GASP2pop::dedup(GASP2param p, int threads) {
 	double average, chebyshev, euclid, localchebyshev, localavg, num;
 	bool result;
@@ -951,6 +991,8 @@ GASP2pop GASP2pop::dedup(GASP2param p, int threads) {
 
 }
 
+
+//helper for getuniques
 bool multiCompare(int start, int end, GASP2pop *self, GASP2pop *clusters, GASP2param p) {
 	double average, chebyshev, euclid;
 	double num;
@@ -1000,7 +1042,7 @@ bool multiCompare(int start, int end, GASP2pop *self, GASP2pop *clusters, GASP2p
 
 
 
-
+//get the unique structures
 GASP2pop GASP2pop::getUniques(GASP2pop clusters, GASP2param p, int threads) {
 	double average, chebyshev, euclid, localchebyshev, localavg;
 	int res;
@@ -1077,7 +1119,7 @@ GASP2pop GASP2pop::getUniques(GASP2pop clusters, GASP2param p, int threads) {
 }
 
 
-//assigns structures in a pop clusters and adds to new clusters
+//assigns structures to pop clusters and adds to new clusters
 void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 	double average, chebyshev, euclid, localchebyshev, localavg;
 	int res;
@@ -1157,6 +1199,8 @@ void GASP2pop::cluster(GASP2pop &clusters, GASP2param p, int threads) {
 	}
 
 }
+
+//AML: this next function is fundamentally broken
 
 //finds the centroid of a cluster
 //FIXME: this does not handle multiple types of molecules right!
@@ -1330,6 +1374,8 @@ int GASP2pop::assignClusterGroups(GASP2param p, int threads) {
 
 }
 
+
+
 bool multiDistWrite(int start, int end, GASP2pop *self, GASP2param p, int num) {
 
 	double average, chebyshev, euclid;
@@ -1435,6 +1481,8 @@ void GASP2pop::clusterReset() {
 
 }
 
+
+//sets the generation of a population
 void GASP2pop::setGen(int gen) {
 
 	for(int i = 0; i < size(); i++) {
@@ -1443,6 +1491,8 @@ void GASP2pop::setGen(int gen) {
 
 }
 
+
+//FIXME FIXME FIXME
 GASP2pop GASP2pop::outliers(GASP2pop &ok) {
 
 	GASP2pop bad;

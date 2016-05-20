@@ -12,6 +12,9 @@ GASP2db::GASP2db() {
 
 }
 
+//connects to an existing DB
+//with SQL databases the connection must be created and dropped ASAP
+//only for the transaction should there be a connection
 int GASP2db::connect() {
 	int state;
 	//cout << "open state cn " << openState << endl;
@@ -32,6 +35,8 @@ int GASP2db::connect() {
 	return 1;
 }
 
+
+//disconnects from the db
 int GASP2db::disconnect() {
 
 	//cout << "open state dc " << openState << endl;
@@ -52,6 +57,7 @@ int GASP2db::disconnect() {
 
 }
 
+//loads the DB and tests if a connection can be formed
 int GASP2db::load(string name) {
 	if(!openState) {
 		path=name;
@@ -65,6 +71,7 @@ int GASP2db::load(string name) {
 	return 0;
 }
 
+//setup the initial tables in the DB
 void GASP2db::init() {
 
 	char * err = 0;
@@ -83,7 +90,7 @@ void GASP2db::init() {
 
 }
 
-
+//sets up a structure table in the database
 void GASP2db::initTable(string name) {
 
 	int ierr;
@@ -179,7 +186,7 @@ bool GASP2db::create(GASP2pop pop, string table) {
 
 }
 
-//sets the INITIAL RECORDS of the structs table
+//updates the secondary records in the database
 bool GASP2db::update(GASP2pop pop, string table) {
 
 	char * err = 0;
@@ -319,6 +326,10 @@ GASP2pop GASP2db::getxml(string sql) {
 	return out;
 }
 
+
+//////////////////////////////////
+//various helper routines to extract populations
+
 GASP2pop GASP2db::getAll(string name) {
 
 	//return getxml("SELECT xml,Ixml from structs");
@@ -367,6 +378,7 @@ GASP2pop GASP2db::getIncomplete(string name) {
 
 }
 
+//////////////////////////////////
 
 //used for converting structures in sql selected subset
 //this can totally and will break if care is not taken
@@ -377,6 +389,8 @@ GASP2pop GASP2db::getGeneral(string sql) {
 
 }
 
+
+//sets up the startup data
 void GASP2db::addInput(string infile, int time) {
 
 	int ierr;
@@ -410,6 +424,7 @@ void GASP2db::addInput(string infile, int time) {
 	}
 }
 
+//helper function for ?
 string GASP2db::getLastInput(int &lastgen) {
 
 	int ierr;
@@ -455,6 +470,8 @@ string GASP2db::getLastInput(int &lastgen) {
 	return stemp;
 }
 
+
+//keep track of time use etc
 void GASP2db::updateTime(int time, int gen) {
 
 	int ierr;
@@ -485,7 +502,6 @@ void GASP2db::updateTime(int time, int gen) {
 
 		disconnect();
 	}
-
 
 }
 

@@ -1,3 +1,5 @@
+
+================================================================================
 INSTALL INSTRUCTIONS:
 
 Requires:
@@ -31,4 +33,23 @@ make
 MODULE LOAD ORDER IS IMPORTANT! gcc/4.9.2 must be loaded last
 
 To run make sure that the gcc/4.9.2 libraries are accessible. If using mpi 3.1.4 or greater mgac can use either mpich2 or impi to run. 
+
+================================================================================
+RUNNING NOTES:
+
+
+
+
+================================================================================
+INPUT FORMAT
+
+
+================================================================================
+DEVELOPMENT NOTES:
+
+A hook for steady state methods exists in gasp2.cpp at line 1304, This is where it should likely be implemented, although further changes to the GASPcontrol serverprogram will be needed.
+
+SQL stuff: 
+
+Outlier filter testing: There is a function designed to test if a structure energy is way out of range. (GASP2pop.cpp, line 1496). It isn't working right. 
 

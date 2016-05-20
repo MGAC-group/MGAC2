@@ -4,6 +4,8 @@ using namespace std;
 
 namespace QE {
 
+
+	//Testing function, arbitrarily sets an energy and sleeps for 5 seconds
 	bool empty(vector<GASP2molecule>& mols, GASP2cell& unit, double& energy, double& force, double&pressure, time_t&time, string hostfile, GASP2param params)
 	{
 		uniform_real_distribution<> d(0,1);
@@ -13,6 +15,9 @@ namespace QE {
 		return true;
 	};
 
+
+	//Runs QE externally
+	//this should be used as a template for other softwares
 	bool runQE(vector<GASP2molecule>& mols, GASP2cell& unit, double &energy, double &force, double&pressure, time_t&time, string hostfile, GASP2param params) {
 
 		bool outstat = true;
