@@ -1,20 +1,22 @@
-The Modified Genetic Algorithm for Crystals (MGAC)
+# The Modified Genetic Algorithm for Crystals (MGAC)
 
 This code is a modernization of the MGAC code written by the Facelli group. The
 code has been contributed by a number of authors over the years:
 
-Victor E. Bazterra
-Gabriel I. Pagola
-Albert M.Lund
-Anita M. Orendt 
-Marta B. Ferraro
-Julio C. Facelli
+- Victor E. Bazterra
+- Gabriel I. Pagola
+- Albert M.Lund
+- Anita M. Orendt 
+- Marta B. Ferraro
+- Julio C. Facelli
 
 Users of this code should cite the following publications:
 
+```
 Victor E. Bazterra, Marta B. Ferraro, and Julio C. Facelli. The Journal of Chemical Physics 116, 5984 (2002); doi: http://dx.doi.org/10.1063/1.1458547
 
 Lund AM, Pagola GI, Orendt AM, Ferraro MB, Facelli JC. Crystal Structure Prediction from First Principles: The Crystal Structures of Glycine. Chemical physics letters. 2015;626:20-24. doi:10.1016/j.cplett.2015.03.015.
+```
 
 Scientific or collaborative inquiries should be directed to Julio Facellio (julio.facelli@utah.edu)
 
@@ -23,81 +25,84 @@ For assistance with the code or other technical aspects please contact Albert Lu
 
 
 ================================================================================
-INSTALL INSTRUCTIONS:
+## INSTALL INSTRUCTIONS:
 
 Requires:
 
--cmake 2.8.12 or greater
--mpich2 3.1.4 or greater
--gcc 4.9.2 or greater (C++11 support)
--QE 5.0.2 (other versions NOT tested)
--objcopy (should be standard on linux)
+- cmake 2.8.12 or greater
+- mpich2 3.1.4 or greater
+- gcc 4.9.2 or greater (C++11 support)
+- QE 5.0.2 (other versions NOT tested)
+- objcopy (should be standard on linux)
 
 Intel compilers/MPI optional but not required
--Intel compilers v2015.1.133 or greater
--IMPI 5.0.1.035 or greater
+- Intel compilers v2015.1.133 or greater
+- IMPI 5.0.1.035 or greater
 
 On generic systems without Intel compilers:
-
+```
 mkdir mgac-build
 cd mgac-build
 cmake -D CMAKE_CXX_COMPILER=g++ -D CMAKE_C_COMPILER=gcc ../mgac-redux
 make
-
+```
 MAKE SURE TO SOURCE MPICH2 VARS!
 
 On CHPC systems with Intel compilers:
 
+```
 module load cmake intel impi gcc/4.9.2
 mkdir mgac-build
 cd mgac-build
 cmake -D CMAKE_CXX_COMPILER=icpc -D CMAKE_C_COMPILER=icc ../mgac-redux
 make
+```
 
 MODULE LOAD ORDER IS IMPORTANT! gcc/4.9.2 must be loaded last
 
 To run make sure that the gcc/4.9.2 libraries are accessible. If using mpi 3.1.4 or greater mgac can use either mpich2 or impi to run. 
 
 ================================================================================
-RUNNING NOTES:
+## RUNNING NOTES:
 
 To see the help message:
-mgac.x -h
-mgac.x --help
+`mgac.x -h`
+`mgac.x --help`
 
 A simple run is executed by:
-mgac.x -i inputfile
+`mgac.x -i inputfile`
 
 A restart is the same, with a reference to the sql file:
-mgac.x -i inputfile -r restart.sq3
+`mgac.x -i inputfile -r restart.sq3`
 
 A list of spacegroups can be listed by:
-mgac.x -l 
+`mgac.x -l `
 
 To convert an output sqlite file to CIF format. This automatically sorts structures:
-mgac.x -i output.sq3 -c file.cif
+`mgac.x -i output.sq3 -c file.cif`
 
 The number of best structures for CIF conversion defaults to 100. Use the -s flag to specify a different number:
-mgac.x -i output.sq3 -c file.cif -s 200
+`mgac.x -i output.sq3 -c file.cif -s 200`
 
 A different table can be selected from the default "structs" table using -b:
-mgac.x -i output.sq3 -c file.cif -s 100 -b precluster
+`mgac.x -i output.sq3 -c file.cif -s 100 -b precluster`
 
 An input template can be quickly generated from a CIF using -t:
-mgac.x -i input.cif -t template.xml
+`mgac.x -i input.cif -t template.xml`
 
 The input template still requires all other parameters to be manually added! 
 
 The plane for molecules must be specified using -p in comma delimited form using the atom labels specified in the CIF:
-mgac.x -i input.cif -t template.xml -p C1,C2,N1
+`mgac.x -i input.cif -t template.xml -p C1,C2,N1`
 
 NOTE: the template generation does not include bond/angle/limitations or dihedrals. Those must be specified manually still.
 
 ================================================================================
-INPUT FORMAT
+## INPUT FORMAT
 
 The MGAC2 format uses a simplified XML format over the MGAC1 format. An example is given below:
 
+```
 <mgac>
         <crystal interdist="0.0" contactdist="0.3" intradist="1.4" maxvol="100.0" minvol="-30.0" name="HISTAN">
                 <cell>
@@ -152,117 +157,115 @@ The MGAC2 format uses a simplified XML format over the MGAC1 format. An example 
         </qe>
         <run replacement="2.5" mutation="0.001" generations="100" popsize="30" seed="-1" const_scale="1.0" lin_scale="1.0" exp_scale="0.0" calcmethod="qe" mode="stepwise" type="clustered" selector="roulette" outputmode="sql" outputfile="histan" spacemode="limited" group="4" symmlimit="4" binlimit="10" downlimit="4" precompute="50" clusterdiff="0.3" clustersize="2.0" angstep="2.5"/>
 </mgac>
-
+```
 
 All keywords must be encapsulated in an mgac tag. 
 
 Explanation of keywords:
 
-crystal::interdist : When performing fitcell, interdist is the buffer distance between the Van der Waals shells (in Angstroms) between atoms in different molecules
+- `crystal::interdist` : When performing fitcell, interdist is the buffer distance between the Van der Waals shells (in Angstroms) between atoms in different molecules
 
-crystal::intradist : When performing fitcell, the buffer distance between Van der Waals shells (in Angstroms) between atoms in the same molecule
+- `crystal::intradist` : When performing fitcell, the buffer distance between Van der Waals shells (in Angstroms) between atoms in the same molecule
 
-crystal::maxvol, crystal::minvol : The maximum and minimum volume percentages for the volume filter.
+- `crystal::maxvol, crystal::minvol` : The maximum and minimum volume percentages for the volume filter.
 
-crystal::name : The name of the crystal.
+- `crystal::name` : The name of the crystal.
 
-crystal::cell : Contains informations about the cell. For input this is mainly the stoichiometry, which is currently required but not well implemented for more than one molecule. 
+- `crystal::cell` : Contains informations about the cell. For input this is mainly the stoichiometry, which is currently required but not well implemented for more than one molecule. 
 
-crystal::cell::stoichiometry::mol : The name of the molecule to be used for this stoichimetry. THIS MUST MATCH THE NAME OF AT LEAST ONE MOLECULE!
+- `crystal::cell::stoichiometry::mol` : The name of the molecule to be used for this stoichimetry. THIS MUST MATCH THE NAME OF AT LEAST ONE MOLECULE!
 
-crystal::cell::stoichiometry::count : The count of the specified molecule.
+- `crystal::cell::stoichiometry::count` : The count of the specified molecule.
 
-crystal::molecule::name : The name of the molecule.
+- `crystal::molecule::name` : The name of the molecule.
 
-crystal::molecule::plane : The space-delimited list of atoms that form a rigid plane in the molecule. The names must match the title of at least three atoms in the atomlist. 
+- `crystal::molecule::plane` : The space-delimited list of atoms that form a rigid plane in the molecule. The names must match the title of at least three atoms in the atomlist. 
 
-crystal::molecule::expectvol : The estimated volume of the ideal crystal structure. Use arh to obtain this valume (in angstroms^3).
+- `crystal::molecule::expectvol` : The estimated volume of the ideal crystal structure. Use arh to obtain this valume (in angstroms^3).
 
-crystal::molecule::atom::elem : The element of the atom. Possible candidates are C,H,N,O,P,Cl,F,S,Br. 
+- `crystal::molecule::atom::elem` : The element of the atom. Possible candidates are C,H,N,O,P,Cl,F,S,Br. 
 
-crystal::molecule::atom::title : The label of this atom. ALL ATOM TITLES MUST BE UNIQUE.
+- `crystal::molecule::atom::title` : The label of this atom. ALL ATOM TITLES MUST BE UNIQUE.
 
-crystal::molecule::x,y,z : The x,y, and z coordinates of the atom in cartesian space. Must be given in ANGSTROMS.
+- `crystal::molecule::x,y,z` : The x,y, and z coordinates of the atom in cartesian space. Must be given in ANGSTROMS.
 
-crystal::molecule::dihedral::title : The name of a dihedral angle specification. 
+- `crystal::molecule::dihedral::title` : The name of a dihedral angle specification. 
 
-crystal::molecule::dihedral::angle : The space-delimited list of atoms that form the dihedral angle. The names of the atoms must form a dihedral angle through bond connectivity and must match atom titles. 
+- `crystal::molecule::dihedral::angle` : The space-delimited list of atoms that form the dihedral angle. The names of the atoms must form a dihedral angle through bond connectivity and must match atom titles. 
 
-crystal::molecule::dihedral::update : The space-delimited list of atoms that will be rotated for the dihedral. This includes at least one edge atom in the actual dihedral tuple. All atoms must match an atom title. 
+- `crystal::molecule::dihedral::update` : The space-delimited list of atoms that will be rotated for the dihedral. This includes at least one edge atom in the actual dihedral tuple. All atoms must match an atom title. 
 
-crystal::molecule::dihedral::min, max : Minimum and maximum rotation of the dihedral angle, in degrees.
+- `crystal::molecule::dihedral::min, max` : Minimum and maximum rotation of the dihedral angle, in degrees.
 
-qe::param : A list of QE parameters to be parsed. Many parameters are the same as specified in QE. See the QE website for more info. Only some paramters are discussed here
+- `qe::param` : A list of QE parameters to be parsed. Many parameters are the same as specified in QE. See the QE website for more info. Only some paramters are discussed here
 
-qe::param::nstep : Number of vc-relax steps before QE exits. 
+- `qe::param::nstep` : Number of vc-relax steps before QE exits. 
 
-qe::param::qepath : Full path to QE program. 
+- `qe::param::qepath` : Full path to QE program. 
 
-qe::param::mpirunpath : Path and arguments to run MPI. 
+- `qe::param::mpirunpath` : Path and arguments to run MPI. 
 
-qe::param::preamble : Command(s) to be run prior to starting QE (e.g. module load or setup script).
+- `qe::param::preamble` : Command(s) to be run prior to starting QE (e.g. module load or setup script).
 
-qe::param::pseudo_dir : Directory containing psuedopotentials for QE. 
+- `qe::param::pseudo_dir` : Directory containing psuedopotentials for QE. 
 
-qe::param::restart_limit : The number of times MGAC will restart QE before stopping permanently. A good default is 3.
+- `qe::param::restart_limit` : The number of times MGAC will restart QE before stopping permanently. A good default is 3.
 
-qe::param::scftimeout : The time limit (in seconds) for a QE run. QE will be forcefully terminated after the time limit. NOTE: If QE is forecfully terminated too frequently, MPI communication may break and nodes will be eliminated from the MGAC run.
+- `qe::param::scftimeout` : The time limit (in seconds) for a QE run. QE will be forcefully terminated after the time limit. NOTE: If QE is forecfully terminated too frequently, MPI communication may break and nodes will be eliminated from the MGAC run.
 
-qe::param::pseudo::elem : The element of the pseudopotential.
+- `qe::param::pseudo::elem` : The element of the pseudopotential.
 
-qe::param::pseudo::mass : Mass in AMU of the pseudopotential atom. 
+- `qe::param::pseudo::mass` : Mass in AMU of the pseudopotential atom. 
 
-qe::param::pseudo::name : The name of the pseudopotential file.
+- `qe::param::pseudo::name` : The name of the pseudopotential file.
 
-run::replacement : The fraction replacement for partial cross. E.g., for a population of 50 and replacement of 2.5, 250 structures will be generated at each generation. 
+- `run::replacement` : The fraction replacement for partial cross. E.g., for a population of 50 and replacement of 2.5, 250 structures will be generated at each generation. 
 
-run::mutation : The probability that an individual structure will be mutated. Genes are mutated within that structure at a rate of 0.15. 
+- `run::mutation` : The probability that an individual structure will be mutated. Genes are mutated within that structure at a rate of 0.15. 
 
-run::generations : Number of generations to run over. 
+- `run::generations` : Number of generations to run over. 
 
-run::popsize : Base population size of run.
+- `run::popsize` : Base population size of run.
 
-run::seed : Seed for the random number generator. If the seed is -1 than a random seed will be chosen. 
+- `run::seed` : Seed for the random number generator. If the seed is -1 than a random seed will be chosen. 
 
-run::const_scale, lin_scale, exp_scale : The constant, linear, and exponential scaling factors for the fitness scaling step. The scaling follows the equation scale(score) = c + l*lin_score + e*exp_score where c,l,and e are the scaling factors, respectively, and the score is derived directly from the energy of the structure. The lin_score is is the normalized difference with the minimum score: 1 - [(score - min)/(max/min)]. The exponential_score is derived from the lin_score via E^(-0.5*10.0*lin_score).
+- `run::const_scale, lin_scale, exp_scale` : The constant, linear, and exponential scaling factors for the fitness scaling step. The scaling follows the equation scale(score) = c + l*lin_score + e*exp_score where c,l,and e are the scaling factors, respectively, and the score is derived directly from the energy of the structure. The lin_score is is the normalized difference with the minimum score: 1 - [(score - min)/(max/min)]. The exponential_score is derived from the lin_score via E^(-0.5*10.0*lin_score).
 
-run::calcmethod : The calculation method of the system. "qe" spceifies the use of QE, whereas "fitcell" runs using fitcell only.  
+- `run::calcmethod` : The calculation method of the system. "qe" spceifies the use of QE, whereas "fitcell" runs using fitcell only.  
 
-run::mode : Can be "stepwise" or "steadystate". Stepwise is the standard generation based GA, steadystate is unimplemented. 
+- `run::mode` : Can be "stepwise" or "steadystate". Stepwise is the standard generation based GA, steadystate is unimplemented. 
 
-run::type : Can be elitism, fullcross, finaleval, or clustered. Elitism follows the same method as MGAC1. Fullcross uses a fullcrossing method, but can be unstable. Finaleval takes a population as a restart and performs a final QE evaluation on the population. Clustered is the preferred method and eliminates duplicate structures from the structure generation. 
+- `run::type` : Can be elitism, fullcross, finaleval, or clustered. Elitism follows the same method as MGAC1. Fullcross uses a fullcrossing method, but can be unstable. Finaleval takes a population as a restart and performs a final QE evaluation on the population. Clustered is the preferred method and eliminates duplicate structures from the structure generation. 
 
-run::selector : The type of structure selector. Only "roulette" is implemented. 
+- `run::selector` : The type of structure selector. Only "roulette" is implemented. 
 
-run::outputmode : Only "sql" is implemented. "xml" no longer works. 
+- `run::outputmode` : Only "sql" is implemented. "xml" no longer works. 
 
-run::outpufile : The prefix to use for the output file. Outputfiles will be of the form "outputfile.type", e.g. "histan.sq3".
+- `run::outpufile` : The prefix to use for the output file. Outputfiles will be of the form "outputfile.type", e.g. "histan.sq3".
 
-run::spacemode : Can be single,limited, or full. Single mode selects a single spacegroup and requires the additional use of the "group" keyword. Limited only uses a subset of low complexity spacegroups and is preferred. Full mode uses all spacegroups (NOTE: the last spacegroup is not implemented, so this might cause crashes).
+- `run::spacemode` : Can be single,limited, or full. Single mode selects a single spacegroup and requires the additional use of the "group" keyword. Limited only uses a subset of low complexity spacegroups and is preferred. Full mode uses all spacegroups (NOTE: the last spacegroup is not implemented, so this might cause crashes).
 
-run::group : Specifies the spacegroup number of a single spacegroup run. Use ./mgac.x -l to see a list of spacegroups. 
+- `run::group` : Specifies the spacegroup number of a single spacegroup run. Use ./mgac.x -l to see a list of spacegroups. 
 
-run::symmlimit : Limits the number of symmetry operations in the available spacegroups. For example, setting a symmlimit of 4 will limit the available spacegroups to spacegroups with 4 or less symmetry operations. 
+- `run::symmlimit` : Limits the number of symmetry operations in the available spacegroups. For example, setting a symmlimit of 4 will limit the available spacegroups to spacegroups with 4 or less symmetry operations. 
 
-run::binlimit : In a multiple spacegroup run, spacegroups are sorted into individual spacegroups. When crossing occurs, only the "binlimit" lowest energy spacegroups will be crossed. The energy of a spacegroup is determined from the lowest energy structure in that spacegroup. 
+- `run::binlimit` : In a multiple spacegroup run, spacegroups are sorted into individual spacegroups. When crossing occurs, only the "binlimit" lowest energy spacegroups will be crossed. The energy of a spacegroup is determined from the lowest energy structure in that spacegroup. 
 
-run::downlimit : The number of nodes that can crash before MGAC will terminate. If a node loses communication over MPI it is considered crashed. 
+- `run::downlimit` : The number of nodes that can crash before MGAC will terminate. If a node loses communication over MPI it is considered crashed. 
 
-run::precompute : The number of precompute steps that will be performed. A precompute step clusters structures and obtains a maximally diverse set of structures. The number of precompute steps required is dependent on the number of genes, clustersize, and clusterdiff. 
+- `run::precompute` : The number of precompute steps that will be performed. A precompute step clusters structures and obtains a maximally diverse set of structures. The number of precompute steps required is dependent on the number of genes, clustersize, and clusterdiff. 
 
-run::clusterdiff : The genetic distance (in fractions of 1.0) between two structures used in clustering. A cluster difference of 0.3 means that 30% of the genes in a structure cannot be shared with any other structure in the clustered populations. 
+- `run::clusterdiff` : The genetic distance (in fractions of 1.0) between two structures used in clustering. A cluster difference of 0.3 means that 30% of the genes in a structure cannot be shared with any other structure in the clustered populations. 
 
-run::clustersize : When clustering, the gene differences are normalized. Clustersize specifies the effective step size of the normalization. 
+- `run::clustersize` : When clustering, the gene differences are normalized. Clustersize specifies the effective step size of the normalization. 
 
-run::angstep, dihstep, rotstep, ratiostep, posstep : The step sizes of cell angle, dihedral angle, molecular rotation angles, cell ratios, and fractional positions, respectively, used in the clustering algorithm.
+- `run::angstep, dihstep, rotstep, ratiostep, posstep` : The step sizes of cell angle, dihedral angle, molecular rotation angles, cell ratios, and fractional positions, respectively, used in the clustering algorithm.
  
 
 ================================================================================
-DEVELOPMENT NOTES:
+## DEVELOPMENT NOTES:
 
-A hook for steady state methods can be found in gasp2.cpp at line 1304, This is where it should likely be implemented, although further changes to the GASPcontrol serverprogram will be needed.
-
-
+A hook for steady state methods can be found in gasp2.cpp around line 1304, This is where it should likely be implemented, although further changes to the GASPcontrol serverprogram will be needed.
 
 
 
