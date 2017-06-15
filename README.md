@@ -1,3 +1,26 @@
+The Modified Genetic Algorithm for Crystals (MGAC)
+
+This code is a modernization of the MGAC code written by the Facelli group. The
+code has been contributed by a number of authors over the years:
+
+Victor E. Bazterra
+Gabriel I. Pagola
+Albert M.Lund
+Anita M. Orendt 
+Marta B. Ferraro
+Julio C. Facelli
+
+Users of this code should cite the following publications:
+
+Victor E. Bazterra, Marta B. Ferraro, and Julio C. Facelli. The Journal of Chemical Physics 116, 5984 (2002); doi: http://dx.doi.org/10.1063/1.1458547
+
+Lund AM, Pagola GI, Orendt AM, Ferraro MB, Facelli JC. Crystal Structure Prediction from First Principles: The Crystal Structures of Glycine. Chemical physics letters. 2015;626:20-24. doi:10.1016/j.cplett.2015.03.015.
+
+Scientific or collaborative inquiries should be directed to Julio Facellio (julio.facelli@utah.edu)
+
+For assistance with the code or other technical aspects please contact Albert Lund (a.m.lund@utah.edu)
+
+
 
 ================================================================================
 INSTALL INSTRUCTIONS:
