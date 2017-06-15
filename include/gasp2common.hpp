@@ -1,3 +1,9 @@
+//
+//Copyright (c) 2017 Albert M. Lund (a.m.lund@utah.edu)
+//
+//This source code is subject to the license found at https://github.com/MGAC-group/MGAC2
+//
+
 #define _GLIBCXX_USE_NANOSLEEP
 #pragma once
 #include <iostream>
