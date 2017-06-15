@@ -41,9 +41,9 @@ Intel compilers/MPI optional but not required
 
 On generic systems without Intel compilers:
 ```
-mkdir mgac-build
-cd mgac-build
-cmake -D CMAKE_CXX_COMPILER=g++ -D CMAKE_C_COMPILER=gcc ../mgac-redux
+mkdir mgac2-build
+cd mgac2-build
+cmake -D CMAKE_CXX_COMPILER=g++ -D CMAKE_C_COMPILER=gcc ../mgac2
 make
 ```
 MAKE SURE TO SOURCE MPICH2 VARS!
@@ -52,9 +52,9 @@ On CHPC systems with Intel compilers:
 
 ```
 module load cmake intel impi gcc/4.9.2
-mkdir mgac-build
-cd mgac-build
-cmake -D CMAKE_CXX_COMPILER=icpc -D CMAKE_C_COMPILER=icc ../mgac-redux
+mkdir mgac2-build
+cd mgac2-build
+cmake -D CMAKE_CXX_COMPILER=icpc -D CMAKE_C_COMPILER=icc ../mgac2
 make
 ```
 
